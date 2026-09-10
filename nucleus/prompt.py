@@ -50,10 +50,23 @@ def nucleus_text() -> tuple[str, dict[str, int]]:
     return "\n".join(parts), sizes
 
 
-def build(question: str, brief: dict, nucleus: str) -> str:
+def not_accepted_block(graph) -> str:
+    """Derived by code from his own ledger: graph records with no accepted decision. Never cite them."""
+    leaves = sorted(record.leaf for record in graph.records.values() if not graph.is_accepted(record))
+    if not leaves:
+        return ""
+    return (
+        f"\n===== {len(leaves)} records in the graph have no accepted decision in the ledger. Do not cite them. =====\n"
+        + "\n".join(leaves)
+        + "\n"
+    )
+
+
+def build(question: str, brief: dict, nucleus: str, graph=None) -> str:
     reading = json.dumps(brief, ensure_ascii=False, indent=1)
     return (
         nucleus
+        + (not_accepted_block(graph) if graph is not None else "")
         + "\n===== the dictionary's reading of the question =====\n"
         + reading
         + "\n\n===== Adam's question, character for character =====\n"

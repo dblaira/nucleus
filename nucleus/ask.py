@@ -87,7 +87,7 @@ def ask(question: str, store: Store | None = None, surface: str = "cli",
     graph = load_graph(NUCLEUS_FILES["graph"], NUCLEUS_FILES["ledger"])
     meanings = dictionary_module.load_meanings(NUCLEUS_FILES["meanings"])
     nucleus, sizes = prompt_module.nucleus_text()
-    prompt = prompt_module.build(question, reading, nucleus)
+    prompt = prompt_module.build(question, reading, nucleus, graph)
     bytes_sent = len(prompt.encode("utf-8"))
     store.finish_step(question_id, STEP_NUCLEUS, note=f"{bytes_sent} bytes; " + ", ".join(f"{k} {v}" for k, v in sizes.items()))
 

@@ -21,6 +21,7 @@ def reading(outcome="no", **extra):
 def fake_model(payload):
     def call(prompt: str) -> ModelReply:
         assert "===== graph:" in prompt and "===== meanings:" in prompt and "===== the contract =====" in prompt
+        assert "have no accepted decision in the ledger. Do not cite them." in prompt
         return ModelReply(provider="fake", model="fake", text=json.dumps(payload))
     return call
 
