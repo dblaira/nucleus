@@ -1,0 +1,39 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["answer", "words", "records", "possibility"],
+  "properties": {
+    "answer": {"type": "string", "enum": ["aligned", "not_sure", "dont_know"]},
+    "words": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["word", "why"],
+        "properties": {"word": {"type": "string"}, "why": {"type": "string"}}
+      }
+    },
+    "records": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "quote", "why"],
+        "properties": {"id": {"type": "string"}, "quote": {"type": "string"}, "why": {"type": "string"}}
+      }
+    },
+    "possibility": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["links", "proposed", "would_show"],
+        "properties": {
+          "links": {"type": "array", "items": {"type": "string"}, "minItems": 2, "maxItems": 2},
+          "proposed": {"type": "string"},
+          "would_show": {"type": "string"}
+        }
+      }
+    }
+  }
+}
