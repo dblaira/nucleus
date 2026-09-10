@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>com.nucleus.serve</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/Users/adamblair/Documents/nucleus/.venv/bin/python</string>
+    <string>-m</string>
+    <string>nucleus.serve</string>
+  </array>
+  <key>WorkingDirectory</key><string>/Users/adamblair/Documents/nucleus</string>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key><string>/Users/adamblair/.local/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
+    <key>HOME</key><string>/Users/adamblair</string>
+  </dict>
+  <key>RunAtLoad</key><true/>
+  <key>KeepAlive</key><true/>
+  <key>StandardOutPath</key><string>/Users/adamblair/Library/Application Support/nucleus/serve.log</string>
+  <key>StandardErrorPath</key><string>/Users/adamblair/Library/Application Support/nucleus/serve-error.log</string>
+</dict>
+</plist>

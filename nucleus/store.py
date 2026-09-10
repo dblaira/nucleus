@@ -121,6 +121,13 @@ class Store:
         ).fetchall()
         return [{"phrase": p, "kind": k, "name": n, "text": t, "strength": s} for p, k, n, t, s in rows]
 
+    def recent(self, limit: int = 12) -> list[dict]:
+        rows = self.connection.execute(
+            "SELECT q.id, q.question, a.status, a.answer, a.finished FROM questions q JOIN answers a ON a.question_id = q.id"
+            " ORDER BY a.finished DESC LIMIT ?", (limit,)
+        ).fetchall()
+        return [{"id": i, "question": q, "status": s, "answer": a, "finished": f} for i, q, s, a, f in rows]
+
     def answer(self, question_id: str) -> dict | None:
         row = self.connection.execute(
             "SELECT status, answer, text, reply_json, gate_ok, gate_reason, finished FROM answers WHERE question_id = ?",

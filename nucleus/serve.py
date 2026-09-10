@@ -17,14 +17,15 @@ STEP_NAMES = [ask_module.STEP_QUESTION, ask_module.STEP_DICTIONARY, ask_module.S
               ask_module.STEP_MODEL, ask_module.STEP_GATE, ask_module.STEP_ANSWER]
 
 PAGE = """<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="nucleus"><meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>nucleus</title>
 <style>
 body{margin:0;background:#F8F4ED;color:#111;font-family:-apple-system,Helvetica,Arial,sans-serif;font-size:18px;line-height:1.5}
 .page{max-width:760px;margin:0 auto;padding:28px 18px 60px}
 h1{font-size:30px;margin:0 0 16px}
 form{display:flex;gap:10px;margin:0 0 26px}
-input{flex:1;font-size:18px;padding:12px 14px;border:1px solid #CCB394;border-radius:8px;background:#fff}
-button{font-size:18px;padding:12px 18px;border:0;border-radius:8px;background:#E60E44;color:#fff}
+input{flex:1;font-size:18px;padding:14px 14px;border:1px solid #CCB394;border-radius:10px;background:#fff;min-width:0}
+button{font-size:18px;padding:14px 20px;border:0;border-radius:10px;background:#E60E44;color:#fff;min-height:48px}
 button:disabled{opacity:.5}
 .steps{display:grid;gap:8px;margin:0 0 26px}
 .step{display:grid;grid-template-columns:1fr 90px;align-items:baseline;padding:10px 14px;border-radius:8px;background:#EFEBE4;color:#999}
@@ -43,12 +44,21 @@ button:disabled{opacity:.5}
 <div class="steps" id="steps"></div>
 <div id="phrases" class="answer"></div>
 <div id="answer" class="answer"></div>
+<div id="recent" style="margin-top:40px"></div>
 </div>
 <script>
 const NAMES = %s;
 const FOLD = 4;
 const stepsEl = document.getElementById('steps'), answerEl = document.getElementById('answer');
 let current = null, timer = null;
+async function loadRecent(){
+  const r = await fetch('/recent'); const rows = await r.json();
+  const el = document.getElementById('recent');
+  if (!rows.length){ el.innerHTML=''; return; }
+  el.innerHTML = '<div class="first" style="font-size:22px">earlier</div>' + rows.map(x => '<div style="padding:10px 0;border-top:1px solid #CCB394"><a href="#" data-id="'+x.id+'" style="color:#111;text-decoration:none"><b>' + esc(x.answer || x.status) + '</b><br>' + esc(x.question) + '</a></div>').join('');
+  el.querySelectorAll('a').forEach(a => a.onclick = async (e) => { e.preventDefault(); current = a.dataset.id; const r = await fetch('/ask/' + current); render(await r.json()); window.scrollTo(0,0); });
+}
+loadRecent();
 function render(data){
   stepsEl.innerHTML = '';
   const byName = {};
@@ -89,7 +99,7 @@ async function poll(){
   if (!current) return;
   const r = await fetch('/ask/' + current); const data = await r.json();
   render(data);
-  if (data.answer){ clearInterval(timer); timer = null; document.getElementById('b').disabled = false; }
+  if (data.answer){ clearInterval(timer); timer = null; document.getElementById('b').disabled = false; loadRecent(); }
 }
 document.getElementById('f').onsubmit = async (e) => {
   e.preventDefault();
@@ -123,6 +133,9 @@ class Handler(BaseHTTPRequestHandler):
             self.send_header("content-length", str(len(body)))
             self.end_headers()
             self.wfile.write(body)
+            return
+        if path == "/recent":
+            self._json(200, self.store.recent(12))
             return
         if path.startswith("/ask/"):
             question_id = path[len("/ask/"):]
@@ -163,8 +176,8 @@ class Handler(BaseHTTPRequestHandler):
 
 def main() -> None:
     Handler.store = Store()
-    server = ThreadingHTTPServer(("127.0.0.1", PORT), Handler)
-    print(f"nucleus on http://127.0.0.1:{PORT}/")
+    server = ThreadingHTTPServer(("0.0.0.0", PORT), Handler)
+    print(f"nucleus on http://0.0.0.0:{PORT}/  (this Mac: http://127.0.0.1:{PORT}/, from the phone over Tailscale: http://100.111.154.126:{PORT}/)")
     server.serve_forever()
 
 
