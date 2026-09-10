@@ -13,7 +13,7 @@ from . import ask as ask_module
 from .store import Store
 
 PORT = 8766
-STEP_NAMES = [ask_module.STEP_QUESTION, ask_module.STEP_DICTIONARY, ask_module.STEP_NUCLEUS,
+STEP_NAMES = [ask_module.STEP_QUESTION, ask_module.STEP_DICTIONARY, ask_module.STEP_PHRASES, ask_module.STEP_NUCLEUS,
               ask_module.STEP_MODEL, ask_module.STEP_GATE, ask_module.STEP_ANSWER]
 
 PAGE = """<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
@@ -41,6 +41,7 @@ button:disabled{opacity:.5}
 <h1>nucleus</h1>
 <form id="f"><input id="q" placeholder="Write your question" autocomplete="off"><button id="b">Ask</button></form>
 <div class="steps" id="steps"></div>
+<div id="phrases" class="answer"></div>
 <div id="answer" class="answer"></div>
 </div>
 <script>
@@ -62,6 +63,9 @@ function render(data){
     el.innerHTML = '<span>' + name + '</span><span class="t">' + t + '</span>';
     stepsEl.appendChild(el);
   }
+  const ph = data.phrases || [];
+  const phEl = document.getElementById('phrases');
+  phEl.innerHTML = ph.length ? '<div class="first">meaning with meaning</div>' + ph.map(h => esc(h.name) + ' — “' + esc(h.text) + '”\\n<span style="color:#666">“' + esc(h.phrase) + '”</span>').join('\\n\\n') + '\\n\\n' : '';
   const a = data.answer;
   if (!a){ answerEl.innerHTML = ''; return; }
   if (a.status !== 'answered'){ answerEl.innerHTML = '<div class="stop">' + esc(a.status + ': ' + (a.text || a.gate_reason || '')) + '</div>'; return; }
@@ -126,7 +130,8 @@ class Handler(BaseHTTPRequestHandler):
             if question is None:
                 self._json(404, {"error": "no such question"})
                 return
-            self._json(200, {"question": question, "steps": self.store.steps(question_id), "answer": self.store.answer(question_id)})
+            self._json(200, {"question": question, "steps": self.store.steps(question_id),
+                             "phrases": self.store.phrase_hits(question_id), "answer": self.store.answer(question_id)})
             return
         self._json(404, {"error": "not found"})
 

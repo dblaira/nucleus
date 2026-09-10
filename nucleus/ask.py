@@ -12,16 +12,18 @@ from . import NUCLEUS_FILES
 from . import dictionary as dictionary_module
 from . import gate as gate_module
 from . import model as model_module
+from . import phrases as phrases_module
 from . import prompt as prompt_module
 from .graph import load_graph
 from .store import Store
 
 STEP_QUESTION = "1 question in"
 STEP_DICTIONARY = "2 dictionary reads it"
-STEP_NUCLEUS = "3 nucleus read whole"
-STEP_MODEL = "4 one model call"
-STEP_GATE = "5 the gate"
-STEP_ANSWER = "6 answer out"
+STEP_PHRASES = "3 your phrases found"
+STEP_NUCLEUS = "4 nucleus read whole"
+STEP_MODEL = "5 one model call"
+STEP_GATE = "6 the gate"
+STEP_ANSWER = "7 answer out"
 
 
 @dataclass
@@ -36,6 +38,7 @@ class Result:
     records: list[dict] = field(default_factory=list)
     possibility: list[dict] = field(default_factory=list)
     reading: dict | None = None
+    phrases: list[dict] = field(default_factory=list)
     steps: list[dict] = field(default_factory=list)
     seconds: float = 0.0
     provider: str | None = None
@@ -82,12 +85,19 @@ def ask(question: str, store: Store | None = None, surface: str = "cli",
         store.save_answer(question_id, "stopped", None, text, json.dumps(reading, ensure_ascii=False), None, None)
         return finish(Result(question_id, question, "stopped", text=text, reason=text, reading=reading))
 
-    # 3. the nucleus, whole
-    store.start_step(question_id, STEP_NUCLEUS)
+    # 3. his phrases, looked up by code. Meaning with meaning.
+    store.start_step(question_id, STEP_PHRASES)
     graph = load_graph(NUCLEUS_FILES["graph"], NUCLEUS_FILES["ledger"])
     meanings = dictionary_module.load_meanings(NUCLEUS_FILES["meanings"])
+    hits = phrases_module.PhraseIndex(meanings, graph).lookup(question)
+    store.save_phrase_hits(question_id, hits)
+    phrase_dicts = [{"phrase": h.phrase, "kind": h.kind, "name": h.name, "text": h.text, "strength": h.strength} for h in hits]
+    store.finish_step(question_id, STEP_PHRASES, note=f"{len(hits)} of his phrases found")
+
+    # 4. the nucleus, whole
+    store.start_step(question_id, STEP_NUCLEUS)
     nucleus, sizes = prompt_module.nucleus_text()
-    prompt = prompt_module.build(question, reading, nucleus, graph)
+    prompt = prompt_module.build(question, reading, nucleus, graph, hits)
     bytes_sent = len(prompt.encode("utf-8"))
     store.finish_step(question_id, STEP_NUCLEUS, note=f"{bytes_sent} bytes; " + ", ".join(f"{k} {v}" for k, v in sizes.items()))
 
@@ -100,7 +110,7 @@ def ask(question: str, store: Store | None = None, surface: str = "cli",
         store.save_model_call(question_id, "?", "?", prompt, call_started, None, False, str(error))
         store.finish_step(question_id, STEP_MODEL, note=f"failed: {error}")
         store.save_answer(question_id, "failed", None, "", None, None, str(error))
-        return finish(Result(question_id, question, "failed", reason=f"The model call failed: {error}", reading=reading, bytes_sent=bytes_sent))
+        return finish(Result(question_id, question, "failed", reason=f"The model call failed: {error}", reading=reading, phrases=phrase_dicts, bytes_sent=bytes_sent))
     store.save_model_call(question_id, reply.provider, reply.model, prompt, reply.text, call_started, True, None)
     store.finish_step(question_id, STEP_MODEL, note=f"{reply.provider} {reply.model}")
 
@@ -110,7 +120,7 @@ def ask(question: str, store: Store | None = None, surface: str = "cli",
     store.finish_step(question_id, STEP_GATE, note="pass" if verdict.ok else f"refused: {verdict.reason}")
     if not verdict.ok:
         store.save_answer(question_id, "refused", None, "", reply.text, False, verdict.reason)
-        return finish(Result(question_id, question, "refused", reason=verdict.reason, reading=reading,
+        return finish(Result(question_id, question, "refused", reason=verdict.reason, reading=reading, phrases=phrase_dicts,
                              provider=reply.provider, model=reply.model, bytes_sent=bytes_sent))
 
     # 6. the answer, out and saved
@@ -121,10 +131,15 @@ def ask(question: str, store: Store | None = None, surface: str = "cli",
     store.finish_step(question_id, STEP_ANSWER)
     return finish(Result(question_id, question, "answered", answer=verdict.answer, text=verdict.text,
                          words=verdict.words, records=verdict.records, possibility=verdict.possibility,
-                         reading=reading, provider=reply.provider, model=reply.model, bytes_sent=bytes_sent))
+                         reading=reading, phrases=phrase_dicts, provider=reply.provider, model=reply.model, bytes_sent=bytes_sent))
 
 
 def print_result(result: Result) -> None:
+    if result.phrases:
+        print("meaning with meaning")
+        for hit in result.phrases:
+            print(f"  “{hit['phrase']}” → {hit['name']}: {hit['text'][:110]}")
+        print()
     print(result.text if result.status == "answered" else f"{result.status}: {result.reason}")
     print()
     for step in result.steps:

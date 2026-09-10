@@ -62,13 +62,23 @@ def not_accepted_block(graph) -> str:
     )
 
 
-def build(question: str, brief: dict, nucleus: str, graph=None) -> str:
+def phrase_block(hits) -> str:
+    """Found by code: phrases of Adam's own that appear in the question. Meaning with meaning."""
+    if not hits:
+        return "\n===== phrases of Adam's found in the question by code =====\nnone\n"
+    lines = [f"- “{h.phrase}” is in {h.kind} {h.name}: {h.text}" for h in hits]
+    return "\n===== phrases of Adam's found in the question by code (found, not judged) =====\n" + "\n".join(lines) + "\n"
+
+
+def build(question: str, brief: dict, nucleus: str, graph=None, hits=None) -> str:
     reading = json.dumps(brief, ensure_ascii=False, indent=1)
     return (
         nucleus
         + (not_accepted_block(graph) if graph is not None else "")
         + "\n===== the dictionary's reading of the question =====\n"
         + reading
+        + "\n"
+        + phrase_block(hits or [])
         + "\n\n===== Adam's question, character for character =====\n"
         + question
         + "\n\n===== the contract =====\n"

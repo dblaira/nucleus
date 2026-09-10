@@ -39,7 +39,7 @@ def test_aligned_end_to_end(store):
     assert result.text.startswith("aligned and why")
     assert "FLOW — “" in result.text and "Your compass points at this." in result.text
     names = [s["name"] for s in result.steps]
-    assert names == ["1 question in", "2 dictionary reads it", "3 nucleus read whole", "4 one model call", "5 the gate", "6 answer out"]
+    assert names == ["1 question in", "2 dictionary reads it", "3 your phrases found", "4 nucleus read whole", "5 one model call", "6 the gate", "7 answer out"]
     assert all(s["finished"] for s in result.steps)
     assert result.bytes_sent > 300_000
     saved = store.answer(result.question_id)

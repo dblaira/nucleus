@@ -29,6 +29,10 @@ CREATE TABLE IF NOT EXISTS candidates (
   id TEXT PRIMARY KEY, question_id TEXT NOT NULL, links TEXT NOT NULL, proposed TEXT NOT NULL,
   would_show TEXT NOT NULL, created REAL NOT NULL
 );
+CREATE TABLE IF NOT EXISTS phrase_hits (
+  question_id TEXT NOT NULL, phrase TEXT NOT NULL, kind TEXT NOT NULL, name TEXT NOT NULL,
+  text TEXT NOT NULL, strength TEXT, position INTEGER NOT NULL
+);
 CREATE TABLE IF NOT EXISTS grades (
   run_id TEXT NOT NULL, question_id TEXT, question TEXT NOT NULL, expected TEXT, got TEXT,
   status TEXT, gate_ok INTEGER, seconds REAL, at REAL NOT NULL
@@ -102,6 +106,20 @@ class Store:
                  entry["would_show"], time.time()),
             )
         self.connection.commit()
+
+    def save_phrase_hits(self, question_id: str, hits: list) -> None:
+        for position, hit in enumerate(hits):
+            self.connection.execute(
+                "INSERT INTO phrase_hits (question_id, phrase, kind, name, text, strength, position) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                (question_id, hit.phrase, hit.kind, hit.name, hit.text, hit.strength, position),
+            )
+        self.connection.commit()
+
+    def phrase_hits(self, question_id: str) -> list[dict]:
+        rows = self.connection.execute(
+            "SELECT phrase, kind, name, text, strength FROM phrase_hits WHERE question_id = ? ORDER BY position", (question_id,)
+        ).fetchall()
+        return [{"phrase": p, "kind": k, "name": n, "text": t, "strength": s} for p, k, n, t, s in rows]
 
     def answer(self, question_id: str) -> dict | None:
         row = self.connection.execute(
