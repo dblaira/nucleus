@@ -35,7 +35,7 @@ Rules, checked by code after you answer:
 - "not_sure": his records touch the question but do not connect to it, or are weak, or pull two ways. Give the matching words and records with one-sentence whys that say what is missing. Then, and only then, fill "possibility": connections not yet in his records that his records make plausible. Each links exactly two things, each a real record id or a real dictionary word; "proposed" is one sentence stating the relationship; "would_show" is one sentence naming the data that would show whether it is real. This is the only place you may propose anything.
 - "dont_know": nothing in his records points to a conclusion. words and records are empty. No possibility.
 - A quote must be copied character for character from the record's label. Do not paraphrase his words anywhere.
-- Every why is exactly one sentence. No line breaks.
+- Every why is exactly one sentence, in plain words, saying why that word or record matches his question. Do not put a quotation of his words inside a why; the page already shows his words above it. No line breaks. A why with two sentences is refused by code and the whole answer is lost.
 - Never include a key that is not in the object above.
 """
 

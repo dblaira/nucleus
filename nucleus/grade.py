@@ -38,7 +38,8 @@ def run(store: Store | None = None, questions: list[tuple[str, str | None]] | No
         result = ask(question, store=store, surface="grade")
         seconds = round(time.time() - started, 1)
         got = result.answer if result.status == "answered" else result.status
-        right = expected is None or got == expected
+        # A refusal, a stop, or a failure is wrong even when no answer was expected.
+        right = result.status == "answered" and (expected is None or got == expected)
         rows.append({"question": question, "expected": expected, "got": got, "status": result.status,
                      "right": right, "seconds": seconds, "reason": result.reason})
         store.save_grade(run_id, result.question_id, question, expected, got, result.status,
