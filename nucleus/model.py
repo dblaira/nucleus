@@ -89,8 +89,61 @@ def call_codex(prompt: str, timeout: float = TIMEOUT_SECONDS) -> ModelReply:
         return ModelReply(provider="codex", model=CODEX_MODEL, text=text)
 
 
+OPENAI_MODEL = os.environ.get("NUCLEUS_OPENAI_MODEL", "gpt-5.6-sol")
+
+
+def openai_key() -> str | None:
+    key = os.environ.get("OPENAI_API_KEY")
+    if key:
+        return key
+    try:
+        completed = subprocess.run(
+            ["security", "find-generic-password", "-s", "nucleus", "-a", "openai", "-w"],
+            capture_output=True, text=True, timeout=10, check=False,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    key = completed.stdout.strip()
+    return key or None
+
+
+def call_openai(prompt: str, key: str, timeout: float = TIMEOUT_SECONDS) -> ModelReply:
+    """The OpenAI API door. Same prompt, plain call, JSON reply. Untested until a key is on this Mac."""
+    body = {
+        "model": OPENAI_MODEL,
+        "input": [{"role": "user", "content": prompt}],
+        "text": {"format": {"type": "json_object"}},
+    }
+    request = urllib.request.Request(
+        "https://api.openai.com/v1/responses",
+        data=json.dumps(body).encode("utf-8"),
+        headers={"content-type": "application/json", "authorization": f"Bearer {key}"},
+        method="POST",
+    )
+    with urllib.request.urlopen(request, timeout=timeout) as response:
+        payload = json.load(response)
+    text = payload.get("output_text") or ""
+    if not text:
+        for item in payload.get("output", []):
+            for part in item.get("content", []) if isinstance(item, dict) else []:
+                if part.get("type") in ("output_text", "text"):
+                    text += part.get("text", "")
+    return ModelReply(provider="openai", model=OPENAI_MODEL, text=text)
+
+
+def door() -> str:
+    if anthropic_key():
+        return "anthropic"
+    if openai_key():
+        return "openai"
+    return "codex"
+
+
 def call(prompt: str, timeout: float = TIMEOUT_SECONDS) -> ModelReply:
     key = anthropic_key()
     if key:
         return call_anthropic(prompt, key, timeout=timeout)
+    key = openai_key()
+    if key:
+        return call_openai(prompt, key, timeout=timeout)
     return call_codex(prompt, timeout=timeout)
