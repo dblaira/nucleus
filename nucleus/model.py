@@ -1,4 +1,5 @@
-"""One model call. Anthropic first when a key is on this Mac, otherwise the Codex lane.
+"""One model call. Z.ai first when Adam's key is in the keychain (his prepaid credits, 2026-09-11),
+then Anthropic, then OpenAI, otherwise the Codex lane.
 
 Both doors take the same prompt and return the raw reply text. The gate judges it.
 """
@@ -131,7 +132,54 @@ def call_openai(prompt: str, key: str, timeout: float = TIMEOUT_SECONDS) -> Mode
     return ModelReply(provider="openai", model=OPENAI_MODEL, text=text)
 
 
+ZAI_MODEL = os.environ.get("NUCLEUS_ZAI_MODEL", "glm-5.3")
+
+
+def zai_key() -> str | None:
+    """Adam's Z.ai key. He puts it in the Mac keychain himself; the code never sees it in a file."""
+    key = os.environ.get("ZAI_API_KEY")
+    if key:
+        return key
+    try:
+        completed = subprocess.run(
+            ["security", "find-generic-password", "-s", "nucleus", "-a", "zai", "-w"],
+            capture_output=True, text=True, timeout=10, check=False,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    key = completed.stdout.strip()
+    return key or None
+
+
+def call_zai(prompt: str, key: str, timeout: float = TIMEOUT_SECONDS) -> ModelReply:
+    """The Z.ai door (GLM). OpenAI-shaped chat call, thinking off, JSON reply. Adam's prepaid credits."""
+    body = {
+        "model": ZAI_MODEL,
+        "messages": [{"role": "user", "content": prompt}],
+        "thinking": {"type": "disabled"},
+        "response_format": {"type": "json_object"},
+        "max_tokens": 4000,
+    }
+    request = urllib.request.Request(
+        "https://api.z.ai/api/paas/v4/chat/completions",
+        data=json.dumps(body).encode("utf-8"),
+        headers={"content-type": "application/json", "authorization": f"Bearer {key}"},
+        method="POST",
+    )
+    with urllib.request.urlopen(request, timeout=timeout) as response:
+        payload = json.load(response)
+    text = ""
+    for choice in payload.get("choices", []):
+        message = choice.get("message") or {}
+        text += message.get("content") or ""
+    if not text:
+        raise RuntimeError(f"Z.ai returned no text: {json.dumps(payload)[:600]}")
+    return ModelReply(provider="zai", model=payload.get("model") or ZAI_MODEL, text=text.strip())
+
+
 def door() -> str:
+    if zai_key():
+        return "zai"
     if anthropic_key():
         return "anthropic"
     if openai_key():
@@ -140,6 +188,9 @@ def door() -> str:
 
 
 def call(prompt: str, timeout: float = TIMEOUT_SECONDS) -> ModelReply:
+    key = zai_key()
+    if key:
+        return call_zai(prompt, key, timeout=timeout)
     key = anthropic_key()
     if key:
         return call_anthropic(prompt, key, timeout=timeout)
