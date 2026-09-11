@@ -14,6 +14,7 @@ from . import gate as gate_module
 from . import model as model_module
 from . import phrases as phrases_module
 from . import prompt as prompt_module
+from .compact import compact_nucleus
 from .graph import load_graph
 from .store import Store
 
@@ -96,7 +97,11 @@ def ask(question: str, store: Store | None = None, surface: str = "cli",
 
     # 4. the nucleus, whole
     store.start_step(question_id, STEP_NUCLEUS)
-    nucleus, sizes = prompt_module.nucleus_text()
+    if model_module.door() == "zai":
+        # Z.ai is paid per byte and slow on the raw files: the compact form, his words untouched, is a third the size.
+        nucleus, sizes = compact_nucleus(graph)
+    else:
+        nucleus, sizes = prompt_module.nucleus_text()
     prompt = prompt_module.build(question, reading, nucleus, graph, hits)
     bytes_sent = len(prompt.encode("utf-8"))
     store.finish_step(question_id, STEP_NUCLEUS, note=f"{bytes_sent} bytes; " + ", ".join(f"{k} {v}" for k, v in sizes.items()))

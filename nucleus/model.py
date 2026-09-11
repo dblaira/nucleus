@@ -1,5 +1,5 @@
-"""One model call. Z.ai first when Adam's key is in the keychain (his prepaid credits, 2026-09-11),
-then Anthropic, then OpenAI, otherwise the Codex lane.
+"""One model call. Anthropic when a key is on this Mac, then OpenAI, otherwise the Codex lane.
+The Z.ai door (Adam's prepaid GLM credits) opens with NUCLEUS_DOOR=zai.
 
 Both doors take the same prompt and return the raw reply text. The gate judges it.
 """
@@ -51,7 +51,7 @@ def call_anthropic(prompt: str, key: str, timeout: float = TIMEOUT_SECONDS) -> M
     user = (sep + tail) if sep else prompt
     body = {
         "model": ANTHROPIC_MODEL,
-        "max_tokens": 4000,
+        "max_tokens": 12000,
         "system": system,
         "messages": [{"role": "user", "content": user}],
     }
@@ -132,7 +132,7 @@ def call_openai(prompt: str, key: str, timeout: float = TIMEOUT_SECONDS) -> Mode
     return ModelReply(provider="openai", model=OPENAI_MODEL, text=text)
 
 
-ZAI_MODEL = os.environ.get("NUCLEUS_ZAI_MODEL", "glm-5.3")
+ZAI_MODEL = os.environ.get("NUCLEUS_ZAI_MODEL", "glm-5.3-flash")  # glm-5.3 thinks past 12,000 tokens and never answers (measured 2026-09-11)
 
 
 def zai_key() -> str | None:
@@ -152,13 +152,13 @@ def zai_key() -> str | None:
 
 
 def call_zai(prompt: str, key: str, timeout: float = TIMEOUT_SECONDS) -> ModelReply:
-    """The Z.ai door (GLM). OpenAI-shaped chat call, thinking off, JSON reply. Adam's prepaid credits."""
+    """The Z.ai door (GLM). OpenAI-shaped chat call, thinking low (this model cannot turn it off), JSON reply. Adam's prepaid credits."""
     body = {
         "model": ZAI_MODEL,
         "messages": [{"role": "user", "content": prompt}],
-        "thinking": {"type": "disabled"},
+        "thinking": {"type": "enabled", "effort": "low"},
         "response_format": {"type": "json_object"},
-        "max_tokens": 4000,
+        "max_tokens": 12000,
     }
     request = urllib.request.Request(
         "https://api.z.ai/api/paas/v4/chat/completions",
@@ -178,8 +178,14 @@ def call_zai(prompt: str, key: str, timeout: float = TIMEOUT_SECONDS) -> ModelRe
 
 
 def door() -> str:
-    if zai_key():
-        return "zai"
+    """Which door a call goes through. NUCLEUS_DOOR=zai|anthropic|openai|codex overrides the order.
+
+    Measured 2026-09-11 on "What is FLOW?": codex 28 s; zai glm-5.3-flash 64 s (compact nucleus) and
+    83 s (full files); zai glm-5.3 never finished thinking. So the Z.ai door waits until Adam asks for it.
+    """
+    chosen = os.environ.get("NUCLEUS_DOOR")
+    if chosen:
+        return chosen
     if anthropic_key():
         return "anthropic"
     if openai_key():
@@ -188,13 +194,14 @@ def door() -> str:
 
 
 def call(prompt: str, timeout: float = TIMEOUT_SECONDS) -> ModelReply:
-    key = zai_key()
-    if key:
+    which = door()
+    if which == "zai":
+        key = zai_key()
+        if not key:
+            raise RuntimeError("NUCLEUS_DOOR is zai but no Z.ai key is in the keychain (service nucleus, account zai).")
         return call_zai(prompt, key, timeout=timeout)
-    key = anthropic_key()
-    if key:
-        return call_anthropic(prompt, key, timeout=timeout)
-    key = openai_key()
-    if key:
-        return call_openai(prompt, key, timeout=timeout)
+    if which == "anthropic":
+        return call_anthropic(prompt, anthropic_key(), timeout=timeout)
+    if which == "openai":
+        return call_openai(prompt, openai_key(), timeout=timeout)
     return call_codex(prompt, timeout=timeout)
