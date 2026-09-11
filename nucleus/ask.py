@@ -42,6 +42,7 @@ class Result:
     phrases: list[dict] = field(default_factory=list)
     steps: list[dict] = field(default_factory=list)
     seconds: float = 0.0
+    times_asked_before: int = 0
     provider: str | None = None
     model: str | None = None
     bytes_sent: int = 0
@@ -65,6 +66,7 @@ def ask(question: str, store: Store | None = None, surface: str = "cli",
     def finish(result: Result) -> Result:
         result.steps = store.steps(question_id)
         result.seconds = round(time.time() - started_all, 3)
+        result.times_asked_before = store.times_asked(question, question_id)
         return result
 
     # 2. the dictionary reads the question with its own program
@@ -106,18 +108,27 @@ def ask(question: str, store: Store | None = None, surface: str = "cli",
     bytes_sent = len(prompt.encode("utf-8"))
     store.finish_step(question_id, STEP_NUCLEUS, note=f"{bytes_sent} bytes; " + ", ".join(f"{k} {v}" for k, v in sizes.items()))
 
-    # 4. one model call
+    # 5. one model call, unless he asked this same question before against these same records.
+    #    Adam, 2026-09-11: "I'm probably gonna be circling the same thoughts, the same emotions, the same
+    #    concepts because they're not yet clear to me." The saved answer comes back; the model is not asked.
+    head, _turn = model_module.split_prompt(prompt)
+    records_hash = model_module.nucleus_hash(head or nucleus)
     store.start_step(question_id, STEP_MODEL)
-    call_started = time.time()
-    try:
-        reply = model_call(prompt)
-    except Exception as error:
-        store.save_model_call(question_id, "?", "?", prompt, call_started, None, False, str(error))
-        store.finish_step(question_id, STEP_MODEL, note=f"failed: {error}")
-        store.save_answer(question_id, "failed", None, "", None, None, str(error))
-        return finish(Result(question_id, question, "failed", reason=f"The model call failed: {error}", reading=reading, phrases=phrase_dicts, bytes_sent=bytes_sent))
-    store.save_model_call(question_id, reply.provider, reply.model, prompt, call_started, reply.text, True, None)
-    store.finish_step(question_id, STEP_MODEL, note=f"{reply.provider} {reply.model}")
+    repeat = store.find_repeat(question, records_hash, question_id)
+    if repeat is not None:
+        reply = model_module.ModelReply(provider="saved", model=repeat["question_id"], text=repeat["reply_json"])
+        store.finish_step(question_id, STEP_MODEL, note="asked before; answered from what was saved")
+    else:
+        call_started = time.time()
+        try:
+            reply = model_call(prompt)
+        except Exception as error:
+            store.save_model_call(question_id, "?", "?", prompt, call_started, None, False, str(error))
+            store.finish_step(question_id, STEP_MODEL, note=f"failed: {error}")
+            store.save_answer(question_id, "failed", None, "", None, None, str(error))
+            return finish(Result(question_id, question, "failed", reason=f"The model call failed: {error}", reading=reading, phrases=phrase_dicts, bytes_sent=bytes_sent))
+        store.save_model_call(question_id, reply.provider, reply.model, prompt, call_started, reply.text, True, None)
+        store.finish_step(question_id, STEP_MODEL, note=f"{reply.provider} {reply.model}")
 
     # 5. the gate
     store.start_step(question_id, STEP_GATE)
@@ -130,8 +141,8 @@ def ask(question: str, store: Store | None = None, surface: str = "cli",
 
     # 6. the answer, out and saved
     store.start_step(question_id, STEP_ANSWER)
-    store.save_answer(question_id, "answered", verdict.answer, verdict.text, reply.text, True, None)
-    if verdict.possibility:
+    store.save_answer(question_id, "answered", verdict.answer, verdict.text, reply.text, True, None, nucleus_hash=records_hash)
+    if verdict.possibility and repeat is None:
         store.save_candidates(question_id, verdict.possibility)
     store.finish_step(question_id, STEP_ANSWER)
     return finish(Result(question_id, question, "answered", answer=verdict.answer, text=verdict.text,
@@ -145,6 +156,8 @@ def print_result(result: Result) -> None:
         for hit in result.phrases:
             print(f"  “{hit['phrase']}” → {hit['name']}: {hit['text'][:110]}")
         print()
+    if result.times_asked_before:
+        print(f"asked before · {result.times_asked_before} time{'s' if result.times_asked_before != 1 else ''}")
     print(result.text if result.status == "answered" else f"{result.status}: {result.reason}")
     print()
     for step in result.steps:

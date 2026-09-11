@@ -108,3 +108,35 @@ def test_model_call_row_keeps_started_and_reply_in_their_columns(store):
     result = ask_module.ask("Anything about the moon?", store=store, model_call=fake_model(payload), brief=lambda q: reading())
     started, reply = store.connection.execute("SELECT started, reply FROM model_calls WHERE question_id = ?", (result.question_id,)).fetchone()
     assert isinstance(started, float) and json.loads(reply) == payload
+
+
+def test_same_question_again_comes_from_what_was_saved(store):
+    calls = []
+    payload = {"answer": "aligned", "words": [{"word": "FLOW", "why": "Your word names the state the question asks about."}],
+               "records": [], "possibility": []}
+
+    def counting(prompt: str) -> ModelReply:
+        calls.append(prompt)
+        return ModelReply(provider="fake", model="fake", text=json.dumps(payload))
+
+    first = ask_module.ask("What is FLOW?", store=store, model_call=counting, brief=lambda q: reading())
+    second = ask_module.ask("  what is  flow? ", store=store, model_call=counting, brief=lambda q: reading())
+    assert first.status == "answered" and second.status == "answered"
+    assert len(calls) == 1
+    assert second.text == first.text
+    assert second.times_asked_before == 1 and first.times_asked_before == 0
+    notes = {s["name"]: s["note"] for s in second.steps}
+    assert notes[ask_module.STEP_MODEL] == "asked before; answered from what was saved"
+
+
+def test_a_refused_answer_is_not_reused(store):
+    calls = []
+    bad = {"answer": "aligned", "words": [{"word": "NOT A WORD", "why": "x."}], "records": [], "possibility": []}
+
+    def counting(prompt: str) -> ModelReply:
+        calls.append(prompt)
+        return ModelReply(provider="fake", model="fake", text=json.dumps(bad))
+
+    ask_module.ask("Anything?", store=store, model_call=counting, brief=lambda q: reading())
+    ask_module.ask("Anything?", store=store, model_call=counting, brief=lambda q: reading())
+    assert len(calls) == 2

@@ -6,14 +6,18 @@ Both doors take the same prompt and return the raw reply text. The gate judges i
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
+import re
 import subprocess
 import tempfile
+import threading
 import urllib.request
 from dataclasses import dataclass
 from pathlib import Path
 
+from . import STORE_PATH
 from .prompt import SCHEMA_PATH
 
 ANTHROPIC_MODEL = "claude-fable-5-1"
@@ -67,8 +71,90 @@ def call_anthropic(prompt: str, key: str, timeout: float = TIMEOUT_SECONDS) -> M
     return ModelReply(provider="anthropic", model=ANTHROPIC_MODEL, text=text)
 
 
+NUCLEUS_MARKER = "\n===== the dictionary's reading of the question ====="
+CONVERSATION_PATH = STORE_PATH.parent / "conversation.json"
+ROOM = STORE_PATH.parent / "codex-room"   # an empty folder the conversation lives in
+ONCE = """
+
+===== hold these =====
+Everything above is Adam Blair's nucleus: his records, his ontology, his dictionary, his routes. Hold all of it.
+Each message after this one is one question with its own contract. Every reply is exactly one JSON object
+and nothing else: no prose, no fences. For this message reply with the single word: ready
+"""
+_conversation_lock = threading.Lock()
+_SESSION_ID = re.compile(r"session id: ([0-9a-f-]{36})")
+_CODEX_BASE = ["codex", "exec", "--ignore-user-config", "--ignore-rules", "--skip-git-repo-check",
+               "-m", CODEX_MODEL, "-c", "model_reasoning_effort=\"low\""]
+
+
+def nucleus_hash(head: str) -> str:
+    return hashlib.sha256(head.encode("utf-8")).hexdigest()
+
+
+def split_prompt(prompt: str) -> tuple[str, str]:
+    """The part that is the same every question (his files) and the part that is this question."""
+    head, sep, tail = prompt.partition(NUCLEUS_MARKER)
+    return (head, sep + tail) if sep else ("", prompt)
+
+
+def _read_conversation() -> dict:
+    try:
+        return json.loads(CONVERSATION_PATH.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+
+
+def _open_conversation(head: str, timeout: float) -> str:
+    """Send the nucleus once. The Codex lane keeps the conversation; its id is saved next to the store."""
+    ROOM.mkdir(parents=True, exist_ok=True)
+    command = _CODEX_BASE + ["-s", "read-only", "-C", str(ROOM), "--color", "never", "-"]
+    completed = subprocess.run(command, input=head + ONCE, capture_output=True, text=True, timeout=timeout, check=False)
+    found = _SESSION_ID.search(completed.stderr)
+    if not found:
+        raise RuntimeError(f"Could not open the conversation. exit {completed.returncode}. stderr: {completed.stderr.strip()[-600:]}")
+    session_id = found.group(1)
+    CONVERSATION_PATH.write_text(json.dumps({"session_id": session_id, "nucleus_hash": nucleus_hash(head)}), encoding="utf-8")
+    return session_id
+
+
+def _extract_json(text: str) -> str:
+    start, end = text.find("{"), text.rfind("}")
+    return text[start:end + 1] if start != -1 and end > start else text.strip()
+
+
+def call_codex_conversation(head: str, turn: str, timeout: float = TIMEOUT_SECONDS) -> ModelReply:
+    """One short turn in the open conversation that already holds the nucleus.
+
+    Measured 2026-09-11: 16.6 s against 26 to 45 s for a fresh conversation each question.
+    The conversation is reopened when his files change (the hash) or when the lane has lost it.
+    """
+    with _conversation_lock:
+        saved = _read_conversation()
+        session_id = saved.get("session_id") if saved.get("nucleus_hash") == nucleus_hash(head) else None
+        if not session_id:
+            session_id = _open_conversation(head, timeout)
+        command = _CODEX_BASE + ["resume", session_id, "-"]
+        completed = subprocess.run(command, input=turn, capture_output=True, text=True, timeout=timeout, check=False)
+        text = _extract_json(completed.stdout)
+        if completed.returncode != 0 or not text.startswith("{"):
+            session_id = _open_conversation(head, timeout)
+            completed = subprocess.run(_CODEX_BASE + ["resume", session_id, "-"], input=turn, capture_output=True, text=True, timeout=timeout, check=False)
+            text = _extract_json(completed.stdout)
+        if not text.startswith("{"):
+            raise RuntimeError(f"The conversation returned nothing usable. exit {completed.returncode}. stderr: {completed.stderr.strip()[-600:]}")
+        return ModelReply(provider="codex", model=CODEX_MODEL, text=text)
+
+
 def call_codex(prompt: str, timeout: float = TIMEOUT_SECONDS) -> ModelReply:
-    """The Codex lane: the signed-in Codex CLI, read-only, in an empty folder, answer shaped by the schema."""
+    """The Codex lane. With the nucleus in the prompt: one open conversation, short turns. Otherwise one fresh call."""
+    head, turn = split_prompt(prompt)
+    if head:
+        return call_codex_conversation(head, turn, timeout=timeout)
+    return call_codex_fresh(prompt, timeout=timeout)
+
+
+def call_codex_fresh(prompt: str, timeout: float = TIMEOUT_SECONDS) -> ModelReply:
+    """A fresh Codex conversation for one prompt, read-only, in an empty folder, answer shaped by the schema."""
     with tempfile.TemporaryDirectory(prefix="nucleus-codex-") as folder:
         out = Path(folder) / "reply.json"
         # --ignore-user-config and --ignore-rules: without them the Codex CLI loads Adam's
@@ -77,7 +163,7 @@ def call_codex(prompt: str, timeout: float = TIMEOUT_SECONDS) -> ModelReply:
         # Measured 2026-09-10 on a one-line prompt: 58 s with them loaded, 9 s without.
         command = [
             "codex", "exec", "-m", CODEX_MODEL, "-s", "read-only", "--ephemeral", "--skip-git-repo-check",
-            "--ignore-user-config", "--ignore-rules", "-c", "model_reasoning_effort=\"low\"",
+            "--ignore-user-config", "--ignore-rules", "-c", "model_reasoning_effort=\"minimal\"",
             "-C", folder, "--color", "never", "--output-schema", str(SCHEMA_PATH), "-o", str(out), "-",
         ]
         completed = subprocess.run(command, input=prompt, capture_output=True, text=True, timeout=timeout, check=False)

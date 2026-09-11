@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 import sqlite3
 import time
 import uuid
@@ -40,12 +41,20 @@ CREATE TABLE IF NOT EXISTS grades (
 """
 
 
+def normalize_question(question: str) -> str:
+    """The same question, typed again: spaces and capitals do not make it a different question."""
+    return re.sub(r"\s+", " ", question).strip().lower()
+
+
 class Store:
     def __init__(self, path: Path = STORE_PATH) -> None:
         self.path = path
         path.parent.mkdir(parents=True, exist_ok=True)
         self.connection = sqlite3.connect(path, check_same_thread=False)
         self.connection.executescript(SCHEMA)
+        columns = {row[1] for row in self.connection.execute("PRAGMA table_info(answers)")}
+        if "nucleus_hash" not in columns:
+            self.connection.execute("ALTER TABLE answers ADD COLUMN nucleus_hash TEXT")
         self.connection.commit()
 
     def new_question(self, question: str, surface: str) -> str:
@@ -90,13 +99,34 @@ class Store:
         self.connection.commit()
 
     def save_answer(self, question_id: str, status: str, answer: str | None, text: str, reply_json: str | None,
-                    gate_ok: bool | None, gate_reason: str | None) -> None:
+                    gate_ok: bool | None, gate_reason: str | None, nucleus_hash: str | None = None) -> None:
         self.connection.execute(
-            "INSERT OR REPLACE INTO answers (question_id, status, answer, text, reply_json, gate_ok, gate_reason, finished)"
-            " VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-            (question_id, status, answer, text, reply_json, None if gate_ok is None else int(gate_ok), gate_reason, time.time()),
+            "INSERT OR REPLACE INTO answers (question_id, status, answer, text, reply_json, gate_ok, gate_reason, finished, nucleus_hash)"
+            " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (question_id, status, answer, text, reply_json, None if gate_ok is None else int(gate_ok), gate_reason, time.time(), nucleus_hash),
         )
         self.connection.commit()
+
+    def find_repeat(self, question: str, nucleus_hash: str, before_id: str) -> dict | None:
+        """The same question, answered before, against the same records: the saved reply, no model."""
+        wanted = normalize_question(question)
+        rows = self.connection.execute(
+            "SELECT q.id, q.question, a.reply_json, a.finished FROM questions q JOIN answers a ON a.question_id = q.id"
+            " WHERE a.status = 'answered' AND a.nucleus_hash = ? AND q.id != ? ORDER BY a.finished DESC",
+            (nucleus_hash, before_id),
+        ).fetchall()
+        for question_id, text, reply_json, finished in rows:
+            if normalize_question(text) == wanted and reply_json:
+                return {"question_id": question_id, "reply_json": reply_json, "finished": finished}
+        return None
+
+    def times_asked(self, question: str, before_id: str) -> int:
+        """How many times he asked this same question before this one. Adam: circling."""
+        wanted = normalize_question(question)
+        asked_at = self.connection.execute("SELECT asked_at FROM questions WHERE id = ?", (before_id,)).fetchone()
+        limit = asked_at[0] if asked_at else time.time()
+        rows = self.connection.execute("SELECT question FROM questions WHERE id != ? AND asked_at < ?", (before_id, limit)).fetchall()
+        return sum(1 for (text,) in rows if normalize_question(text) == wanted)
 
     def save_candidates(self, question_id: str, possibility: list[dict]) -> None:
         for entry in possibility:

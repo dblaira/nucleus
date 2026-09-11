@@ -45,6 +45,7 @@ button.ask-btn:disabled{opacity:.5}
 .answer:empty{display:none}
 .answer .first{font-family:Georgia,"Times New Roman",serif;font-style:italic;font-size:28px;color:var(--brick);margin:0 0 14px}
 .answer .first.mm{color:var(--lapis);font-size:22px}
+.answer .before{font-family:Georgia,serif;font-style:italic;font-size:18px;color:#7A6E58;margin:0 0 6px}
 .more{display:none}
 .more.open{display:block}
 .reveal{margin-top:14px;font-size:18px;background:none;color:var(--lapis);border:1.5px solid var(--lapis);padding:10px 16px;border-radius:10px}
@@ -106,7 +107,8 @@ function render(data){
   for (const l of lines){ if (l === '' ) { if (cur.length) blocks.push(cur); cur = []; } else cur.push(l); }
   if (cur.length) blocks.push(cur);
   const shown = blocks.slice(0, FOLD), hidden = blocks.slice(FOLD);
-  let html = '<div class="first">' + esc(first) + '</div>' + shown.map(b => esc(b.join('\\n'))).join('\\n\\n');
+  const before = data.asked_before ? '<div class="before">asked before · ' + data.asked_before + (data.asked_before === 1 ? ' time' : ' times') + '</div>' : '';
+  let html = before + '<div class="first">' + esc(first) + '</div>' + shown.map(b => esc(b.join('\\n'))).join('\\n\\n');
   if (hidden.length){
     html += '<div class="more" id="more">\\n\\n' + hidden.map(b => esc(b.join('\\n'))).join('\\n\\n') + '</div>';
     html += '<button class="reveal" id="reveal">▾ ' + hidden.length + ' more</button>';
@@ -165,7 +167,8 @@ class Handler(BaseHTTPRequestHandler):
                 self._json(404, {"error": "no such question"})
                 return
             self._json(200, {"question": question, "steps": self.store.steps(question_id),
-                             "phrases": self.store.phrase_hits(question_id), "answer": self.store.answer(question_id)})
+                             "phrases": self.store.phrase_hits(question_id), "answer": self.store.answer(question_id),
+                             "asked_before": self.store.times_asked(question["question"], question_id)})
             return
         self._json(404, {"error": "not found"})
 
