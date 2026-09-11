@@ -151,7 +151,7 @@ def ask(question: str, store: Store | None = None, surface: str = "cli",
             store.save_model_call(question_id, "?", "?", prompt, started, None, False, str(error))
             store.finish_step(question_id, step, note=f"failed: {error}")
             raise
-        store.save_model_call(question_id, reply.provider, reply.model, prompt, reply.text, started, True, None)
+        store.save_model_call(question_id, reply.provider, reply.model, prompt, started, reply.text, True, None)
         store.finish_step(question_id, step, note=f"{reply.provider} {reply.model}")
         return reply
 

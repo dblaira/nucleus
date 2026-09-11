@@ -111,7 +111,7 @@ def ask(question: str, store: Store | None = None, surface: str = "cli",
         store.finish_step(question_id, STEP_MODEL, note=f"failed: {error}")
         store.save_answer(question_id, "failed", None, "", None, None, str(error))
         return finish(Result(question_id, question, "failed", reason=f"The model call failed: {error}", reading=reading, phrases=phrase_dicts, bytes_sent=bytes_sent))
-    store.save_model_call(question_id, reply.provider, reply.model, prompt, reply.text, call_started, True, None)
+    store.save_model_call(question_id, reply.provider, reply.model, prompt, call_started, reply.text, True, None)
     store.finish_step(question_id, STEP_MODEL, note=f"{reply.provider} {reply.model}")
 
     # 5. the gate

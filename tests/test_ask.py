@@ -101,3 +101,10 @@ def test_model_failure_is_saved_and_reported(store):
     assert result.status == "failed" and "no network" in result.reason
     row = store.connection.execute("SELECT ok, error FROM model_calls").fetchone()
     assert row == (0, "no network")
+
+
+def test_model_call_row_keeps_started_and_reply_in_their_columns(store):
+    payload = {"answer": "dont_know", "words": [], "records": [], "possibility": []}
+    result = ask_module.ask("Anything about the moon?", store=store, model_call=fake_model(payload), brief=lambda q: reading())
+    started, reply = store.connection.execute("SELECT started, reply FROM model_calls WHERE question_id = ?", (result.question_id,)).fetchone()
+    assert isinstance(started, float) and json.loads(reply) == payload
