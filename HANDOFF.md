@@ -22,7 +22,7 @@ Read this file, then `README.md`, then `AGENTS.md` in the Cowboyai repo for the 
 | links between his words and his records | `nucleus/links.py`, tables `links`, `searched_words` | 1,290 links, 134 of 177 words |
 | the middle word on every link, from his list only | `nucleus/kinds.py` reads 43 words from `Main/🗯 Narrative vs 🔥 Relational.md`; `links.kind`; `links.schema.json`, `kinds.schema.json` | 98% of links; a row reads "A VISION depends on “…”" |
 | thumbs on every row of an answer | `serve.py` `POST /thumb`, `GET /ask/<id>` → `rows`; `store.thumb` | 👍 keeps (green), 👎 never paints again (dark red) |
-| CowboyAI styling for the coming nucleus app | `ios/Styling/Theme.swift`, `ios/Styling/Assets.xcassets` | copied, app not built |
+| the nucleus iPhone app | `ios/` (xcodegen `project.yml` → `nucleus.xcodeproj`; `NucleusApp`, `AskView`, `AskModel`, `API`, `Theme`, `Assets`) | built for the iOS 27 simulator and signed for Adam's iPhone (com.adamblair.nucleus, team 7FKUS5M5QS); talks to the Mac on 8766 over Tailscale; `-ask "..."` launch argument asks at once |
 | painted picture, no model, when every word in the question has links | `links.paint` in `ask.py` step 3b | 0.2 s |
 | same question again, answered from what was saved | `store.find_repeat` | 0.24 s |
 | one open conversation on the Codex lane holding his files | `model.call_codex_conversation`, `~/Library/Application Support/nucleus/conversation.json` | 17–19 s per new question |
@@ -59,7 +59,7 @@ Rule from this: never tell Adam something will be faster until it is timed next 
 3. (done 2026-09-12) The middle word on every link: Adam said "do it all" → the whole list from his note. Code refuses any other word.
 4. (done 2026-09-12) Thumbs on the page.
 5. Expected verdict for the hopeful-project question in `questions.txt`; 48 graph records with no ledger decision (`prompt.not_accepted_block`).
-6. Whether the iPhone app (`Cowboyai/authority-hub/ios`, talks to the old service on 8765) switches to this (8766). He said he will not say "switch" until the trade is clear; the trade he understood is in the compare table of 2026-09-12 (story and "pull the same thread" vs speed and never making things up).
+6. The old CowboyAI iPhone app still talks to the old service on 8765. The new nucleus app (ios/) talks to 8766. Adam, 2026-09-12: the nucleus app "will eventually take over the name Cowboyai". He said he will not say "switch" until the trade is clear; the trade he understood is in the compare table of 2026-09-12 (story and "pull the same thread" vs speed and never making things up).
 
 ## What Adam said about the product, 2026-09-12, in order
 
