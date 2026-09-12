@@ -13,6 +13,7 @@ from __future__ import annotations
 import json
 import sys
 import time
+from pathlib import Path
 from dataclasses import dataclass, field
 
 from . import NUCLEUS_FILES
@@ -22,15 +23,36 @@ from . import model as model_module
 from .compact import compact_records
 from .gate import FIRST_LINE, one_sentence, unescape_label
 from .graph import Graph, load_graph
+from .kinds import is_kind, load_kinds
 from .store import Store
+
+LINKS_SCHEMA = Path(__file__).with_name("links.schema.json")
+KINDS_SCHEMA = Path(__file__).with_name("kinds.schema.json")
 
 LINK_CONTRACT = """You are reading Adam Blair's accepted records (one per line: id | type | strength | accepted | label | note)
 and one word from his dictionary with his own meaning of it. Find every record that connects to this word's
 meaning. Return exactly one JSON object and nothing else:
-{"word": "<the word>", "records": [{"id": "<record id>", "quote": "<a verbatim excerpt of that record's label>", "why": "<one sentence: how this record connects to the word's meaning>"}]}
+{"word": "<the word>", "records": [{"id": "<record id>", "quote": "<a verbatim excerpt of that record's label>", "kind": "<the middle word>", "why": "<one sentence: how this record connects to the word's meaning>"}]}
+The middle word completes the sentence "<the word> <middle word> <the record>". Adam's words, his note:
+"The two things are not enough. The middle must say what kind of connection exists." Choose it from this
+list only, copied exactly; code refuses anything else:
+__KINDS__
 A quote is copied character for character. Each why is one sentence, no quotation inside it, no line break.
 If no record connects, return {"word": "<the word>", "records": []}.
 """
+
+KIND_CONTRACT = """Below are one word from Adam Blair's dictionary, his own meaning of it, and records of his that are already
+linked to that word. For each record give the middle word that completes the sentence
+"<the word> <middle word> <the record>". Adam's words, his note: "The two things are not enough. The middle
+must say what kind of connection exists." Choose from this list only, copied exactly; code refuses anything else:
+__KINDS__
+Return exactly one JSON object and nothing else:
+{"word": "<the word>", "kinds": [{"id": "<record id>", "kind": "<the middle word>"}]}
+"""
+
+
+def _with_kinds(contract: str, kinds: list[str]) -> str:
+    return contract.replace("__KINDS__", "\n".join(f"- {k}" for k in kinds))
 
 # PROPOSAL, not a rule of record (adams-authority): how a painted picture picks one of Adam's three lines.
 # aligned:   every touched word has links, and together they reach at least 3 records
@@ -86,7 +108,8 @@ def paint(question: str, reading: dict, hits, store: Store, graph: Graph, meanin
             # why from the background pass (about the word itself) is shown under a painted picture
             why = link["why"] if str(link["source"]).startswith("links:") else ""
             records.append({"id": record.uri, "leaf": record.leaf, "quote": link["quote"], "why": why,
-                            "strength": record.strength, "accepted_at": record.accepted_at, "connection_type": record.connection_type})
+                            "strength": record.strength, "accepted_at": record.accepted_at, "connection_type": record.connection_type,
+                            "link_word": word, "kind": link.get("kind")})
     if not words:
         return None
     records.sort(key=lambda r: -float(r["strength"] or 0))
@@ -124,12 +147,13 @@ def seed_from_answers(store: Store, graph: Graph) -> int:
 
 def find_links(word: str, store: Store, graph: Graph, meanings, model_call=None) -> int:
     """One background call for one word. Saves what the graph confirms. Returns links added."""
-    model_call = model_call or model_module.call
+    model_call = model_call or (lambda p: model_module.call(p, schema=LINKS_SCHEMA))
     texts = [m.text for m in dictionary_module.meanings_for(meanings, word)]
+    kinds = load_kinds()
     prompt = (
         "===== accepted records =====\n" + compact_records(graph)
         + f"\n===== the word =====\n{word}\n" + "\n".join(f"Adam's meaning: {t}" for t in texts)
-        + "\n\n===== the contract =====\n" + LINK_CONTRACT
+        + "\n\n===== the contract =====\n" + _with_kinds(LINK_CONTRACT, kinds)
     )
     started = time.time()
     reply = model_call(prompt)
@@ -145,10 +169,65 @@ def find_links(word: str, store: Store, graph: Graph, meanings, model_call=None)
             why = one_sentence(item.get("why"), f"why for {record.leaf}")
         except gate_module.Refused:
             continue
-        if store.add_link(word, record.leaf, quote, why, f"links:{word}", reply.provider, reply.model):
+        kind = item.get("kind").strip() if is_kind(item.get("kind"), kinds) else None   # code refuses any word not on his list
+        if store.add_link(word, record.leaf, quote, why, f"links:{word}", reply.provider, reply.model, kind=kind):
             added += 1
     store.mark_word_searched(word, model_module.nucleus_hash(compact_records(graph)))
     return added
+
+
+def find_kinds(word: str, store: Store, graph: Graph, meanings, model_call=None) -> int:
+    """One background call for one word: the middle word for each of its links that has none. Returns kinds set."""
+    model_call = model_call or (lambda p: model_module.call(p, schema=KINDS_SCHEMA))
+    kinds = load_kinds()
+    links = [l for l in store.links_for(word) if l["kind"] is None and l["thumb"] != 0]
+    if not links:
+        return 0
+    lines = []
+    for l in links:
+        r = graph.find(l["record"])
+        if r is not None:
+            lines.append(f"{r.leaf} | {r.connection_type} | {r.strength} | {unescape_label(r.label)}")
+    texts = [m.text for m in dictionary_module.meanings_for(meanings, word)]
+    prompt = (
+        f"===== the word =====\n{word}\n" + "\n".join(f"Adam's meaning: {t}" for t in texts)
+        + "\n\n===== his records linked to it (id | type | strength | label) =====\n" + "\n".join(lines)
+        + "\n\n===== the contract =====\n" + _with_kinds(KIND_CONTRACT, kinds)
+    )
+    started = time.time()
+    reply = model_call(prompt)
+    store.save_model_call(f"kinds:{word}", reply.provider, reply.model, prompt, started, reply.text, True, None)
+    payload = json.loads(model_module._extract_json(reply.text))
+    wanted = {l["record"] for l in links}
+    done = 0
+    for item in payload.get("kinds") or []:
+        if not isinstance(item, dict):
+            continue
+        record = graph.find(str(item.get("id")))
+        if record is None or record.leaf not in wanted or not is_kind(item.get("kind"), kinds):
+            continue
+        store.set_kind(word, record.leaf, item.get("kind").strip())
+        done += 1
+    return done
+
+
+def kinds_pass(limit: int | None = None, model_call=None) -> list[tuple[str, int, float]]:
+    """Every word with links that have no middle word yet, one call each."""
+    store = Store()
+    graph = load_graph(NUCLEUS_FILES["graph"], NUCLEUS_FILES["ledger"])
+    meanings = dictionary_module.load_meanings(NUCLEUS_FILES["meanings"])
+    todo = store.words_with_unkinded_links()
+    results = []
+    for word in todo[:limit] if limit else todo:
+        t = time.time()
+        try:
+            done = find_kinds(word, store, graph, meanings, model_call)
+        except Exception as error:
+            store.save_model_call(f"kinds:{word}", "?", "?", "", t, None, False, str(error))
+            done = -1
+        results.append((word, done, round(time.time() - t, 1)))
+        print(f"{word:<28} {done:3d} kinds  {time.time()-t:5.1f} s", flush=True)
+    return results
 
 
 def background_pass(limit: int | None = None, model_call=None) -> list[tuple[str, int, float]]:
@@ -180,12 +259,18 @@ def main(argv: list[str]) -> int:
         graph = load_graph(NUCLEUS_FILES["graph"], NUCLEUS_FILES["ledger"])
         print("links kept from saved answers:", seed_from_answers(store, graph))
         return 0
-    limit = int(argv[1]) if len(argv) > 1 and argv[0] == "pass" else None
+    limit = int(argv[1]) if len(argv) > 1 else None
     if argv and argv[0] == "pass":
         results = background_pass(limit)
         print(f"words searched: {len(results)}, links added: {sum(a for _, a, _ in results if a > 0)}")
+        results = kinds_pass(limit)
+        print(f"words kinded: {len(results)}, kinds set: {sum(a for _, a, _ in results if a > 0)}")
         return 0
-    print("usage: python -m nucleus.links seed | pass [N]", file=sys.stderr)
+    if argv and argv[0] == "kinds":
+        results = kinds_pass(limit)
+        print(f"words kinded: {len(results)}, kinds set: {sum(a for _, a, _ in results if a > 0)}")
+        return 0
+    print("usage: python -m nucleus.links seed | pass [N] | kinds [N]", file=sys.stderr)
     return 2
 
 

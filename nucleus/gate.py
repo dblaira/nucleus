@@ -194,7 +194,10 @@ def compose(answer: str, words: list[dict], records: list[dict], possibility: li
     for entry in records:
         lines.append("")
         stamp = " · ".join(part for part in (entry["strength"], entry["accepted_at"][:10]) if part)
-        lines.append(f"{stamp} — “{unescape_label(entry['quote'])}”" if stamp else f"“{unescape_label(entry['quote'])}”")
+        quote = f"“{unescape_label(entry['quote'])}”"
+        if entry.get("kind") and entry.get("link_word"):
+            quote = f"{entry['link_word']} {entry['kind']} {quote}"      # Adam: "Thing A → exact relationship → Thing B"
+        lines.append(f"{stamp} — {quote}" if stamp else quote)
         if entry["why"]:
             lines.append(entry["why"])
     if answer == "not_sure" and possibility:

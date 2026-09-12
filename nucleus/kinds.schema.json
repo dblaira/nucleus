@@ -1,0 +1,8 @@
+{
+  "type": "object", "additionalProperties": false, "required": ["word", "kinds"],
+  "properties": {
+    "word": {"type": "string"},
+    "kinds": {"type": "array", "items": {"type": "object", "additionalProperties": false,
+      "required": ["id", "kind"], "properties": {"id": {"type": "string"}, "kind": {"type": "string"}}}}
+  }
+}

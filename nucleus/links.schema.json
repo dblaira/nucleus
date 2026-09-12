@@ -1,0 +1,9 @@
+{
+  "type": "object", "additionalProperties": false, "required": ["word", "records"],
+  "properties": {
+    "word": {"type": "string"},
+    "records": {"type": "array", "items": {"type": "object", "additionalProperties": false,
+      "required": ["id", "quote", "kind", "why"],
+      "properties": {"id": {"type": "string"}, "quote": {"type": "string"}, "kind": {"type": "string"}, "why": {"type": "string"}}}}
+  }
+}

@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS phrase_hits (
 );
 CREATE TABLE IF NOT EXISTS links (
   word TEXT NOT NULL, record TEXT NOT NULL, quote TEXT NOT NULL, why TEXT NOT NULL, source TEXT NOT NULL,
-  provider TEXT, model TEXT, found_at REAL NOT NULL, thumb INTEGER, PRIMARY KEY (word, record)
+  provider TEXT, model TEXT, found_at REAL NOT NULL, thumb INTEGER, kind TEXT, PRIMARY KEY (word, record)
 );
 CREATE TABLE IF NOT EXISTS searched_words (
   word TEXT PRIMARY KEY, searched_at REAL NOT NULL, records_hash TEXT
@@ -65,6 +65,9 @@ class Store:
         columns = {row[1] for row in self.connection.execute("PRAGMA table_info(searched_words)")}
         if columns and "records_hash" not in columns:
             self.connection.execute("ALTER TABLE searched_words ADD COLUMN records_hash TEXT")
+        columns = {row[1] for row in self.connection.execute("PRAGMA table_info(links)")}
+        if columns and "kind" not in columns:
+            self.connection.execute("ALTER TABLE links ADD COLUMN kind TEXT")
         self.connection.commit()
 
     def new_question(self, question: str, surface: str) -> str:
@@ -196,22 +199,32 @@ class Store:
         )
         self.connection.commit()
 
-    def add_link(self, word: str, record: str, quote: str, why: str, source: str, provider: str, model: str) -> bool:
+    def add_link(self, word: str, record: str, quote: str, why: str, source: str, provider: str, model: str,
+                 kind: str | None = None) -> bool:
         """A link between one of his words and one of his records. Kept once; a second find does not overwrite."""
         cursor = self.connection.execute(
-            "INSERT OR IGNORE INTO links (word, record, quote, why, source, provider, model, found_at, thumb)"
-            " VALUES (?, ?, ?, ?, ?, ?, ?, ?, NULL)",
-            (word, record, quote, why, source, provider, model, time.time()),
+            "INSERT OR IGNORE INTO links (word, record, quote, why, source, provider, model, found_at, thumb, kind)"
+            " VALUES (?, ?, ?, ?, ?, ?, ?, ?, NULL, ?)",
+            (word, record, quote, why, source, provider, model, time.time(), kind),
         )
         self.connection.commit()
         return cursor.rowcount == 1
 
+    def set_kind(self, word: str, record: str, kind: str) -> None:
+        """The middle word, from Adam's list only. The caller checks the list."""
+        self.connection.execute("UPDATE links SET kind = ? WHERE word = ? AND record = ?", (kind, word, record))
+        self.connection.commit()
+
     def links_for(self, word: str) -> list[dict]:
         rows = self.connection.execute(
-            "SELECT record, quote, why, source, provider, model, found_at, thumb FROM links WHERE word = ? ORDER BY found_at", (word,)
+            "SELECT record, quote, why, source, provider, model, found_at, thumb, kind FROM links WHERE word = ? ORDER BY found_at", (word,)
         ).fetchall()
-        return [{"record": r, "quote": q, "why": w, "source": s, "provider": p, "model": m, "found_at": f, "thumb": t}
-                for r, q, w, s, p, m, f, t in rows]
+        return [{"record": r, "quote": q, "why": w, "source": s, "provider": p, "model": m, "found_at": f, "thumb": t, "kind": k}
+                for r, q, w, s, p, m, f, t, k in rows]
+
+    def words_with_unkinded_links(self) -> list[str]:
+        return [w for (w,) in self.connection.execute(
+            "SELECT DISTINCT word FROM links WHERE kind IS NULL AND (thumb IS NULL OR thumb = 1) ORDER BY word")]
 
     def thumb(self, word: str, record: str, up: bool) -> None:
         self.connection.execute("UPDATE links SET thumb = ? WHERE word = ? AND record = ?", (1 if up else 0, word, record))
@@ -230,5 +243,6 @@ class Store:
         return {w for (w,) in self.connection.execute("SELECT word FROM searched_words WHERE records_hash = ?", (records_hash,))}
 
     def link_counts(self) -> dict:
-        words, links = self.connection.execute("SELECT COUNT(DISTINCT word), COUNT(*) FROM links").fetchone()
-        return {"words": words, "links": links, "searched": len(self.searched_words())}
+        words, links, kinded = self.connection.execute(
+            "SELECT COUNT(DISTINCT word), COUNT(*), SUM(CASE WHEN kind IS NOT NULL THEN 1 ELSE 0 END) FROM links").fetchone()
+        return {"words": words, "links": links, "kinded": kinded or 0, "searched": len(self.searched_words())}

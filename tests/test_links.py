@@ -60,3 +60,43 @@ def test_a_change_to_his_records_sends_words_back_through_the_pass(tmp_path: Pat
     assert store.searched_words() == {"FLOW"}
     assert store.searched_words("hash-of-yesterdays-records") == {"FLOW"}
     assert store.searched_words("hash-of-todays-records") == set()
+
+
+def test_the_middle_words_come_from_his_note():
+    from nucleus.kinds import load_kinds, is_kind
+    kinds = load_kinds()
+    assert len(kinds) >= 30
+    for word in ("requires", "correlates with", "causes", "happens before", "should not", "is part of"):
+        assert word in kinds
+    assert "MEANING" not in kinds and "RELATIONSHIP" not in kinds
+    assert is_kind("requires", kinds) and not is_kind("is caused by the vibes", kinds)
+
+
+def test_a_middle_word_off_his_list_is_refused_and_a_good_one_is_painted(tmp_path: Path):
+    store = Store(tmp_path / "n.sqlite3")
+    graph = load_graph(NUCLEUS_FILES["graph"], NUCLEUS_FILES["ledger"])
+    meanings = dictionary.load_meanings(NUCLEUS_FILES["meanings"])
+    reply = {"word": "FLOW", "records": [
+        {"id": FLOW_ID, "quote": FLOW_QUOTE, "kind": "requires", "why": "Momentum is the felt side of FLOW."},
+    ]}
+    links.find_links("FLOW", store, graph, meanings, model_call=lambda p: ModelReply("fake", "fake", json.dumps(reply)))
+    assert store.links_for("FLOW")[0]["kind"] == "requires"
+    picture = links.paint("What is FLOW?", reading("FLOW"), [], store, graph, meanings)
+    assert f"FLOW requires “{FLOW_QUOTE}”" in picture.text
+
+    store2 = Store(tmp_path / "n2.sqlite3")
+    bad = {"word": "FLOW", "records": [{"id": FLOW_ID, "quote": FLOW_QUOTE, "kind": "vibes with", "why": "x."}]}
+    links.find_links("FLOW", store2, graph, meanings, model_call=lambda p: ModelReply("fake", "fake", json.dumps(bad)))
+    assert store2.links_for("FLOW")[0]["kind"] is None
+
+
+def test_kinds_pass_fills_the_middle_word_on_old_links(tmp_path: Path):
+    store = Store(tmp_path / "n.sqlite3")
+    graph = load_graph(NUCLEUS_FILES["graph"], NUCLEUS_FILES["ledger"])
+    meanings = dictionary.load_meanings(NUCLEUS_FILES["meanings"])
+    store.add_link("FLOW", FLOW_ID, FLOW_QUOTE, "old why.", "some-question", "fake", "fake")
+    assert store.words_with_unkinded_links() == ["FLOW"]
+    reply = {"word": "FLOW", "kinds": [{"id": FLOW_ID, "kind": "depends on"}, {"id": "not-linked", "kind": "causes"}]}
+    done = links.find_kinds("FLOW", store, graph, meanings, model_call=lambda p: ModelReply("fake", "fake", json.dumps(reply)))
+    assert done == 1 and store.links_for("FLOW")[0]["kind"] == "depends on"
+    assert store.words_with_unkinded_links() == []

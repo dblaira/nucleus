@@ -145,15 +145,15 @@ def call_codex_conversation(head: str, turn: str, timeout: float = TIMEOUT_SECON
         return ModelReply(provider="codex", model=CODEX_MODEL, text=text)
 
 
-def call_codex(prompt: str, timeout: float = TIMEOUT_SECONDS) -> ModelReply:
+def call_codex(prompt: str, timeout: float = TIMEOUT_SECONDS, schema: Path = SCHEMA_PATH) -> ModelReply:
     """The Codex lane. With the nucleus in the prompt: one open conversation, short turns. Otherwise one fresh call."""
     head, turn = split_prompt(prompt)
     if head:
         return call_codex_conversation(head, turn, timeout=timeout)
-    return call_codex_fresh(prompt, timeout=timeout)
+    return call_codex_fresh(prompt, timeout=timeout, schema=schema)
 
 
-def call_codex_fresh(prompt: str, timeout: float = TIMEOUT_SECONDS) -> ModelReply:
+def call_codex_fresh(prompt: str, timeout: float = TIMEOUT_SECONDS, schema: Path = SCHEMA_PATH) -> ModelReply:
     """A fresh Codex conversation for one prompt, read-only, in an empty folder, answer shaped by the schema."""
     with tempfile.TemporaryDirectory(prefix="nucleus-codex-") as folder:
         out = Path(folder) / "reply.json"
@@ -164,7 +164,7 @@ def call_codex_fresh(prompt: str, timeout: float = TIMEOUT_SECONDS) -> ModelRepl
         command = [
             "codex", "exec", "-m", CODEX_MODEL, "-s", "read-only", "--ephemeral", "--skip-git-repo-check",
             "--ignore-user-config", "--ignore-rules", "-c", "model_reasoning_effort=\"low\"",
-            "-C", folder, "--color", "never", "--output-schema", str(SCHEMA_PATH), "-o", str(out), "-",
+            "-C", folder, "--color", "never", "--output-schema", str(schema), "-o", str(out), "-",
         ]
         completed = subprocess.run(command, input=prompt, capture_output=True, text=True, timeout=timeout, check=False)
         if out.exists():
@@ -279,7 +279,8 @@ def door() -> str:
     return "codex"
 
 
-def call(prompt: str, timeout: float = TIMEOUT_SECONDS) -> ModelReply:
+def call(prompt: str, timeout: float = TIMEOUT_SECONDS, schema: Path = SCHEMA_PATH) -> ModelReply:
+    """schema shapes the reply on the Codex lane; the other doors take the shape from the prompt."""
     which = door()
     if which == "zai":
         key = zai_key()
@@ -290,4 +291,4 @@ def call(prompt: str, timeout: float = TIMEOUT_SECONDS) -> ModelReply:
         return call_anthropic(prompt, anthropic_key(), timeout=timeout)
     if which == "openai":
         return call_openai(prompt, openai_key(), timeout=timeout)
-    return call_codex(prompt, timeout=timeout)
+    return call_codex(prompt, timeout=timeout, schema=schema)
