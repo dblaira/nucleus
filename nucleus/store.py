@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS links (
   provider TEXT, model TEXT, found_at REAL NOT NULL, thumb INTEGER, PRIMARY KEY (word, record)
 );
 CREATE TABLE IF NOT EXISTS searched_words (
-  word TEXT PRIMARY KEY, searched_at REAL NOT NULL
+  word TEXT PRIMARY KEY, searched_at REAL NOT NULL, records_hash TEXT
 );
 CREATE TABLE IF NOT EXISTS grades (
   run_id TEXT NOT NULL, question_id TEXT, question TEXT NOT NULL, expected TEXT, got TEXT,
@@ -62,6 +62,9 @@ class Store:
         columns = {row[1] for row in self.connection.execute("PRAGMA table_info(answers)")}
         if "nucleus_hash" not in columns:
             self.connection.execute("ALTER TABLE answers ADD COLUMN nucleus_hash TEXT")
+        columns = {row[1] for row in self.connection.execute("PRAGMA table_info(searched_words)")}
+        if columns and "records_hash" not in columns:
+            self.connection.execute("ALTER TABLE searched_words ADD COLUMN records_hash TEXT")
         self.connection.commit()
 
     def new_question(self, question: str, surface: str) -> str:
@@ -214,12 +217,17 @@ class Store:
         self.connection.execute("UPDATE links SET thumb = ? WHERE word = ? AND record = ?", (1 if up else 0, word, record))
         self.connection.commit()
 
-    def mark_word_searched(self, word: str) -> None:
-        self.connection.execute("INSERT OR REPLACE INTO searched_words (word, searched_at) VALUES (?, ?)", (word, time.time()))
+    def mark_word_searched(self, word: str, records_hash: str | None = None) -> None:
+        self.connection.execute("INSERT OR REPLACE INTO searched_words (word, searched_at, records_hash) VALUES (?, ?, ?)",
+                                (word, time.time(), records_hash))
         self.connection.commit()
 
-    def searched_words(self) -> set[str]:
-        return {w for (w,) in self.connection.execute("SELECT word FROM searched_words")}
+    def searched_words(self, records_hash: str | None = None) -> set[str]:
+        """Words already searched. With a hash: only those searched against these same records, so a
+        change to his records sends every word back through the background pass."""
+        if records_hash is None:
+            return {w for (w,) in self.connection.execute("SELECT word FROM searched_words")}
+        return {w for (w,) in self.connection.execute("SELECT word FROM searched_words WHERE records_hash = ?", (records_hash,))}
 
     def link_counts(self) -> dict:
         words, links = self.connection.execute("SELECT COUNT(DISTINCT word), COUNT(*) FROM links").fetchone()

@@ -52,3 +52,11 @@ def test_a_why_from_an_old_answer_is_not_shown_under_a_painted_picture(tmp_path:
     store.add_link("FLOW", FLOW_ID, FLOW_QUOTE, "This answers your question about diet.", "some-question-id", "fake", "fake")
     picture = links.paint("What is FLOW?", reading("FLOW"), [], store, graph, meanings)
     assert picture is not None and "diet" not in picture.text and FLOW_QUOTE in picture.text
+
+
+def test_a_change_to_his_records_sends_words_back_through_the_pass(tmp_path: Path):
+    store = Store(tmp_path / "n.sqlite3")
+    store.mark_word_searched("FLOW", "hash-of-yesterdays-records")
+    assert store.searched_words() == {"FLOW"}
+    assert store.searched_words("hash-of-yesterdays-records") == {"FLOW"}
+    assert store.searched_words("hash-of-todays-records") == set()

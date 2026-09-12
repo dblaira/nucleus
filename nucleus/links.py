@@ -147,7 +147,7 @@ def find_links(word: str, store: Store, graph: Graph, meanings, model_call=None)
             continue
         if store.add_link(word, record.leaf, quote, why, f"links:{word}", reply.provider, reply.model):
             added += 1
-    store.mark_word_searched(word)
+    store.mark_word_searched(word, model_module.nucleus_hash(compact_records(graph)))
     return added
 
 
@@ -156,7 +156,7 @@ def background_pass(limit: int | None = None, model_call=None) -> list[tuple[str
     store = Store()
     graph = load_graph(NUCLEUS_FILES["graph"], NUCLEUS_FILES["ledger"])
     meanings = dictionary_module.load_meanings(NUCLEUS_FILES["meanings"])
-    searched = store.searched_words()
+    searched = store.searched_words(model_module.nucleus_hash(compact_records(graph)))
     todo = []
     for m in meanings:
         if m.word not in searched and m.word not in todo:
