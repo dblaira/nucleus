@@ -195,7 +195,8 @@ def compose(answer: str, words: list[dict], records: list[dict], possibility: li
         lines.append("")
         stamp = " · ".join(part for part in (entry["strength"], entry["accepted_at"][:10]) if part)
         lines.append(f"{stamp} — “{unescape_label(entry['quote'])}”" if stamp else f"“{unescape_label(entry['quote'])}”")
-        lines.append(entry["why"])
+        if entry["why"]:
+            lines.append(entry["why"])
     if answer == "not_sure" and possibility:
         lines.append("")
         lines.append(POSSIBILITY_TITLE)

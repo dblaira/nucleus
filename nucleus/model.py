@@ -163,7 +163,7 @@ def call_codex_fresh(prompt: str, timeout: float = TIMEOUT_SECONDS) -> ModelRepl
         # Measured 2026-09-10 on a one-line prompt: 58 s with them loaded, 9 s without.
         command = [
             "codex", "exec", "-m", CODEX_MODEL, "-s", "read-only", "--ephemeral", "--skip-git-repo-check",
-            "--ignore-user-config", "--ignore-rules", "-c", "model_reasoning_effort=\"minimal\"",
+            "--ignore-user-config", "--ignore-rules", "-c", "model_reasoning_effort=\"low\"",
             "-C", folder, "--color", "never", "--output-schema", str(SCHEMA_PATH), "-o", str(out), "-",
         ]
         completed = subprocess.run(command, input=prompt, capture_output=True, text=True, timeout=timeout, check=False)

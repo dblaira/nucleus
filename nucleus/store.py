@@ -34,6 +34,13 @@ CREATE TABLE IF NOT EXISTS phrase_hits (
   question_id TEXT NOT NULL, phrase TEXT NOT NULL, kind TEXT NOT NULL, name TEXT NOT NULL,
   text TEXT NOT NULL, strength TEXT, position INTEGER NOT NULL
 );
+CREATE TABLE IF NOT EXISTS links (
+  word TEXT NOT NULL, record TEXT NOT NULL, quote TEXT NOT NULL, why TEXT NOT NULL, source TEXT NOT NULL,
+  provider TEXT, model TEXT, found_at REAL NOT NULL, thumb INTEGER, PRIMARY KEY (word, record)
+);
+CREATE TABLE IF NOT EXISTS searched_words (
+  word TEXT PRIMARY KEY, searched_at REAL NOT NULL
+);
 CREATE TABLE IF NOT EXISTS grades (
   run_id TEXT NOT NULL, question_id TEXT, question TEXT NOT NULL, expected TEXT, got TEXT,
   status TEXT, gate_ok INTEGER, seconds REAL, at REAL NOT NULL
@@ -185,3 +192,35 @@ class Store:
             (run_id, question_id, question, expected, got, status, None if gate_ok is None else int(gate_ok), seconds, time.time()),
         )
         self.connection.commit()
+
+    def add_link(self, word: str, record: str, quote: str, why: str, source: str, provider: str, model: str) -> bool:
+        """A link between one of his words and one of his records. Kept once; a second find does not overwrite."""
+        cursor = self.connection.execute(
+            "INSERT OR IGNORE INTO links (word, record, quote, why, source, provider, model, found_at, thumb)"
+            " VALUES (?, ?, ?, ?, ?, ?, ?, ?, NULL)",
+            (word, record, quote, why, source, provider, model, time.time()),
+        )
+        self.connection.commit()
+        return cursor.rowcount == 1
+
+    def links_for(self, word: str) -> list[dict]:
+        rows = self.connection.execute(
+            "SELECT record, quote, why, source, provider, model, found_at, thumb FROM links WHERE word = ? ORDER BY found_at", (word,)
+        ).fetchall()
+        return [{"record": r, "quote": q, "why": w, "source": s, "provider": p, "model": m, "found_at": f, "thumb": t}
+                for r, q, w, s, p, m, f, t in rows]
+
+    def thumb(self, word: str, record: str, up: bool) -> None:
+        self.connection.execute("UPDATE links SET thumb = ? WHERE word = ? AND record = ?", (1 if up else 0, word, record))
+        self.connection.commit()
+
+    def mark_word_searched(self, word: str) -> None:
+        self.connection.execute("INSERT OR REPLACE INTO searched_words (word, searched_at) VALUES (?, ?)", (word, time.time()))
+        self.connection.commit()
+
+    def searched_words(self) -> set[str]:
+        return {w for (w,) in self.connection.execute("SELECT word FROM searched_words")}
+
+    def link_counts(self) -> dict:
+        words, links = self.connection.execute("SELECT COUNT(DISTINCT word), COUNT(*) FROM links").fetchone()
+        return {"words": words, "links": links, "searched": len(self.searched_words())}

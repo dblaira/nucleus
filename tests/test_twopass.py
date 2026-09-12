@@ -41,8 +41,9 @@ def test_two_passes_then_judge_through_the_gate(tmp_path: Path):
         return ModelReply("fake", "fake", json.dumps(nothing))
 
     result = twopass.ask("What is FLOW?", store=Store(tmp_path / "n.sqlite3"), model_call=fake, brief=lambda q: reading())
+    assert result.status == "answered", result.reason
     assert len(seen) == 3
-    assert result.status == "answered" and result.answer == "aligned"
+    assert result.answer == "aligned"
     assert "Your compass points at this." in result.text
     names = [s["name"] for s in result.steps]
     assert twopass.STEP_PASS_1 in names and twopass.STEP_PASS_2 in names and twopass.STEP_JUDGE in names

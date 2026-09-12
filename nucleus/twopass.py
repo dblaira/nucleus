@@ -143,24 +143,33 @@ def ask(question: str, store: Store | None = None, surface: str = "cli",
     store.finish_step(question_id, STEP_SPLIT, note=f"{sizes[0]} and {sizes[1]} bytes")
 
     def run(step: str, prompt: str) -> model_module.ModelReply:
-        store.start_step(question_id, step)
+        """The model call only. The store is written from the main thread; one connection, one thread."""
         started = time.time()
         try:
             reply = model_call(prompt)
         except Exception as error:
-            store.save_model_call(question_id, "?", "?", prompt, started, None, False, str(error))
-            store.finish_step(question_id, step, note=f"failed: {error}")
-            raise
+            raise RuntimeError(f"{step}: {error}") from error
+        return model_module.ModelReply(reply.provider, reply.model, reply.text), started
+
+    def record(step: str, prompt: str, outcome) -> model_module.ModelReply:
+        reply, started = outcome
         store.save_model_call(question_id, reply.provider, reply.model, prompt, started, reply.text, True, None)
         store.finish_step(question_id, step, note=f"{reply.provider} {reply.model}")
         return reply
 
     try:
+        store.start_step(question_id, STEP_PASS_1)
+        store.start_step(question_id, STEP_PASS_2)
         with ThreadPoolExecutor(max_workers=2) as pool:
             futures = [pool.submit(run, STEP_PASS_1, prompts[0]), pool.submit(run, STEP_PASS_2, prompts[1])]
-            passes = [f.result() for f in futures]
-        judged = run(STEP_JUDGE, judge_prompt(question, [p.text for p in passes], graph, meanings))
+            outcomes = [f.result() for f in futures]
+        passes = [record(STEP_PASS_1, prompts[0], outcomes[0]), record(STEP_PASS_2, prompts[1], outcomes[1])]
+        judge_text = judge_prompt(question, [p.text for p in passes], graph, meanings)
+        store.start_step(question_id, STEP_JUDGE)
+        judged = record(STEP_JUDGE, judge_text, run(STEP_JUDGE, judge_text))
     except Exception as error:
+        for step in (STEP_PASS_1, STEP_PASS_2, STEP_JUDGE):
+            store.finish_step(question_id, step, note=f"failed: {error}")
         store.save_answer(question_id, "failed", None, "", None, None, str(error))
         return finish(Result(question_id, question, "failed", reason=f"A model call failed: {error}", reading=reading, phrases=phrase_dicts, bytes_sent=sum(sizes)))
 

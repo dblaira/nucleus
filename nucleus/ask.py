@@ -11,6 +11,7 @@ from typing import Callable
 from . import NUCLEUS_FILES
 from . import dictionary as dictionary_module
 from . import gate as gate_module
+from . import links as links_module
 from . import model as model_module
 from . import phrases as phrases_module
 from . import prompt as prompt_module
@@ -96,6 +97,21 @@ def ask(question: str, store: Store | None = None, surface: str = "cli",
     store.save_phrase_hits(question_id, hits)
     phrase_dicts = [{"phrase": h.phrase, "kind": h.kind, "name": h.name, "text": h.text, "strength": h.strength} for h in hits]
     store.finish_step(question_id, STEP_PHRASES, note=f"{len(hits)} of his phrases found")
+
+    # 3b. the picture from saved links. His words, his records, no model. Adam, 2026-09-11:
+    #     "we're not trying to answer questions. Trying to paint accurate pictures from the information given."
+    picture = links_module.paint(question, reading, hits, store, graph, meanings)
+    if picture is not None and not picture.missing:
+        for name in (STEP_NUCLEUS, STEP_MODEL, STEP_GATE, STEP_ANSWER):
+            store.start_step(question_id, name)
+            store.finish_step(question_id, name, note="painted from your links, no model" if name == STEP_MODEL else "")
+        reply_json = json.dumps({"answer": picture.answer, "words": [{"word": w["word"], "why": w["why"]} for w in picture.words],
+                                 "records": [{"id": r["leaf"], "quote": r["quote"], "why": r["why"]} for r in picture.records],
+                                 "possibility": []}, ensure_ascii=False)
+        store.save_answer(question_id, "answered", picture.answer, picture.text, reply_json, True, None,
+                          nucleus_hash=model_module.nucleus_hash(prompt_module.nucleus_text()[0]))
+        return finish(Result(question_id, question, "answered", answer=picture.answer, text=picture.text, words=picture.words,
+                             records=picture.records, reading=reading, phrases=phrase_dicts, provider="links", model="painted"))
 
     # 4. the nucleus, whole
     store.start_step(question_id, STEP_NUCLEUS)
