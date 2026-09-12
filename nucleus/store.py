@@ -57,7 +57,7 @@ class Store:
     def __init__(self, path: Path = STORE_PATH) -> None:
         self.path = path
         path.parent.mkdir(parents=True, exist_ok=True)
-        self.connection = sqlite3.connect(path, check_same_thread=False)
+        self.connection = sqlite3.connect(path, check_same_thread=False, timeout=60)
         self.connection.executescript(SCHEMA)
         columns = {row[1] for row in self.connection.execute("PRAGMA table_info(answers)")}
         if "nucleus_hash" not in columns:

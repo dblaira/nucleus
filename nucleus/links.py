@@ -211,12 +211,12 @@ def find_kinds(word: str, store: Store, graph: Graph, meanings, model_call=None)
     return done
 
 
-def kinds_pass(limit: int | None = None, model_call=None) -> list[tuple[str, int, float]]:
-    """Every word with links that have no middle word yet, one call each."""
+def kinds_pass(limit: int | None = None, model_call=None, shard: tuple[int, int] = (0, 1)) -> list[tuple[str, int, float]]:
+    """Every word with links that have no middle word yet, one call each. shard=(i, n) takes every n-th word."""
     store = Store()
     graph = load_graph(NUCLEUS_FILES["graph"], NUCLEUS_FILES["ledger"])
     meanings = dictionary_module.load_meanings(NUCLEUS_FILES["meanings"])
-    todo = store.words_with_unkinded_links()
+    todo = [w for i, w in enumerate(store.words_with_unkinded_links()) if i % shard[1] == shard[0]]
     results = []
     for word in todo[:limit] if limit else todo:
         t = time.time()
@@ -259,7 +259,7 @@ def main(argv: list[str]) -> int:
         graph = load_graph(NUCLEUS_FILES["graph"], NUCLEUS_FILES["ledger"])
         print("links kept from saved answers:", seed_from_answers(store, graph))
         return 0
-    limit = int(argv[1]) if len(argv) > 1 else None
+    limit = int(argv[1]) if len(argv) > 1 and argv[1].isdigit() else None
     if argv and argv[0] == "pass":
         results = background_pass(limit)
         print(f"words searched: {len(results)}, links added: {sum(a for _, a, _ in results if a > 0)}")
@@ -267,7 +267,11 @@ def main(argv: list[str]) -> int:
         print(f"words kinded: {len(results)}, kinds set: {sum(a for _, a, _ in results if a > 0)}")
         return 0
     if argv and argv[0] == "kinds":
-        results = kinds_pass(limit)
+        shard = (0, 1)
+        if len(argv) > 1 and "/" in argv[1]:
+            i, n = argv[1].split("/")
+            shard, limit = (int(i), int(n)), None
+        results = kinds_pass(limit, shard=shard)
         print(f"words kinded: {len(results)}, kinds set: {sum(a for _, a, _ in results if a > 0)}")
         return 0
     print("usage: python -m nucleus.links seed | pass [N] | kinds [N]", file=sys.stderr)
