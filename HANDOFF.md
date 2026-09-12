@@ -19,7 +19,10 @@ Read this file, then `README.md`, then `AGENTS.md` in the Cowboyai repo for the 
 | the path of one question | `nucleus/ask.py` | running |
 | his dictionary reads the question | `nucleus/dictionary.py` → `npm run brief-json` in adams-language | running |
 | his 2–5 word phrases looked up by code | `nucleus/phrases.py` | running |
-| links between his words and his records | `nucleus/links.py`, tables `links`, `searched_words` | 1,290 links, 134 of 177 words, 0 thumbed |
+| links between his words and his records | `nucleus/links.py`, tables `links`, `searched_words` | 1,290 links, 134 of 177 words |
+| the middle word on every link, from his list only | `nucleus/kinds.py` reads 43 words from `Main/🗯 Narrative vs 🔥 Relational.md`; `links.kind`; `links.schema.json`, `kinds.schema.json` | 98% of links; a row reads "A VISION depends on “…”" |
+| thumbs on every row of an answer | `serve.py` `POST /thumb`, `GET /ask/<id>` → `rows`; `store.thumb` | 👍 keeps (green), 👎 never paints again (dark red) |
+| CowboyAI styling for the coming nucleus app | `ios/Styling/Theme.swift`, `ios/Styling/Assets.xcassets` | copied, app not built |
 | painted picture, no model, when every word in the question has links | `links.paint` in `ask.py` step 3b | 0.2 s |
 | same question again, answered from what was saved | `store.find_repeat` | 0.24 s |
 | one open conversation on the Codex lane holding his files | `model.call_codex_conversation`, `~/Library/Application Support/nucleus/conversation.json` | 17–19 s per new question |
@@ -53,8 +56,8 @@ Rule from this: never tell Adam something will be faster until it is timed next 
 
 1. The line at the top of a painted picture: today a count (`links.ALIGNED_RECORDS = 3`, every touched word has links and together ≥3 records → aligned, else not_sure). Labeled PROPOSAL in the code.
 2. Whether a link found by the model may be painted before his thumb. Today: yes, thumb NULL paints; thumb 0 never paints.
-3. The middle term on every link ("FLOW requires ..."): which words from his Narrative vs Relational hierarchy the background pass may use. Not built.
-4. Thumbs up / down buttons on the phone page. Not built. `store.thumb(word, record, up)` exists.
+3. (done 2026-09-12) The middle word on every link: Adam said "do it all" → the whole list from his note. Code refuses any other word.
+4. (done 2026-09-12) Thumbs on the page.
 5. Expected verdict for the hopeful-project question in `questions.txt`; 48 graph records with no ledger decision (`prompt.not_accepted_block`).
 6. Whether the iPhone app (`Cowboyai/authority-hub/ios`, talks to the old service on 8765) switches to this (8766). He said he will not say "switch" until the trade is clear; the trade he understood is in the compare table of 2026-09-12 (story and "pull the same thread" vs speed and never making things up).
 
@@ -62,6 +65,8 @@ Rule from this: never tell Adam something will be faster until it is timed next 
 
 - "the rows of a users words reflected back to them are fine, but there needs to be some explanation.  This is a glorified search look up.  That isn't a product."
 - "The three answers aren't enough.  A label named 'aligned'? That is a glorified search retrieval."
+- "I want the styling only from Cowboyai to be ported over to this project repo. I want this so you can build an ios app version of "nucleaus", that will eventually take over the name Cowboyai."
+- "I am not using your words." (the middle words are his, from his note, never Claude's)
 - His run idea, logged in Cowboyai `docs/product/2026-09-12-phrases-and-pre-answers-idea.md`: phrases (built), match before any call (built), onboarding by dictation (not built), pre-answers (links are the built form), thumbs (not built), words on screen while waiting (half built).
 
 ## How to work with him (the rules that bit tonight)
