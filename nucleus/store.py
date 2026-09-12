@@ -222,6 +222,39 @@ class Store:
         return [{"record": r, "quote": q, "why": w, "source": s, "provider": p, "model": m, "found_at": f, "thumb": t, "kind": k}
                 for r, q, w, s, p, m, f, t, k in rows]
 
+    def link(self, word: str, record: str) -> dict | None:
+        row = self.connection.execute(
+            "SELECT quote, why, kind, thumb FROM links WHERE word = ? AND record = ?", (word, record)).fetchone()
+        if row is None:
+            return None
+        return {"word": word, "record": record, "quote": row[0], "why": row[1], "kind": row[2], "thumb": row[3]}
+
+    def rows_for_answer(self, reply_json: str | None) -> list[dict]:
+        """One row per record in an answer: the word it is linked from, the middle word, his thumb.
+        A record with no saved link yet gets the answer's first word, so a thumb can make the link."""
+        if not reply_json:
+            return []
+        try:
+            payload = json.loads(reply_json)
+        except json.JSONDecodeError:
+            return []
+        words = [w.get("word") for w in payload.get("words") or [] if isinstance(w, dict) and isinstance(w.get("word"), str)]
+        rows: list[dict] = []
+        for item in payload.get("records") or []:
+            if not isinstance(item, dict) or not isinstance(item.get("id"), str):
+                continue
+            leaf = item["id"].rsplit("/", 1)[-1]
+            found = None
+            for word in words:
+                found = self.link(word, leaf)
+                if found:
+                    break
+            if found:
+                rows.append({"word": found["word"], "record": leaf, "quote": item.get("quote", ""), "kind": found["kind"], "thumb": found["thumb"], "saved": True})
+            elif words:
+                rows.append({"word": words[0], "record": leaf, "quote": item.get("quote", ""), "kind": None, "thumb": None, "saved": False})
+        return rows
+
     def words_with_unkinded_links(self) -> list[str]:
         return [w for (w,) in self.connection.execute(
             "SELECT DISTINCT word FROM links WHERE kind IS NULL AND (thumb IS NULL OR thumb = 1) ORDER BY word")]

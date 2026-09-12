@@ -100,3 +100,16 @@ def test_kinds_pass_fills_the_middle_word_on_old_links(tmp_path: Path):
     done = links.find_kinds("FLOW", store, graph, meanings, model_call=lambda p: ModelReply("fake", "fake", json.dumps(reply)))
     assert done == 1 and store.links_for("FLOW")[0]["kind"] == "depends on"
     assert store.words_with_unkinded_links() == []
+
+
+def test_rows_for_an_answer_carry_the_link_and_his_thumb(tmp_path: Path):
+    store = Store(tmp_path / "n.sqlite3")
+    store.add_link("FLOW", FLOW_ID, FLOW_QUOTE, "why.", "links:FLOW", "fake", "fake", kind="requires")
+    reply = json.dumps({"answer": "aligned", "words": [{"word": "FLOW", "why": "w."}],
+                        "records": [{"id": FLOW_ID, "quote": FLOW_QUOTE, "why": "r."},
+                                    {"id": "conn-obs-claude-2026-07-02-affect-work-stated-relationship", "quote": "x", "why": "r."}]})
+    rows = store.rows_for_answer(reply)
+    assert rows[0] == {"word": "FLOW", "record": FLOW_ID, "quote": FLOW_QUOTE, "kind": "requires", "thumb": None, "saved": True}
+    assert rows[1]["saved"] is False and rows[1]["word"] == "FLOW"
+    store.thumb("FLOW", FLOW_ID, up=False)
+    assert store.rows_for_answer(reply)[0]["thumb"] == 0

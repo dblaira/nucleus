@@ -50,6 +50,10 @@ button.ask-btn:disabled{opacity:.5}
 .more.open{display:block}
 .reveal{margin-top:14px;font-size:18px;background:none;color:var(--lapis);border:1.5px solid var(--lapis);padding:10px 16px;border-radius:10px}
 .stop{color:var(--brick);font-size:20px}
+.thumbs{display:inline-flex;gap:8px;margin-left:10px;vertical-align:middle}
+.thumbs button{font-size:20px;line-height:1;background:none;border:1.5px solid #CFC5B0;border-radius:10px;padding:6px 10px;color:#7A6E58}
+.thumbs button.on.up{background:#2AB860;border-color:#2AB860;color:#fff}
+.thumbs button.on.down{background:#B00124;border-color:#B00124;color:#fff}
 #recent{margin-top:30px}
 #recent .first{font-family:Georgia,serif;font-style:italic;font-size:22px;color:var(--lapis);margin:0 0 6px}
 #recent a{display:block;padding:12px 0;border-top:1px solid #B9AE96;color:var(--ink);text-decoration:none}
@@ -108,14 +112,30 @@ function render(data){
   if (cur.length) blocks.push(cur);
   const shown = blocks.slice(0, FOLD), hidden = blocks.slice(FOLD);
   const before = data.asked_before ? '<div class="before">asked before · ' + data.asked_before + (data.asked_before === 1 ? ' time' : ' times') + '</div>' : '';
-  let html = before + '<div class="first">' + esc(first) + '</div>' + shown.map(b => esc(b.join('\\n'))).join('\\n\\n');
+  const rows = data.rows || [];
+  const block = b => {
+    const text = b.join('\\n');
+    const row = rows.find(x => x.quote && text.indexOf(x.quote.replace(/\\\\"/g, '"').slice(0, 40)) !== -1);
+    if (!row) return esc(text);
+    const up = row.thumb === 1 ? ' on' : '', down = row.thumb === 0 ? ' on' : '';
+    return esc(text) + '<span class="thumbs" data-word="' + esc(row.word) + '" data-record="' + esc(row.record) + '" data-quote="' + esc(row.quote) + '">'
+      + '<button class="up' + up + '" title="keep">👍</button><button class="down' + down + '" title="never again">👎</button></span>';
+  };
+  let html = before + '<div class="first">' + esc(first) + '</div>' + shown.map(block).join('\\n\\n');
   if (hidden.length){
-    html += '<div class="more" id="more">\\n\\n' + hidden.map(b => esc(b.join('\\n'))).join('\\n\\n') + '</div>';
+    html += '<div class="more" id="more">\\n\\n' + hidden.map(block).join('\\n\\n') + '</div>';
     html += '<button class="reveal" id="reveal">▾ ' + hidden.length + ' more</button>';
   }
   answerEl.innerHTML = html;
   const r = document.getElementById('reveal');
   if (r) r.onclick = () => { document.getElementById('more').classList.add('open'); r.remove(); };
+  answerEl.querySelectorAll('.thumbs button').forEach(b => b.onclick = async () => {
+    const t = b.parentElement, up = b.classList.contains('up');
+    await fetch('/thumb', {method:'POST', headers:{'content-type':'application/json'},
+      body: JSON.stringify({word: t.dataset.word, record: t.dataset.record, quote: t.dataset.quote, up: up})});
+    t.querySelectorAll('button').forEach(x => x.classList.remove('on'));
+    b.classList.add('on');
+  });
 }
 function esc(s){ return String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
 async function poll(){
@@ -166,14 +186,17 @@ class Handler(BaseHTTPRequestHandler):
             if question is None:
                 self._json(404, {"error": "no such question"})
                 return
+            answer = self.store.answer(question_id)
             self._json(200, {"question": question, "steps": self.store.steps(question_id),
-                             "phrases": self.store.phrase_hits(question_id), "answer": self.store.answer(question_id),
-                             "asked_before": self.store.times_asked(question["question"], question_id)})
+                             "phrases": self.store.phrase_hits(question_id), "answer": answer,
+                             "asked_before": self.store.times_asked(question["question"], question_id),
+                             "rows": self.store.rows_for_answer((answer or {}).get("reply_json"))})
             return
         self._json(404, {"error": "not found"})
 
     def do_POST(self) -> None:  # noqa: N802
-        if urlparse(self.path).path != "/ask":
+        path = urlparse(self.path).path
+        if path not in ("/ask", "/thumb"):
             self._json(404, {"error": "not found"})
             return
         length = int(self.headers.get("content-length", "0"))
@@ -181,6 +204,17 @@ class Handler(BaseHTTPRequestHandler):
             payload = json.loads(self.rfile.read(length) or b"{}")
         except json.JSONDecodeError:
             self._json(400, {"error": "the body is not JSON"})
+            return
+        if path == "/thumb":
+            # his thumb on one link. Up keeps it; down means it never paints again.
+            word, record, up = str(payload.get("word", "")), str(payload.get("record", "")), bool(payload.get("up"))
+            if not word or not record:
+                self._json(400, {"error": "word and record"})
+                return
+            if self.store.link(word, record) is None:
+                self.store.add_link(word, record, str(payload.get("quote", "")), "", "thumb", "adam", "adam")
+            self.store.thumb(word, record, up)
+            self._json(200, self.store.link(word, record))
             return
         question = str(payload.get("question", "")).strip()
         if not question:
