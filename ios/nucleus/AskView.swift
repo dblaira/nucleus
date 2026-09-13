@@ -36,7 +36,7 @@ struct AskView: View {
         HStack(spacing: 16) {
             Image("CowboyHat").resizable().scaledToFit().frame(width: 64).foregroundStyle(CowboyTheme.cream)
             VStack(alignment: .leading, spacing: 4) {
-                Text("nucleus").font(CowboyTheme.editorialSerif(40, relativeTo: .largeTitle)).italic().foregroundStyle(CowboyTheme.cream)
+                Text("nucleus").font(CowboyTheme.editorialSerif(40, relativeTo: .largeTitle)).italic().foregroundStyle(CowboyTheme.cream).shadow(color: .black.opacity(0.5), radius: 3, y: 1)
                 Text("your words first, then your three answers").font(.system(size: 15)).foregroundStyle(CowboyTheme.cream.opacity(0.9))
             }
             Spacer()
@@ -46,8 +46,13 @@ struct AskView: View {
         }
         .padding(.vertical, 18).padding(.horizontal, 20)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(CowboyTheme.navy)
+        .background {
+            // the red rock photo Adam chose, under a navy wash so the words stay readable
+            Image("Header").resizable().scaledToFill()
+                .overlay(CowboyTheme.navy.opacity(0.62))
+        }
         .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .shadow(color: .black.opacity(0.25), radius: 8, y: 4)
         .padding(.top, 8)
     }
 

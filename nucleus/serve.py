@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 import sys
 import threading
 import time
@@ -13,6 +14,8 @@ from . import ask as ask_module
 from .store import Store
 
 PORT = 8766
+HEADER_PHOTO = Path(__file__).with_name("header.jpg")   # the red rock photo Adam chose, 2026-09-12
+
 STEP_NAMES = [ask_module.STEP_QUESTION, ask_module.STEP_DICTIONARY, ask_module.STEP_PHRASES, ask_module.STEP_NUCLEUS,
               ask_module.STEP_MODEL, ask_module.STEP_GATE, ask_module.STEP_ANSWER]
 
@@ -23,7 +26,7 @@ PAGE = """<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name=
 :root{--sand:#CDB38B;--lapis:#243F86;--gold:#C59237;--reed:#968C60;--brick:#99292B;--paper:#F7F1E6;--ink:#2A2318;--soft:#5E5443}
 body{margin:0;background:var(--sand);color:var(--ink);font-family:-apple-system,Helvetica,Arial,sans-serif;font-size:18px;line-height:1.5}
 .page{max-width:760px;margin:0 auto;padding:0 0 60px}
-.mast{background:var(--lapis);color:var(--paper);padding:22px 20px 18px;display:flex;align-items:center;gap:16px}
+.mast{background:linear-gradient(rgba(36,63,134,.62),rgba(36,63,134,.62)),url(/header.jpg) center 35%/cover no-repeat;color:var(--paper);padding:22px 20px 18px;display:flex;align-items:center;gap:16px;text-shadow:0 1px 3px rgba(0,0,0,.45)}
 .mast img.hat{width:64px;height:64px;filter:invert(1) sepia(1) saturate(0) brightness(1.9)}
 .mast img.icon{width:44px;height:44px;border-radius:10px;margin-left:auto;box-shadow:0 4px 12px rgba(0,0,0,.3)}
 .mast h1{font-family:Georgia,"Times New Roman",serif;font-style:italic;font-weight:400;font-size:34px;margin:0}
@@ -174,6 +177,15 @@ class Handler(BaseHTTPRequestHandler):
             self.send_response(200)
             self.send_header("content-type", "text/html; charset=utf-8")
             self.send_header("content-length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+            return
+        if path == "/header.jpg":
+            body = HEADER_PHOTO.read_bytes()
+            self.send_response(200)
+            self.send_header("content-type", "image/jpeg")
+            self.send_header("content-length", str(len(body)))
+            self.send_header("cache-control", "max-age=86400")
             self.end_headers()
             self.wfile.write(body)
             return
