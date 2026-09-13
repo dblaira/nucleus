@@ -1,7 +1,8 @@
 import SwiftUI
 
-/// Height kept for the entry box on the first screen; the photo takes the rest.
-private let ASK_BOX_ROOM: CGFloat = 300
+/// The photo takes one fifth of the screen. Adam, 2026-09-12: "I would actually like 1/5 of the screen to be taken
+/// up by the shot. It's just for aesthetic beauty. I need to be able to use the rest of the screen for fucking work"
+private let PHOTO_SHARE: CGFloat = 0.20
 
 struct AskView: View {
     @State private var model = AskModel()
@@ -39,32 +40,33 @@ struct AskView: View {
         .sheet(isPresented: $showSettings) { settings }
     }
 
-    /// The photo fills everything above the entry box, edge to edge. Adam, 2026-09-12: "I meant the area above
-    /// the entry box. nothing below or in the entry box, everything above the entry box"
+    /// The photo, edge to edge, one fifth of the screen tall, the title on it.
     private var masthead: some View {
         ZStack(alignment: .bottomLeading) {
             Image("Header").resizable().scaledToFill()
-                .containerRelativeFrame([.horizontal, .vertical]) { length, axis in axis == .vertical ? length - ASK_BOX_ROOM : length }
+                .containerRelativeFrame([.horizontal, .vertical]) { length, axis in axis == .vertical ? length * PHOTO_SHARE : length }
                 .clipped()
             LinearGradient(colors: [CowboyTheme.navy.opacity(0.0), CowboyTheme.navy.opacity(0.75)], startPoint: .center, endPoint: .bottom)
-            VStack(alignment: .leading, spacing: 10) {
-                Image("CowboyHat").resizable().scaledToFit().frame(width: 92).foregroundStyle(CowboyTheme.cream)
-                Text("nucleus").font(CowboyTheme.editorialSerif(64, relativeTo: .largeTitle)).italic().foregroundStyle(CowboyTheme.cream).shadow(color: .black.opacity(0.5), radius: 4, y: 1)
-                Text("your words first, then your three answers").font(.system(size: 19)).foregroundStyle(CowboyTheme.cream).shadow(color: .black.opacity(0.5), radius: 3, y: 1)
+            HStack(alignment: .bottom, spacing: 14) {
+                Image("CowboyHat").resizable().scaledToFit().frame(width: 56).foregroundStyle(CowboyTheme.cream)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("nucleus").font(CowboyTheme.editorialSerif(40, relativeTo: .largeTitle)).italic().foregroundStyle(CowboyTheme.cream).shadow(color: .black.opacity(0.5), radius: 4, y: 1)
+                    Text("your words first, then your three answers").font(.system(size: 15)).foregroundStyle(CowboyTheme.cream).shadow(color: .black.opacity(0.5), radius: 3, y: 1)
+                }
             }
-            .padding(.horizontal, 22).padding(.bottom, 26)
+            .padding(.horizontal, 18).padding(.bottom, 12)
             VStack {
                 HStack {
                     Spacer()
                     Button { showSettings = true } label: {
                         Image(systemName: "gearshape").font(.system(size: 22)).foregroundStyle(CowboyTheme.cream.opacity(0.9)).shadow(color: .black.opacity(0.5), radius: 3)
                     }
-                    .padding(.top, 62).padding(.trailing, 22)
+                    .padding(.top, 58).padding(.trailing, 18)
                 }
                 Spacer()
             }
         }
-        .containerRelativeFrame([.horizontal, .vertical]) { length, axis in axis == .vertical ? length - ASK_BOX_ROOM : length }
+        .containerRelativeFrame([.horizontal, .vertical]) { length, axis in axis == .vertical ? length * PHOTO_SHARE : length }
     }
 
     private var askBox: some View {
