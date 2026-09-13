@@ -4,7 +4,13 @@ import Observation
 @MainActor
 @Observable
 final class AskModel {
-    var question = ""
+    var question = UserDefaults.standard.string(forKey: "nucleus.draft") ?? "" {
+        didSet {
+            // the draft is kept the moment it is typed, so nothing he wrote is ever lost to a reload
+            UserDefaults.standard.set(question, forKey: "nucleus.draft")
+            print("nucleus: question now \(question.count) chars")
+        }
+    }
     var current: AskResponse?
     var recent: [RecentItem] = []
     var working = false
@@ -15,8 +21,11 @@ final class AskModel {
     static let stepNames = ["1 question in", "2 dictionary reads it", "3 your phrases found", "4 nucleus read whole",
                             "5 one model call", "6 the gate", "7 answer out"]
 
+    init() { print("nucleus: model created") }
+
     func ask() async {
         let text = question.trimmingCharacters(in: .whitespacesAndNewlines)
+        print("nucleus: ask() with \(text.count) chars, working=\(working)")
         guard !text.isEmpty, !working else { return }
         working = true; problem = nil; current = nil; showAll = false; thumbs = [:]
         do {
@@ -35,6 +44,7 @@ final class AskModel {
     }
 
     func open(_ id: String) async {
+        print("nucleus: open(\(id))")
         do {
             current = try await NucleusAPI.status(id)
             question = current?.question.question ?? question
