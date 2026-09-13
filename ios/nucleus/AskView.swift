@@ -8,16 +8,20 @@ struct AskView: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 18) {
+            VStack(alignment: .leading, spacing: 0) {
                 masthead
-                askBox
-                steps
-                answer
-                earlier
+                VStack(alignment: .leading, spacing: 18) {
+                    askBox
+                    steps
+                    answer
+                    earlier
+                }
+                .padding(.horizontal, 16)
+                .padding(.top, 18)
+                .padding(.bottom, 40)
             }
-            .padding(.horizontal, 16)
-            .padding(.bottom, 40)
         }
+        .ignoresSafeArea(edges: .top)
         .background(CowboyTheme.tan.ignoresSafeArea())
         .scrollDismissesKeyboard(.interactively)
         .task {
@@ -32,28 +36,32 @@ struct AskView: View {
         .sheet(isPresented: $showSettings) { settings }
     }
 
+    /// The whole first screen is the photo. Adam, 2026-09-12: "I want the header to fill the entire width and
+    /// height of the iphone screen. not a small component size header."
     private var masthead: some View {
-        HStack(spacing: 16) {
-            Image("CowboyHat").resizable().scaledToFit().frame(width: 64).foregroundStyle(CowboyTheme.cream)
-            VStack(alignment: .leading, spacing: 4) {
-                Text("nucleus").font(CowboyTheme.editorialSerif(40, relativeTo: .largeTitle)).italic().foregroundStyle(CowboyTheme.cream).shadow(color: .black.opacity(0.5), radius: 3, y: 1)
-                Text("your words first, then your three answers").font(.system(size: 15)).foregroundStyle(CowboyTheme.cream.opacity(0.9))
-            }
-            Spacer()
-            Button { showSettings = true } label: {
-                Image(systemName: "gearshape").font(.system(size: 20)).foregroundStyle(CowboyTheme.cream.opacity(0.8))
-            }
-        }
-        .padding(.vertical, 18).padding(.horizontal, 20)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background {
-            // the red rock photo Adam chose, under a navy wash so the words stay readable
+        ZStack(alignment: .bottomLeading) {
             Image("Header").resizable().scaledToFill()
-                .overlay(CowboyTheme.navy.opacity(0.62))
+                .containerRelativeFrame([.horizontal, .vertical])
+                .clipped()
+            LinearGradient(colors: [CowboyTheme.navy.opacity(0.0), CowboyTheme.navy.opacity(0.75)], startPoint: .center, endPoint: .bottom)
+            VStack(alignment: .leading, spacing: 10) {
+                Image("CowboyHat").resizable().scaledToFit().frame(width: 92).foregroundStyle(CowboyTheme.cream)
+                Text("nucleus").font(CowboyTheme.editorialSerif(64, relativeTo: .largeTitle)).italic().foregroundStyle(CowboyTheme.cream).shadow(color: .black.opacity(0.5), radius: 4, y: 1)
+                Text("your words first, then your three answers").font(.system(size: 19)).foregroundStyle(CowboyTheme.cream).shadow(color: .black.opacity(0.5), radius: 3, y: 1)
+            }
+            .padding(.horizontal, 22).padding(.bottom, 44)
+            VStack {
+                HStack {
+                    Spacer()
+                    Button { showSettings = true } label: {
+                        Image(systemName: "gearshape").font(.system(size: 22)).foregroundStyle(CowboyTheme.cream.opacity(0.9)).shadow(color: .black.opacity(0.5), radius: 3)
+                    }
+                    .padding(.top, 62).padding(.trailing, 22)
+                }
+                Spacer()
+            }
         }
-        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-        .shadow(color: .black.opacity(0.25), radius: 8, y: 4)
-        .padding(.top, 8)
+        .containerRelativeFrame([.horizontal, .vertical])
     }
 
     private var askBox: some View {
