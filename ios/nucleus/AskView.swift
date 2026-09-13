@@ -1,5 +1,8 @@
 import SwiftUI
 
+/// Height kept for the entry box on the first screen; the photo takes the rest.
+private let ASK_BOX_ROOM: CGFloat = 300
+
 struct AskView: View {
     @State private var model = AskModel()
     @State private var showSettings = false
@@ -17,7 +20,7 @@ struct AskView: View {
                     earlier
                 }
                 .padding(.horizontal, 16)
-                .padding(.top, 18)
+                .padding(.top, 14)
                 .padding(.bottom, 40)
             }
         }
@@ -36,12 +39,12 @@ struct AskView: View {
         .sheet(isPresented: $showSettings) { settings }
     }
 
-    /// The whole first screen is the photo. Adam, 2026-09-12: "I want the header to fill the entire width and
-    /// height of the iphone screen. not a small component size header."
+    /// The photo fills everything above the entry box, edge to edge. Adam, 2026-09-12: "I meant the area above
+    /// the entry box. nothing below or in the entry box, everything above the entry box"
     private var masthead: some View {
         ZStack(alignment: .bottomLeading) {
             Image("Header").resizable().scaledToFill()
-                .containerRelativeFrame([.horizontal, .vertical])
+                .containerRelativeFrame([.horizontal, .vertical]) { length, axis in axis == .vertical ? length - ASK_BOX_ROOM : length }
                 .clipped()
             LinearGradient(colors: [CowboyTheme.navy.opacity(0.0), CowboyTheme.navy.opacity(0.75)], startPoint: .center, endPoint: .bottom)
             VStack(alignment: .leading, spacing: 10) {
@@ -49,7 +52,7 @@ struct AskView: View {
                 Text("nucleus").font(CowboyTheme.editorialSerif(64, relativeTo: .largeTitle)).italic().foregroundStyle(CowboyTheme.cream).shadow(color: .black.opacity(0.5), radius: 4, y: 1)
                 Text("your words first, then your three answers").font(.system(size: 19)).foregroundStyle(CowboyTheme.cream).shadow(color: .black.opacity(0.5), radius: 3, y: 1)
             }
-            .padding(.horizontal, 22).padding(.bottom, 44)
+            .padding(.horizontal, 22).padding(.bottom, 26)
             VStack {
                 HStack {
                     Spacer()
@@ -61,7 +64,7 @@ struct AskView: View {
                 Spacer()
             }
         }
-        .containerRelativeFrame([.horizontal, .vertical])
+        .containerRelativeFrame([.horizontal, .vertical]) { length, axis in axis == .vertical ? length - ASK_BOX_ROOM : length }
     }
 
     private var askBox: some View {
