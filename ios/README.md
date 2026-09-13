@@ -24,3 +24,6 @@ codesign fail with "resource fork, Finder information, or similar detritus not a
     xcrun devicectl device process launch --device B03CFB03-AA65-5941-BD82-8CBC60092BD9 com.adamblair.nucleus
 
 The phone must be on the Mac's Wi-Fi or plugged in. First installed 2026-09-12.
+
+Launching with `devicectl device process launch` ties the app to the Mac's command: a second launch kills the first
+instance (signal 9), and `--console` holds it until it exits. For normal use Adam opens the app from the home screen.
