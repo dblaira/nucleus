@@ -168,12 +168,27 @@ class Store:
         ).fetchall()
         return [{"phrase": p, "kind": k, "name": n, "text": t, "strength": s} for p, k, n, t, s in rows]
 
-    def recent(self, limit: int = 12) -> list[dict]:
+    HIS_SURFACES = ("web", "cowboyai-iphone")
+
+    def recent(self, limit: int | None = None) -> list[dict]:
+        """Every question he asked, newest first, each question once (its latest answer). Only his surfaces:
+        the page and the app (web), and the questions brought back from the CowboyAI app (cowboyai-iphone).
+        Adam, 2026-09-14: "recover all of the questions that I had asked before and add them back to the app"."""
         rows = self.connection.execute(
             "SELECT q.id, q.question, a.status, a.answer, a.finished FROM questions q JOIN answers a ON a.question_id = q.id"
-            " ORDER BY a.finished DESC LIMIT ?", (limit,)
+            " WHERE q.surface IN (?, ?) ORDER BY a.finished DESC", self.HIS_SURFACES
         ).fetchall()
-        return [{"id": i, "question": q, "status": s, "answer": a, "finished": f} for i, q, s, a, f in rows]
+        seen: set[str] = set()
+        out: list[dict] = []
+        for i, q, s, a, f in rows:
+            key = normalize_question(q)
+            if key in seen:
+                continue
+            seen.add(key)
+            out.append({"id": i, "question": q, "status": s, "answer": a, "finished": f})
+            if limit is not None and len(out) >= limit:
+                break
+        return out
 
     def answer(self, question_id: str) -> dict | None:
         row = self.connection.execute(

@@ -215,7 +215,7 @@ class Handler(BaseHTTPRequestHandler):
             self.wfile.write(body)
             return
         if path == "/recent":
-            self._json(200, self.store.recent(12))
+            self._json(200, self.store.recent())
             return
         if path.startswith("/ask/"):
             question_id = path[len("/ask/"):]
