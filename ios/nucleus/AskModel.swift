@@ -27,13 +27,14 @@ final class AskModel {
         let text = question.trimmingCharacters(in: .whitespacesAndNewlines)
         print("nucleus: ask() with \(text.count) chars, working=\(working)")
         guard !text.isEmpty, !working else { return }
-        working = true; problem = nil; current = nil; showAll = false; thumbs = [:]
+        working = true; problem = nil; current = nil; showAll = false; thumbs = [:]; explanationThumb = nil
         do {
             let id = try await NucleusAPI.ask(text)
             while true {
                 let status = try await NucleusAPI.status(id)
                 current = status
-                if status.answer != nil { break }
+                // the rows show as soon as they exist; keep polling until the meaning under the first line is written
+                if status.answer != nil && (status.explanation?.status ?? "none") != "pending" { break }
                 try await Task.sleep(nanoseconds: 700_000_000)
             }
             await loadRecent()
@@ -48,7 +49,7 @@ final class AskModel {
         do {
             current = try await NucleusAPI.status(id)
             question = current?.question.question ?? question
-            showAll = false; thumbs = [:]
+            showAll = false; thumbs = [:]; explanationThumb = nil
         } catch {
             problem = "The Mac did not answer. \(error.localizedDescription)"
         }
@@ -61,6 +62,14 @@ final class AskModel {
     func thumb(_ row: AskResponse.Row, up: Bool) async {
         thumbs["\(row.word)|\(row.record)"] = up ? 1 : 0
         try? await NucleusAPI.thumb(word: row.word, record: row.record, quote: row.quote, up: up)
+    }
+
+    var explanationThumb: Int?
+
+    func thumbExplanation(up: Bool) async {
+        guard let id = current?.question.id else { return }
+        explanationThumb = up ? 1 : 0
+        try? await NucleusAPI.thumbExplanation(questionID: id, up: up)
     }
 
     func thumbState(_ row: AskResponse.Row) -> Int? {

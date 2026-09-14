@@ -135,6 +135,25 @@ struct AskView: View {
                     Text("\(a.status): \(a.text ?? a.gate_reason ?? "")").font(.system(size: 19)).foregroundStyle(CowboyTheme.cardRed)
                 } else {
                     Text(parts.first).font(.custom(CowboyTheme.editorialSerifName, size: 28)).italic().foregroundStyle(CowboyTheme.cardRed)
+                    // the meaning first. Adam, 2026-09-14: "I don't wanna have to scroll past 60 fucking rows of my words to get down to the goddamn meaning."
+                    if let ex = model.current?.explanation {
+                        if ex.status == "pending" {
+                            Text("writing what this says about your question…").font(.system(size: 17)).italic().foregroundStyle(CowboyTheme.navigationInactive)
+                        } else if ex.status == "shown", let text = ex.text {
+                            VStack(alignment: .leading, spacing: 10) {
+                                Text(text).font(.system(size: 20)).foregroundStyle(Color.black).lineSpacing(4)
+                                HStack(spacing: 8) {
+                                    let state = model.explanationThumb ?? ex.thumb
+                                    thumbButton("hand.thumbsup", on: state == 1, color: CowboyTheme.green) { Task { await model.thumbExplanation(up: true) } }
+                                    thumbButton("hand.thumbsdown", on: state == 0, color: CowboyTheme.cardRed) { Task { await model.thumbExplanation(up: false) } }
+                                }
+                            }
+                            .padding(14)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .background(Color.white)
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                        }
+                    }
                     let shown = model.showAll ? parts.rest : Array(parts.rest.prefix(fold))
                     ForEach(Array(shown.enumerated()), id: \.offset) { _, block in
                         blockView(block)

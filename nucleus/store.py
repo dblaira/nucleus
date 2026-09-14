@@ -41,6 +41,10 @@ CREATE TABLE IF NOT EXISTS links (
 CREATE TABLE IF NOT EXISTS searched_words (
   word TEXT PRIMARY KEY, searched_at REAL NOT NULL, records_hash TEXT
 );
+CREATE TABLE IF NOT EXISTS explanations (
+  question_id TEXT PRIMARY KEY, status TEXT NOT NULL, text TEXT, reason TEXT, provider TEXT, model TEXT,
+  started REAL NOT NULL, finished REAL, thumb INTEGER
+);
 CREATE TABLE IF NOT EXISTS grades (
   run_id TEXT NOT NULL, question_id TEXT, question TEXT NOT NULL, expected TEXT, got TEXT,
   status TEXT, gate_ok INTEGER, seconds REAL, at REAL NOT NULL
@@ -279,3 +283,28 @@ class Store:
         words, links, kinded = self.connection.execute(
             "SELECT COUNT(DISTINCT word), COUNT(*), SUM(CASE WHEN kind IS NOT NULL THEN 1 ELSE 0 END) FROM links").fetchone()
         return {"words": words, "links": links, "kinded": kinded or 0, "searched": len(self.searched_words())}
+
+    def explanation_pending(self, question_id: str) -> None:
+        self.connection.execute("INSERT OR REPLACE INTO explanations (question_id, status, started) VALUES (?, 'pending', ?)",
+                                (question_id, time.time()))
+        self.connection.commit()
+
+    def save_explanation(self, question_id: str, text: str | None, reason: str | None, provider: str, model: str, started: float) -> None:
+        self.connection.execute(
+            "INSERT OR REPLACE INTO explanations (question_id, status, text, reason, provider, model, started, finished, thumb)"
+            " VALUES (?, ?, ?, ?, ?, ?, ?, ?, NULL)",
+            (question_id, "shown" if text else "refused", text, reason, provider, model, started, time.time()))
+        self.connection.commit()
+
+    def explanation(self, question_id: str) -> dict | None:
+        row = self.connection.execute(
+            "SELECT status, text, reason, provider, model, started, finished, thumb FROM explanations WHERE question_id = ?",
+            (question_id,)).fetchone()
+        if row is None:
+            return None
+        return {"status": row[0], "text": row[1], "reason": row[2], "provider": row[3], "model": row[4],
+                "started": row[5], "finished": row[6], "thumb": row[7]}
+
+    def thumb_explanation(self, question_id: str, up: bool) -> None:
+        self.connection.execute("UPDATE explanations SET thumb = ? WHERE question_id = ?", (1 if up else 0, question_id))
+        self.connection.commit()

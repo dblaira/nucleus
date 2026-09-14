@@ -11,6 +11,7 @@ from typing import Callable
 from . import NUCLEUS_FILES
 from . import dictionary as dictionary_module
 from . import gate as gate_module
+from . import explain as explain_module
 from . import links as links_module
 from . import model as model_module
 from . import phrases as phrases_module
@@ -54,7 +55,9 @@ class Result:
 
 def ask(question: str, store: Store | None = None, surface: str = "cli",
         model_call: Callable[[str], model_module.ModelReply] | None = None,
-        brief: Callable[[str], dict] | None = None, question_id: str | None = None) -> Result:
+        brief: Callable[[str], dict] | None = None, question_id: str | None = None,
+        explain_call=None) -> Result:
+    """explain_call: the model door for the paragraph under the rows; None = the usual door, False = no paragraph."""
     store = store or Store()
     model_call = model_call or model_module.call
     brief = brief or dictionary_module.brief
@@ -110,6 +113,9 @@ def ask(question: str, store: Store | None = None, surface: str = "cli",
                                  "possibility": []}, ensure_ascii=False)
         store.save_answer(question_id, "answered", picture.answer, picture.text, reply_json, True, None,
                           nucleus_hash=model_module.nucleus_hash(prompt_module.nucleus_text()[0]))
+        # the rows are on the screen; the explanation arrives under them when the model is done
+        if explain_call is not False:
+            explain_module.start(question_id, question, picture.text, picture.touched, store, explain_call)
         return finish(Result(question_id, question, "answered", answer=picture.answer, text=picture.text, words=picture.words,
                              records=picture.records, reading=reading, phrases=phrase_dicts, provider="links", model="painted"))
 
@@ -160,6 +166,12 @@ def ask(question: str, store: Store | None = None, surface: str = "cli",
     store.save_answer(question_id, "answered", verdict.answer, verdict.text, reply.text, True, None, nucleus_hash=records_hash)
     if verdict.possibility and repeat is None:
         store.save_candidates(question_id, verdict.possibility)
+    if verdict.answer != "dont_know" and explain_call is not False:
+        earlier = store.explanation(repeat["question_id"]) if repeat is not None else None
+        if earlier and earlier.get("text"):
+            store.save_explanation(question_id, earlier["text"], None, earlier.get("provider") or "saved", earlier.get("model") or "saved", time.time())
+        else:
+            explain_module.start(question_id, question, verdict.text, [w["word"] for w in verdict.words], store, explain_call)
     store.finish_step(question_id, STEP_ANSWER)
     return finish(Result(question_id, question, "answered", answer=verdict.answer, text=verdict.text,
                          words=verdict.words, records=verdict.records, possibility=verdict.possibility,

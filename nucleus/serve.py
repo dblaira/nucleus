@@ -11,6 +11,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlparse
 
 from . import ask as ask_module
+from . import explain as explain_module
 from .store import Store
 
 PORT = 8766
@@ -48,6 +49,8 @@ button.ask-btn:disabled{opacity:.5}
 .answer:empty{display:none}
 .answer .first{font-family:Georgia,"Times New Roman",serif;font-style:italic;font-size:28px;color:var(--brick);margin:0 0 14px}
 .answer .first.mm{color:var(--lapis);font-size:22px}
+.explain{margin:0 0 18px;padding:14px 16px;background:#fff;border-radius:12px;font-size:20px;line-height:1.45;white-space:pre-wrap}
+.explain.pending{color:#7A6E58;font-style:italic;background:none;padding:0 0 10px}
 .answer .before{font-family:Georgia,serif;font-style:italic;font-size:18px;color:#7A6E58;margin:0 0 6px}
 .more{display:none}
 .more.open{display:block}
@@ -124,12 +127,25 @@ function render(data){
     return esc(text) + '<span class="thumbs" data-word="' + esc(row.word) + '" data-record="' + esc(row.record) + '" data-quote="' + esc(row.quote) + '">'
       + '<button class="up' + up + '" title="keep">👍</button><button class="down' + down + '" title="never again">👎</button></span>';
   };
-  let html = before + '<div class="first">' + esc(first) + '</div>' + shown.map(block).join('\\n\\n');
+  // the meaning first. Adam, 2026-09-14: "I don't wanna have to scroll past 60 fucking rows of my words to get down to the goddamn meaning."
+  const ex = data.explanation;
+  let exHtml = '';
+  if (ex && ex.status === 'pending') exHtml = '<div class="explain pending">writing what this says about your question…</div>';
+  else if (ex && ex.status === 'shown') {
+    const up = ex.thumb === 1 ? ' on' : '', down = ex.thumb === 0 ? ' on' : '';
+    exHtml = '<div class="explain">' + esc(ex.text) + '<span class="thumbs" id="exthumbs"><button class="up' + up + '">👍</button><button class="down' + down + '">👎</button></span></div>';
+  }
+  let html = before + '<div class="first">' + esc(first) + '</div>' + exHtml + shown.map(block).join('\\n\\n');
   if (hidden.length){
     html += '<div class="more" id="more">\\n\\n' + hidden.map(block).join('\\n\\n') + '</div>';
     html += '<button class="reveal" id="reveal">▾ ' + hidden.length + ' more</button>';
   }
   answerEl.innerHTML = html;
+  const ext = document.getElementById('exthumbs');
+  if (ext) ext.querySelectorAll('button').forEach(b => b.onclick = async () => {
+    await fetch('/thumb-explanation', {method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify({question_id: current, up: b.classList.contains('up')})});
+    ext.querySelectorAll('button').forEach(x => x.classList.remove('on')); b.classList.add('on');
+  });
   const r = document.getElementById('reveal');
   if (r) r.onclick = () => { document.getElementById('more').classList.add('open'); r.remove(); };
   answerEl.querySelectorAll('.thumbs button').forEach(b => b.onclick = async () => {
@@ -145,7 +161,8 @@ async function poll(){
   if (!current) return;
   const r = await fetch('/ask/' + current); const data = await r.json();
   render(data);
-  if (data.answer){ clearInterval(timer); timer = null; document.getElementById('b').disabled = false; loadRecent(); }
+  if (data.answer && !(data.explanation && data.explanation.status === 'pending')){ clearInterval(timer); timer = null; document.getElementById('b').disabled = false; loadRecent(); }
+  else if (data.answer) { document.getElementById('b').disabled = false; }
 }
 document.getElementById('f').onsubmit = async (e) => {
   e.preventDefault();
@@ -173,7 +190,7 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self) -> None:  # noqa: N802
         path = urlparse(self.path).path
         if path == "/":
-            body = PAGE.replace("__NAMES__", json.dumps(STEP_NAMES)).encode("utf-8")
+            body = PAGE.replace("__NAMES__", json.dumps(STEP_NAMES)).replace("__TITLE__", explain_module.TITLE).encode("utf-8")
             self.send_response(200)
             self.send_header("content-type", "text/html; charset=utf-8")
             self.send_header("content-length", str(len(body)))
@@ -202,13 +219,14 @@ class Handler(BaseHTTPRequestHandler):
             self._json(200, {"question": question, "steps": self.store.steps(question_id),
                              "phrases": self.store.phrase_hits(question_id), "answer": answer,
                              "asked_before": self.store.times_asked(question["question"], question_id),
-                             "rows": self.store.rows_for_answer((answer or {}).get("reply_json"))})
+                             "rows": self.store.rows_for_answer((answer or {}).get("reply_json")),
+                             "explanation": self.store.explanation(question_id)})
             return
         self._json(404, {"error": "not found"})
 
     def do_POST(self) -> None:  # noqa: N802
         path = urlparse(self.path).path
-        if path not in ("/ask", "/thumb"):
+        if path not in ("/ask", "/thumb", "/thumb-explanation"):
             self._json(404, {"error": "not found"})
             return
         length = int(self.headers.get("content-length", "0"))
@@ -216,6 +234,14 @@ class Handler(BaseHTTPRequestHandler):
             payload = json.loads(self.rfile.read(length) or b"{}")
         except json.JSONDecodeError:
             self._json(400, {"error": "the body is not JSON"})
+            return
+        if path == "/thumb-explanation":
+            qid = str(payload.get("question_id", ""))
+            if not qid:
+                self._json(400, {"error": "question_id"})
+                return
+            self.store.thumb_explanation(qid, bool(payload.get("up")))
+            self._json(200, self.store.explanation(qid) or {})
             return
         if path == "/thumb":
             # his thumb on one link. Up keeps it; down means it never paints again.
