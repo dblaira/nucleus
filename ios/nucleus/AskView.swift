@@ -32,6 +32,7 @@ struct AskView: View {
         .scrollDismissesKeyboard(.interactively)
         .task {
             print("nucleus: view task started")
+            await NucleusAPI.hello()
             await model.loadRecent()
             // a question handed in at launch (`-ask "..."`) is asked at once; used by the Mac to test the app
             if let i = CommandLine.arguments.firstIndex(of: "-ask"), i + 1 < CommandLine.arguments.count {

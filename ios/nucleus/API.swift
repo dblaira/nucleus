@@ -1,4 +1,5 @@
 import Foundation
+import UIKit
 
 /// The Mac's nucleus service. The phone reaches it over Tailscale.
 struct AskResponse: Decodable {
@@ -47,6 +48,15 @@ enum NucleusAPI {
     static func recent() async throws -> [RecentItem] {
         let (data, _) = try await URLSession.shared.data(from: base.appendingPathComponent("recent"))
         return try JSONDecoder().decode([RecentItem].self, from: data)
+    }
+
+    static func hello() async {
+        var request = URLRequest(url: base.appendingPathComponent("hello"))
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "content-type")
+        let name = await MainActor.run { UIDevice.current.name }
+        request.httpBody = try? JSONSerialization.data(withJSONObject: ["build": BuildStamp.text, "device": name])
+        _ = try? await URLSession.shared.data(for: request)
     }
 
     static func thumbExplanation(questionID: String, up: Bool) async throws {

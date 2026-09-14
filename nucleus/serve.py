@@ -234,7 +234,7 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_POST(self) -> None:  # noqa: N802
         path = urlparse(self.path).path
-        if path not in ("/ask", "/thumb", "/thumb-explanation"):
+        if path not in ("/ask", "/thumb", "/thumb-explanation", "/hello"):
             self._json(404, {"error": "not found"})
             return
         length = int(self.headers.get("content-length", "0"))
@@ -242,6 +242,13 @@ class Handler(BaseHTTPRequestHandler):
             payload = json.loads(self.rfile.read(length) or b"{}")
         except json.JSONDecodeError:
             self._json(400, {"error": "the body is not JSON"})
+            return
+        if path == "/hello":
+            # the app on his phone says which build it is when it opens; the Mac writes it down
+            line = f"{time.strftime('%Y-%m-%d %H:%M:%S')} {payload.get('device', '?')} build {payload.get('build', '?')}\n"
+            with open(Path.home() / "Library" / "Logs" / "nucleus-hello.log", "a", encoding="utf-8") as f:
+                f.write(line)
+            self._json(200, {"ok": True})
             return
         if path == "/thumb-explanation":
             qid = str(payload.get("question_id", ""))
