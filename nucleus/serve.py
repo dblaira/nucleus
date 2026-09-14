@@ -40,7 +40,10 @@ textarea{width:100%;box-sizing:border-box;font-family:Georgia,"Times New Roman",
 .row .count{font-size:13px;color:var(--soft)}
 button.ask-btn{font-size:19px;font-weight:700;padding:14px 26px;border:0;border-radius:12px;background:var(--brick);color:var(--paper);min-height:50px}
 button.ask-btn:disabled{opacity:.5}
-.steps{display:grid;gap:6px;margin:22px 0 22px}
+.steps{display:none}
+.steps.open{display:grid;gap:6px;margin:10px 0 0}
+.stepsline{margin:16px 0 0;font-size:14px;color:#7A6E58;background:none;border:0;padding:0}
+.waiting{margin:18px 0 0;font-size:18px;font-style:italic;color:#7A6E58}
 .step{display:grid;grid-template-columns:1fr 90px;align-items:baseline;padding:9px 14px;border-radius:10px;background:var(--paper);color:#B9AE96;font-size:16px}
 .step.running{background:var(--lapis);color:var(--paper)}
 .step.done{color:var(--ink)}
@@ -69,9 +72,11 @@ button.ask-btn:disabled{opacity:.5}
 <div class="body">
 <form id="f" class="ask"><label for="q">Your question</label><textarea id="q" placeholder="Write it in your own words. The box grows as you write." autocomplete="off"></textarea>
 <div class="row"><span class="count" id="count">0 words</span><button class="ask-btn" id="b" type="submit">Ask</button></div></form>
-<div class="steps" id="steps"></div>
+<div class="waiting" id="waiting" hidden>reading your words…</div>
 <div id="phrases" class="answer"></div>
 <div id="answer" class="answer"></div>
+<button class="stepsline" id="stepsline" hidden>▸ how long each step took</button>
+<div class="steps" id="steps"></div>
 <div id="recent"></div>
 </div></div>
 <script>
@@ -91,7 +96,10 @@ async function loadRecent(){
   el.querySelectorAll('a').forEach(a => a.onclick = async (e) => { e.preventDefault(); current = a.dataset.id; const r = await fetch('/ask/' + current); const d = await r.json(); qEl.value = d.question.question; grow(); count(); render(d); window.scrollTo(0,0); });
 }
 loadRecent(); grow(); count();
+document.getElementById('stepsline').onclick = () => { const s = document.getElementById('steps'); s.classList.toggle('open'); };
 function render(data){
+  document.getElementById('waiting').hidden = !!data.answer || !current;
+  document.getElementById('stepsline').hidden = !data.answer;
   stepsEl.innerHTML = '';
   const byName = {};
   (data.steps||[]).forEach(s => byName[s.name] = s);

@@ -16,7 +16,9 @@ struct AskView: View {
                 masthead
                 VStack(alignment: .leading, spacing: 18) {
                     askBox
-                    steps
+                    if model.working && model.current?.answer == nil {
+                        Text("reading your words…").font(.system(size: 17)).italic().foregroundStyle(CowboyTheme.navigationInactive)
+                    }
                     answer
                     earlier
                 }
