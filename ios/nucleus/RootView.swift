@@ -49,7 +49,8 @@ struct RootView: View {
                 .safeAreaInset(edge: .bottom, spacing: 0) {
                     BottomNavigation(
                         selection: $selectedTab,
-                        openComposer: { showingComposer = true }
+                        openComposer: { showingComposer = true },
+                        goHome: { model.goHome() }
                     )
                 }
                 .toolbar(.hidden, for: .navigationBar)
@@ -68,6 +69,7 @@ struct RootView: View {
 
             Button {
                 selectedTab = .decide
+                model.goHome()
             } label: {
                 Image("CowboyHat")
                     .renderingMode(.template)
@@ -85,7 +87,7 @@ struct RootView: View {
             .buttonStyle(.plain)
             .padding(.trailing, 14)
             .padding(.bottom, 106)
-            .accessibilityLabel("Open nucleus")
+            .accessibilityLabel("Home")
             .accessibilityIdentifier("assistant-hat")
         }
         .task {
@@ -146,6 +148,7 @@ private struct CowboyHeader: View {
 private struct BottomNavigation: View {
     @Binding var selection: AppTab
     let openComposer: () -> Void
+    let goHome: () -> Void
 
     var body: some View {
         VStack(spacing: 0) {
@@ -187,6 +190,8 @@ private struct BottomNavigation: View {
         let isSelected = selection == tab
 
         return Button {
+            // Decide, tapped while already on Decide, is home
+            if tab == .decide, isSelected { goHome() }
             selection = tab
         } label: {
             VStack(spacing: 4) {

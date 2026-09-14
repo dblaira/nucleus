@@ -54,6 +54,12 @@ final class AskModel {
         }
     }
 
+    /// Home: the opened answer is put away, PAST RESULTS comes to the top. Adam, 2026-09-14: "There's no navigation.
+    /// Can you get back to the home screen?"
+    func goHome() {
+        current = nil; problem = nil; thumbs = [:]; explanationThumb = nil
+    }
+
     func loadRecent() async {
         recent = (try? await NucleusAPI.recent()) ?? []
     }
