@@ -3,11 +3,13 @@ import SwiftUI
 enum CowboyTheme {
     static let editorialSerifName = "Bodoni 72 Oldstyle"
     static let carouselSerifName = "TimesNewRomanPSMT"
-    static let navy = Color(red: 8 / 255, green: 23 / 255, blue: 45 / 255)
+    /// SAVY's page navy, Brand.page 0x0A1626.
+    static let navy = Color(red: 0x0A / 255, green: 0x16 / 255, blue: 0x26 / 255)
     static let navyRaised = Color(red: 10 / 255, green: 31 / 255, blue: 54 / 255)
     static let cream = Color(red: 243 / 255, green: 234 / 255, blue: 213 / 255)
     static let tan = Color(red: 213 / 255, green: 193 / 255, blue: 148 / 255)
-    static let red = Color(red: 230 / 255, green: 14 / 255, blue: 68 / 255)
+    /// SAVY's crimson, Brand.crimson 0xDC143C.
+    static let red = Color(red: 0xDC / 255, green: 0x14 / 255, blue: 0x3C / 255)
     static let cardRed = Color(red: 176 / 255, green: 1 / 255, blue: 36 / 255)
     static let bottomNavigationTan = Color(red: 0.80, green: 0.70, blue: 0.58)
     static let navigationInactive = Color(red: 0.34, green: 0.27, blue: 0.21).opacity(0.68)

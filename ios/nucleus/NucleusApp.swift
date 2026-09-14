@@ -2,9 +2,12 @@ import SwiftUI
 
 @main
 struct NucleusApp: App {
+    @State private var model = AskModel()
+
     var body: some Scene {
         WindowGroup {
-            AskView()
+            RootView(model: model)
+                .preferredColorScheme(.dark)
         }
     }
 }

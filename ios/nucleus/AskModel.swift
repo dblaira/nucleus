@@ -15,7 +15,6 @@ final class AskModel {
     var recent: [RecentItem] = []
     var working = false
     var problem: String?
-    var showAll = false
     var thumbs: [String: Int] = [:]      // "word|record" -> 1 up, 0 down
 
     static let stepNames = ["1 question in", "2 dictionary reads it", "3 your phrases found", "4 nucleus read whole",
@@ -27,7 +26,7 @@ final class AskModel {
         let text = question.trimmingCharacters(in: .whitespacesAndNewlines)
         print("nucleus: ask() with \(text.count) chars, working=\(working)")
         guard !text.isEmpty, !working else { return }
-        working = true; problem = nil; current = nil; showAll = false; thumbs = [:]; explanationThumb = nil
+        working = true; problem = nil; current = nil; thumbs = [:]; explanationThumb = nil
         do {
             let id = try await NucleusAPI.ask(text)
             while true {
@@ -49,7 +48,7 @@ final class AskModel {
         do {
             current = try await NucleusAPI.status(id)
             question = current?.question.question ?? question
-            showAll = false; thumbs = [:]; explanationThumb = nil
+            thumbs = [:]; explanationThumb = nil
         } catch {
             problem = "The Mac did not answer. \(error.localizedDescription)"
         }
@@ -74,26 +73,5 @@ final class AskModel {
 
     func thumbState(_ row: AskResponse.Row) -> Int? {
         thumbs["\(row.word)|\(row.record)"] ?? row.thumb
-    }
-
-    /// The answer text, split the way the page splits it: first line, then blocks separated by blank lines.
-    var blocks: (first: String, rest: [String]) {
-        guard let text = current?.answer?.text, !text.isEmpty else { return ("", []) }
-        var lines = text.components(separatedBy: "\n")
-        let first = lines.removeFirst()
-        var blocks: [String] = []; var cur: [String] = []
-        for line in lines {
-            if line.isEmpty { if !cur.isEmpty { blocks.append(cur.joined(separator: "\n")) }; cur = [] } else { cur.append(line) }
-        }
-        if !cur.isEmpty { blocks.append(cur.joined(separator: "\n")) }
-        return (first, blocks)
-    }
-
-    func row(for block: String) -> AskResponse.Row? {
-        guard let rows = current?.rows else { return nil }
-        return rows.first { row in
-            let key = String(row.quote.replacingOccurrences(of: "\\\"", with: "\"").prefix(40))
-            return !key.isEmpty && block.contains(key)
-        }
     }
 }

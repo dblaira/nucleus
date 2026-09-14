@@ -1,16 +1,27 @@
-# ios — the styling of CowboyAI, ported here for the nucleus app
+# ios — the nucleus app in the CowboyAI app's styling
 
 Adam, 2026-09-12: "I want the styling only from Cowboyai to be ported over to this project repo. I want this so you
 can build an ios app version of "nucleaus", that will eventually take over the name Cowboyai."
 
-Copied as they are from `Cowboyai/authority-hub/ios/CowboyAI` (styling only, no screens, no logic):
+Adam, 2026-09-14: "Replace the styling in the nucleus app with the styling of the cowboy AI app. I like the
+functionality of this app, but I don't like the styling at all, so replace the entire go find the code for cowboy AI
+and just use it here, but use the data pipeline whatever the fuck you call it here"
 
-- `Styling/Theme.swift` — `CowboyTheme`: navy, navyRaised, cream, tan, red, cardRed, bottomNavigationTan,
-  navigationInactive, green, orange, muted; the editorial serif ("Bodoni 72 Oldstyle") and the carousel serif
-  (Times New Roman); `BenDayDotBackground`.
-- `Styling/Assets.xcassets` — AppIcon, CowboyHat.
+The screens are copied from `Cowboyai/authority-hub/ios/CowboyAI`; the data is nucleus's (`API.swift`, `AskModel.swift`,
+port 8766):
 
-The web page (`nucleus/serve.py`) uses the same palette. The app is not built yet.
+- `RootView.swift` — the shell: navy hat header with the connection button, tan bottom bar with Decide, Route and the
+  red bolt, the hat button. From `RootView.swift`.
+- `DecideView.swift` — the home: the live answer, then PAST RESULTS as the horizontal carousel. From `SavedResultsView.swift`.
+- `LiveAnswerView.swift` — the cream YOUR QUESTION panel, the cream YOUR ANSWER panel (first line, then the meaning,
+  thumbs), then HE SAID THE WORD ITSELF (his word's meanings) and HIS ROUTES SENT IT HERE (the records his links reach,
+  thumbs on each card), then POSSIBILITY. Tapping a card opens the complete words. From `LiveAnswerView.swift`.
+- `AnswerParts.swift` — splits the Mac's answer text (gate.compose) into those pieces; the Mac's pipeline is unchanged.
+- `RouteView.swift` — the seven steps and how long each took. From `RouteView.swift`.
+- `ComposerView.swift` — the question form behind the bolt: the question, Ask. From `CowboyQuestionComposerView.swift`.
+- `SettingsView.swift` — the Connection sheet: the Mac's address, the build stamp. From `SettingsView.swift`.
+- `Theme.swift`, `Assets.xcassets` — `CowboyTheme`, AppIcon, CowboyHat. `Header.imageset` (the red rock photo) stays
+  in the catalog and is not shown.
 
 ## Building for Adam's iPhone
 
