@@ -12,6 +12,7 @@
 		519E7C299FECB914836FC66B /* AskModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59CECC2AEC8748659A8DF22E /* AskModel.swift */; };
 		569D91B485E81B6C0F2C234F /* AskView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82686C4729A1EAA28077F1B3 /* AskView.swift */; };
 		6D518CAD813CEFB8B760F7A7 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2E89E3BD7CAFE24D5C7A916B /* Assets.xcassets */; };
+		C277DCFE237D25936198B354 /* BuildStamp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 708E90DEBEC4B8919BF9FC3F /* BuildStamp.swift */; };
 		EE78102B5A44FFE2530EF58F /* API.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EAF369E62451DEC45CAE0EA /* API.swift */; };
 /* End PBXBuildFile section */
 
@@ -19,6 +20,7 @@
 		2E89E3BD7CAFE24D5C7A916B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		4EAF369E62451DEC45CAE0EA /* API.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = API.swift; sourceTree = "<group>"; };
 		59CECC2AEC8748659A8DF22E /* AskModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AskModel.swift; sourceTree = "<group>"; };
+		708E90DEBEC4B8919BF9FC3F /* BuildStamp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuildStamp.swift; sourceTree = "<group>"; };
 		82686C4729A1EAA28077F1B3 /* AskView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AskView.swift; sourceTree = "<group>"; };
 		86C5FAF1126B7E046F1A98BA /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		8C592D7C9FE3C9E3746A768E /* nucleus.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = nucleus.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -34,6 +36,7 @@
 				59CECC2AEC8748659A8DF22E /* AskModel.swift */,
 				82686C4729A1EAA28077F1B3 /* AskView.swift */,
 				2E89E3BD7CAFE24D5C7A916B /* Assets.xcassets */,
+				708E90DEBEC4B8919BF9FC3F /* BuildStamp.swift */,
 				DC68FEDFA4602FFE4F18F341 /* Info.plist */,
 				E2B89B1F698F39DAE236DF18 /* NucleusApp.swift */,
 				86C5FAF1126B7E046F1A98BA /* Theme.swift */,
@@ -131,6 +134,7 @@
 				EE78102B5A44FFE2530EF58F /* API.swift in Sources */,
 				519E7C299FECB914836FC66B /* AskModel.swift in Sources */,
 				569D91B485E81B6C0F2C234F /* AskView.swift in Sources */,
+				C277DCFE237D25936198B354 /* BuildStamp.swift in Sources */,
 				4941C33F163607FF53EFA902 /* NucleusApp.swift in Sources */,
 				4DE0D5700E19BF26742F0278 /* Theme.swift in Sources */,
 			);

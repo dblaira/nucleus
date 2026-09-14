@@ -233,6 +233,7 @@ struct AskView: View {
             }
             .navigationTitle("nucleus")
             .toolbar { Button("Done") { showSettings = false } }
+            .safeAreaInset(edge: .bottom) { Text("build \(BuildStamp.text)").font(.system(size: 12)).foregroundStyle(CowboyTheme.navigationInactive).padding(8) }
         }
     }
 }
