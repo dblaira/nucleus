@@ -40,7 +40,8 @@ struct HomeView: View {
 
     private func header(topInset: CGFloat) -> some View {
         HStack(alignment: .top, spacing: 0) {
-            Text("nucleus")
+            // The name is Cowboy AI. It always was. Adam, 2026-09-14: "It's the name that we've always had."
+            Text("Cowboy AI")
                 .font(SavyLayout.displaySerif(SavyLayout.heroWordmarkFontSize, weight: .bold))
                 .foregroundStyle(.white)
                 .lineLimit(1)

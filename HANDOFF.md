@@ -61,8 +61,10 @@ Rule from this: never tell Adam something will be faster until it is timed next 
 5. Expected verdict for the hopeful-project question in `questions.txt`; 48 graph records with no ledger decision (`prompt.not_accepted_block`).
 6. The old CowboyAI iPhone app still talks to the old service on 8765. The new nucleus app (ios/) talks to 8766. Adam, 2026-09-12: the nucleus app "will eventually take over the name Cowboyai". He said he will not say "switch" until the trade is clear; the trade he understood is in the compare table of 2026-09-12 (story and "pull the same thread" vs speed and never making things up).
 
-7. (2026-09-14) The wordmark on the app's home reads "nucleus". Adam: "The name is wrong but we can fix that later."
-   The name is his to give; do not rename it without his word.
+7. (2026-09-14) The name is Cowboy AI. It always was; Claude had put "nucleus" on the app's home. Adam: "It's the name
+   that we've always had. You're the one that changed it." The wordmark now reads Cowboy AI. The home-screen label
+   still reads nucleus because the old Cowboy AI app is still installed beside it; that label changes when the old
+   app goes.
 
 ## What Adam said about the product, 2026-09-12, in order
 
