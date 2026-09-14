@@ -16,6 +16,9 @@ enum CowboyTheme {
     static let green = Color(red: 54 / 255, green: 205 / 255, blue: 125 / 255)
     static let orange = Color(red: 241 / 255, green: 117 / 255, blue: 32 / 255)
     static let muted = Color.white.opacity(0.86)
+    /// SAVY's page paper and ink (SavyTheme.paper, SavyTheme.ink).
+    static let paper = Color(red: 248 / 255, green: 244 / 255, blue: 237 / 255)
+    static let ink = Color.black
 
     /// The same regular-weight editorial face used by Notorious Recall and SAVY.
     static func editorialSerif(

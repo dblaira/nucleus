@@ -54,10 +54,9 @@ final class AskModel {
         }
     }
 
-    /// Home: the opened answer is put away, PAST RESULTS comes to the top. Adam, 2026-09-14: "There's no navigation.
-    /// Can you get back to the home screen?"
-    func goHome() {
-        current = nil; problem = nil; thumbs = [:]; explanationThumb = nil
+    /// The past answers under one of his three lines.
+    func recent(in category: Category) -> [RecentItem] {
+        recent.filter { $0.answer == category.rawValue }
     }
 
     func loadRecent() async {

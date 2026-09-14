@@ -7,21 +7,32 @@ Adam, 2026-09-14: "Replace the styling in the nucleus app with the styling of th
 functionality of this app, but I don't like the styling at all, so replace the entire go find the code for cowboy AI
 and just use it here, but use the data pipeline whatever the fuck you call it here"
 
-The screens are copied from `Cowboyai/authority-hub/ios/CowboyAI`; the data is nucleus's (`API.swift`, `AskModel.swift`,
-port 8766):
+Adam, 2026-09-14: "refer to the savy app repo so you can see the type of navigation expect.  Adopt the homepage layout of
+SAVY.  Below it, below the carousel, you can list the different answers under the three categories ... Those can have
+their own pages ... all three options should be available to press on"
 
-- `RootView.swift` — the shell: navy hat header with the connection button, tan bottom bar with Decide, Route and the
-  red bolt, the hat button. From `RootView.swift`.
-- `DecideView.swift` — the home: the live answer, then PAST RESULTS as the horizontal carousel. From `SavedResultsView.swift`.
-- `LiveAnswerView.swift` — the cream YOUR QUESTION panel, the cream YOUR ANSWER panel (first line, then the meaning,
-  thumbs), then HE SAID THE WORD ITSELF (his word's meanings) and HIS ROUTES SENT IT HERE (the records his links reach,
-  thumbs on each card), then POSSIBILITY. Tapping a card opens the complete words. From `LiveAnswerView.swift`.
+The shell and home are SAVY's (`/Users/adamblair/Developer/GitHub/SAVY-iOS/SAVY`); the answer panels are the CowboyAI
+app's (`Cowboyai/authority-hub/ios/CowboyAI`); the data is nucleus's (`API.swift`, `AskModel.swift`, port 8766):
+
+- `RootView.swift` — SAVY's shell: tabs Now and Route with the bolt, pages pushed over the home. From SAVY RootView.
+- `SavyShell.swift` — SAVY's layout numbers, the round menu button, the back button, the bottom bar, and `Category`:
+  his three lines. From SAVY RootView, SavyShellComponents, ConnectionView.
+- `HomeView.swift` — SAVY's home: the wordmark hero, the latest answers carousel (no title band), then his three lines
+  as compact rows, each with its count, all three on the first screen. From SAVY EditorialHomeView.
+- `CategoryPage.swift` — one line's page: SAVY's section page (tan header, back, navy list of band cards). From
+  SAVY ConnectionView.
+- `AnswerPage.swift` — one question and its answer with the back button; the cream panels are CowboyAI's
+  (`LiveAnswerView.swift`): YOUR QUESTION, YOUR ANSWER (first line, meaning, thumbs), HE SAID THE WORD ITSELF,
+  HIS ROUTES SENT IT HERE, POSSIBILITY. Asking from the bolt opens this page while the answer is written.
 - `AnswerParts.swift` — splits the Mac's answer text (gate.compose) into those pieces; the Mac's pipeline is unchanged.
-- `RouteView.swift` — the seven steps and how long each took. From `RouteView.swift`.
-- `ComposerView.swift` — the question form behind the bolt: the question, Ask. From `CowboyQuestionComposerView.swift`.
-- `SettingsView.swift` — the Connection sheet: the Mac's address, the build stamp. From `SettingsView.swift`.
-- `Theme.swift`, `Assets.xcassets` — `CowboyTheme`, AppIcon, CowboyHat. `Header.imageset` (the red rock photo) stays
-  in the catalog and is not shown.
+- `RouteView.swift` — the seven steps and how long each took. From CowboyAI RouteView.
+- `ComposerView.swift` — the question form behind the bolt. From CowboyAI CowboyQuestionComposerView.
+- `SettingsView.swift` — the Connection sheet (menu button): the Mac's address, the build stamp. From CowboyAI.
+- `Theme.swift`, `Assets.xcassets` — `CowboyTheme` (+ SAVY paper and ink), AppIcon, CowboyHat. `Header.imageset`
+  (the red rock photo) stays in the catalog and is not shown.
+
+Stopped, refused and saved-without-answer results are not under any of the three lines; they appear in the latest
+carousel only.
 
 ## On the Mac too
 
