@@ -40,17 +40,21 @@ struct HomeView: View {
 
     private func header(topInset: CGFloat) -> some View {
         HStack(alignment: .top, spacing: 0) {
-            // The name is Cowboy AI. It always was. Adam, 2026-09-14: "It's the name that we've always had."
-            Text("Cowboy AI")
-                .font(SavyLayout.displaySerif(SavyLayout.heroWordmarkFontSize, weight: .bold))
-                .foregroundStyle(.white)
-                .lineLimit(1)
-                .minimumScaleFactor(0.85)
+            // Cowboy AI's name on screen is the hat, no letters: the CowboyAI app's header (CowboyHeader).
+            // Adam, 2026-09-14: "You know what cowboy I looked like before? The hat icon"
+            Image("CowboyHat")
+                .renderingMode(.template)
+                .resizable()
+                .scaledToFill()
+                .frame(width: 188, height: 106)
+                .clipped()
+                .foregroundStyle(CowboyTheme.tan)
+                .accessibilityLabel("Cowboy AI")
 
             Spacer(minLength: 0)
 
             SavyMenuButton(openConnection: openConnection)
-                .padding(.top, SavyLayout.accountMenuHeroWordmarkOffset)
+                .padding(.top, (106 - SavyLayout.accountMenuButtonSize) / 2)
         }
         .padding(.horizontal, SavyLayout.horizontalPadding)
         .padding(.top, topInset + SavyLayout.heroContentTopPadding)
