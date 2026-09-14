@@ -15,6 +15,7 @@ targets:
   nucleus:
     type: application
     platform: iOS
+    supportedDestinations: [iOS, macCatalyst]
     sources: [nucleus]
     settings:
       base:

@@ -23,6 +23,18 @@ port 8766):
 - `Theme.swift`, `Assets.xcassets` — `CowboyTheme`, AppIcon, CowboyHat. `Header.imageset` (the red rock photo) stays
   in the catalog and is not shown.
 
+## On the Mac too
+
+Adam, 2026-09-14: "load this into xcode in mac os so I can run it there too."
+
+The same target builds as a Mac app (Mac Catalyst). In Xcode the destination is `My Mac (Mac Catalyst)`. From the
+Mac it is at `~/Applications/nucleus.app`, built with:
+
+    DEVELOPER_DIR="/Users/adamblair/Downloads/Xcode-beta 5.app/Contents/Developer" \
+    xcodebuild -project nucleus.xcodeproj -scheme nucleus -destination 'platform=macOS,variant=Mac Catalyst' \
+      -derivedDataPath ~/Library/Developer/nucleus-mac -configuration Debug -allowProvisioningUpdates build
+    cp -R ~/Library/Developer/nucleus-mac/Build/Products/Debug-maccatalyst/nucleus.app ~/Applications/nucleus.app
+
 ## Building for Adam's iPhone
 
 Build with derived data OUTSIDE ~/Documents (that folder is iCloud-synced and its file-provider attributes make
