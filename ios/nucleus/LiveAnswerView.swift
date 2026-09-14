@@ -154,15 +154,19 @@ struct LiveAnswerSection: View {
                             MeaningCard(
                                 label: record.label.uppercased(),
                                 text: record.quote,
-                                secondary: record.why.isEmpty ? record.stamp : record.why
+                                secondary: record.why.isEmpty && record.row != nil ? record.stamp : record.why
                             ) {
-                                Thumbs(state: model.thumbState(record.row)) { up in
-                                    Task { await model.thumb(record.row, up: up) }
+                                if let row = record.row {
+                                    Thumbs(state: model.thumbState(row)) { up in
+                                        Task { await model.thumb(row, up: up) }
+                                    }
+                                } else {
+                                    Image(systemName: "chevron.right").font(.system(size: 12, weight: .semibold))
                                 }
                             }
                         }
                         .buttonStyle(.plain)
-                        .accessibilityIdentifier("live-record-\(record.row.record)")
+                        .accessibilityIdentifier("live-record-\(record.row?.record ?? String(record.id))")
                     }
                 }
                 .padding(.horizontal, 2)
@@ -329,15 +333,17 @@ struct RecordDetail: View {
                                 .fixedSize(horizontal: false, vertical: true)
                                 .textSelection(.enabled)
                         }
-                        if !record.stamp.isEmpty {
+                        if !record.stamp.isEmpty, record.row != nil {
                             Text(record.stamp)
                                 .font(.system(size: 11, weight: .bold))
                                 .tracking(1)
                                 .foregroundStyle(.secondary)
                                 .padding(.top, 4)
                         }
-                        Thumbs(state: model.thumbState(record.row)) { up in
-                            Task { await model.thumb(record.row, up: up) }
+                        if let row = record.row {
+                            Thumbs(state: model.thumbState(row)) { up in
+                                Task { await model.thumb(row, up: up) }
+                            }
                         }
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -350,7 +356,7 @@ struct RecordDetail: View {
                 .padding(.bottom, 28)
             }
             .background(Color.white)
-            .navigationTitle(record.row.word)
+            .navigationTitle(record.row?.word ?? "")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {

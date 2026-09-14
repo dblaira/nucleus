@@ -12,11 +12,12 @@ struct AnswerParts {
 
     struct Record: Identifiable {
         let id: Int
-        let row: AskResponse.Row
-        let stamp: String       // "0.90 · 2026-07-10"
+        let row: AskResponse.Row?   // nil when the Mac has no link row for it (an answer brought back from CowboyAI)
+        let stamp: String           // "0.90 · 2026-07-10"
+        let line: String            // the record line as written, when there is no row
         let why: String
-        var quote: String { row.quote.replacingOccurrences(of: "\\\"", with: "\"") }
-        var label: String { [row.word, row.kind ?? ""].filter { !$0.isEmpty }.joined(separator: " ") }
+        var quote: String { row.map { $0.quote.replacingOccurrences(of: "\\\"", with: "\"") } ?? line }
+        var label: String { row.map { [$0.word, $0.kind ?? ""].filter { !$0.isEmpty }.joined(separator: " ") } ?? stamp }
     }
 
     var firstLine = ""
@@ -55,7 +56,11 @@ struct AnswerParts {
                 if let dash = head.range(of: " — "), head[..<dash.lowerBound].first?.isNumber == true {
                     stamp = String(head[..<dash.lowerBound])
                 }
-                records.append(Record(id: index, row: row, stamp: stamp, why: block.dropFirst().joined(separator: "\n")))
+                records.append(Record(id: index, row: row, stamp: stamp, line: head, why: block.dropFirst().joined(separator: "\n")))
+            } else if block[0].first?.isNumber == true, let dash = block[0].range(of: " — ") {
+                // a record line with no saved link row: "0.70 · 2026-07-02 — “…”"
+                records.append(Record(id: index, row: nil, stamp: String(block[0][..<dash.lowerBound]),
+                                      line: String(block[0][dash.upperBound...]), why: block.dropFirst().joined(separator: "\n")))
             } else if let dash = block[0].range(of: " — “") {
                 let word = String(block[0][..<dash.lowerBound])
                 let prefix = word + " — “"
