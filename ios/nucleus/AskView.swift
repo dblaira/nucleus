@@ -17,7 +17,7 @@ struct AskView: View {
                 VStack(alignment: .leading, spacing: 18) {
                     askBox
                     if model.working && model.current?.answer == nil {
-                        Text("reading your words…").font(.system(size: 17)).italic().foregroundStyle(CowboyTheme.navigationInactive)
+                        Text("reading your words…").font(CowboyTheme.readingSerif(15, relativeTo: .body)).foregroundStyle(CowboyTheme.navigationInactive)
                     }
                     answer
                     earlier
@@ -52,8 +52,8 @@ struct AskView: View {
             HStack(alignment: .bottom, spacing: 14) {
                 Image("CowboyHat").resizable().scaledToFit().frame(width: 56).foregroundStyle(CowboyTheme.cream)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("nucleus").font(CowboyTheme.editorialSerif(40, relativeTo: .largeTitle)).italic().foregroundStyle(CowboyTheme.cream).shadow(color: .black.opacity(0.5), radius: 4, y: 1)
-                    Text("your words first, then your three answers").font(.system(size: 15)).foregroundStyle(CowboyTheme.cream).shadow(color: .black.opacity(0.5), radius: 3, y: 1)
+                    Text("nucleus").font(CowboyTheme.editorialSerif(34, relativeTo: .largeTitle)).foregroundStyle(CowboyTheme.cream).shadow(color: .black.opacity(0.5), radius: 4, y: 1)
+                    Text("your words first, then your three answers").font(CowboyTheme.readingSerif(14, relativeTo: .body)).foregroundStyle(CowboyTheme.cream).shadow(color: .black.opacity(0.5), radius: 3, y: 1)
                 }
             }
             .padding(.horizontal, 18).padding(.bottom, 12)
@@ -73,9 +73,9 @@ struct AskView: View {
 
     private var askBox: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("YOUR QUESTION").font(.system(size: 12, weight: .semibold)).tracking(1.4).foregroundStyle(CowboyTheme.navigationInactive)
+            kicker("YOUR QUESTION")
             TextEditor(text: $model.question)
-                .font(.custom(CowboyTheme.editorialSerifName, size: 22))
+                .font(CowboyTheme.readingSerif(20, relativeTo: .body))
                 .frame(minHeight: 120)
                 .padding(8)
                 .background(Color.white)
@@ -130,20 +130,21 @@ struct AskView: View {
         if let a = model.current?.answer {
             let parts = model.blocks
             VStack(alignment: .leading, spacing: 14) {
+                kicker(a.status == "answered" ? "YOUR ANSWER" : a.status.uppercased())
                 if let n = model.current?.asked_before, n > 0 {
-                    Text("asked before · \(n) \(n == 1 ? "time" : "times")").font(.custom(CowboyTheme.editorialSerifName, size: 18)).italic().foregroundStyle(CowboyTheme.navigationInactive)
+                    Text("asked before · \(n) \(n == 1 ? "time" : "times")").font(CowboyTheme.readingSerif(14, relativeTo: .body)).foregroundStyle(CowboyTheme.navigationInactive)
                 }
                 if a.status != "answered" {
                     Text("\(a.status): \(a.text ?? a.gate_reason ?? "")").font(.system(size: 19)).foregroundStyle(CowboyTheme.cardRed)
                 } else {
-                    Text(parts.first).font(.custom(CowboyTheme.editorialSerifName, size: 28)).italic().foregroundStyle(CowboyTheme.cardRed)
+                    Text(parts.first).font(CowboyTheme.editorialSerif(22, relativeTo: .title2)).foregroundStyle(CowboyTheme.navy).lineSpacing(3)
                     // the meaning first. Adam, 2026-09-14: "I don't wanna have to scroll past 60 fucking rows of my words to get down to the goddamn meaning."
                     if let ex = model.current?.explanation {
                         if ex.status == "pending" {
-                            Text("writing what this says about your question…").font(.system(size: 17)).italic().foregroundStyle(CowboyTheme.navigationInactive)
+                            Text("writing what this says about your question…").font(CowboyTheme.readingSerif(15, relativeTo: .body)).foregroundStyle(CowboyTheme.navigationInactive)
                         } else if ex.status == "shown", let text = ex.text {
                             VStack(alignment: .leading, spacing: 10) {
-                                Text(text).font(.system(size: 20)).foregroundStyle(Color.black).lineSpacing(4)
+                                Text(text).font(CowboyTheme.readingSerif(18, relativeTo: .body)).foregroundStyle(CowboyTheme.navy).lineSpacing(4)
                                 HStack(spacing: 8) {
                                     let state = model.explanationThumb ?? ex.thumb
                                     thumbButton("hand.thumbsup", on: state == 1, color: CowboyTheme.green) { Task { await model.thumbExplanation(up: true) } }
@@ -177,7 +178,7 @@ struct AskView: View {
 
     private func blockView(_ block: String) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(block).font(.system(size: 19)).foregroundStyle(Color.black)
+            Text(block).font(CowboyTheme.readingSerif(17, relativeTo: .body)).foregroundStyle(CowboyTheme.navy).lineSpacing(3)
             if let row = model.row(for: block) {
                 HStack(spacing: 8) {
                     thumbButton("hand.thumbsup", on: model.thumbState(row) == 1, color: CowboyTheme.green) { Task { await model.thumb(row, up: true) } }
@@ -185,6 +186,11 @@ struct AskView: View {
                 }
             }
         }
+    }
+
+    /// The label the CowboyAI app uses above a question and a saved answer (LiveAnswerView).
+    private func kicker(_ text: String) -> some View {
+        Text(text).font(.system(size: 11, weight: .semibold)).tracking(1.1).foregroundStyle(CowboyTheme.red)
     }
 
     private func thumbButton(_ symbol: String, on: Bool, color: Color, action: @escaping () -> Void) -> some View {
@@ -201,12 +207,12 @@ struct AskView: View {
     @ViewBuilder private var earlier: some View {
         if !model.recent.isEmpty {
             VStack(alignment: .leading, spacing: 0) {
-                Text("earlier").font(.custom(CowboyTheme.editorialSerifName, size: 30)).italic().foregroundStyle(CowboyTheme.navy).padding(.bottom, 6)
+                Text("Earlier").font(CowboyTheme.editorialSerif(28, relativeTo: .title)).foregroundStyle(CowboyTheme.navy).padding(.bottom, 6)
                 ForEach(model.recent) { item in
                     Button { Task { await model.open(item.id) } } label: {
                         VStack(alignment: .leading, spacing: 4) {
-                            Text(item.answer ?? item.status).font(.system(size: 20, weight: .bold)).foregroundStyle(CowboyTheme.cardRed)
-                            Text(item.question).font(.system(size: 20)).foregroundStyle(Color.black).multilineTextAlignment(.leading)
+                            Text((item.answer ?? item.status).replacingOccurrences(of: "_", with: " ").uppercased()).font(.system(size: 11, weight: .semibold)).tracking(1.1).foregroundStyle(CowboyTheme.red)
+                            Text(item.question).font(CowboyTheme.readingSerif(17, relativeTo: .body)).foregroundStyle(CowboyTheme.navy).multilineTextAlignment(.leading)
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.vertical, 12)
