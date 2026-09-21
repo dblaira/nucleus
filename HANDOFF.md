@@ -64,8 +64,9 @@ Rule from this: never tell Adam something will be faster until it is timed next 
 7. (2026-09-14) The name is Cowboy AI, and on screen it is the hat. Claude had put letters ("nucleus", then
    "Cowboy AI") in the hero. Adam: "It's the name that we've always had. You're the one that changed it." and "You
    know what cowboy I looked like before? The hat icon". The hero now holds the CowboyAI app's tan hat, no letters
-   (skill `the-name-is-cowboy-ai`). The home-screen label still reads nucleus because the old Cowboy AI app is
-   installed beside it; that label changes when the old app goes.
+   (skill `the-name-is-cowboy-ai`). On 2026-09-21 Adam said: "Why is cowboyai on the iphone named nucleaus? Change it back to Cowboyai."
+   The iOS display name and bundle name are now `Cowboyai`. Keep `com.adamblair.nucleus` as the bundle identifier
+   so updates preserve the existing app's data. The engine and internal project name remain nucleus.
 
 ## What Adam said about the product, 2026-09-12, in order
 
