@@ -328,3 +328,73 @@ checkout is preserved. The exact request is appended on companion Cowboyai
 branch `codex/forms-slice-4-ledger`.
 
 **Slice 4 complete. Stopped here; real forms wait for Adam's Yes or No.**
+
+## Forms slice 4b — October 2, 2026 Pacific
+
+Adam's next request in the same Codex chat:
+
+> Build slice 4b on a new branch codex/forms-slice-4b from 3dba8c5. Problem: F-25, F-26 and F-31 demand an exact screen — record_count 15 or 12 and word_count 1 or 3 are exact matches in _count_matches — so each fits one past answer and stops fitting when that word gets one more link. Fix the night pass: counts in fires-when are written only as minimums or ranges, never exact numbers. Every proposed form must fit at least 3 past painted answers in the copy database, from at least 2 different words, or it is refused with the reason "fits too few answers". Re-propose these three with widened conditions under new numbers; mark the old three rejected with the reason "fit one screen only"; a widened form is not a repeat of its narrow original. On the /forms page, show under each form the number of past answers it fits, biggest first, with up to 3 filled examples from different words. Keep everything else from slice 4: copy database only, port 8767, live service on 8766 untouched, NUCLEUS_FORMS_ONLY off, nothing approved, nothing merged. All tests pass, plus tests for "exact counts refused" and "too few answers refused". Push, update HANDOFF.md, restart the 8767 page from the new worktree, and report the phone link.
+
+Slice 4b is built on `codex/forms-slice-4b`, from exactly
+`3dba8c53d30d02acceeb6ba3bf5fe25374509eb6`, in the new worktree
+`/Users/adamblair/.codex/worktrees/nucleus-forms-slice-4b`.
+The night writer schema, prompt, and deterministic check now allow only minimums
+or nonzero-width ranges for count conditions. Exact integers, equal endpoints,
+and maximum-only bounds cannot become new proposed forms. The day filler and
+its existing count semantics remain unchanged.
+
+Every candidate is checked against the whole saved painted history, including
+answers consumed by prior night passes. Each answered question ID counts once;
+the two-word requirement counts the word actually bound into the sentence,
+not every word mentioned on its screen. Below 3 answers or 2 bound words gives
+exactly `fits too few answers`. The new additive `form_night_coverage` table
+retains all matching snapshots, fills, and source parts. The semantic reviewer
+still checks every distinct filled sentence. The page shows the fit count,
+sorts largest first, and keeps up to 3 examples for different words.
+
+The requested re-proposals ran once on the existing copy with
+`--bootstrap --widen F-25 F-26 F-31`, run
+`3bd5aeff-5019-425b-8196-771924c735d4`. Exact counts became minimums; sentences
+and other conditions were kept. Widened conditions have a different repeat
+signature. **Three new candidates, zero proposed, three refused:**
+
+| Old | New | Past answers fitted | Bound words | Result |
+| --- | --- | ---: | ---: | --- |
+| F-25 | F-36 | 32 | 1 (FLOW) | fits too few answers |
+| F-26 | F-37 | 32 | 1 (FLOW) | fits too few answers |
+| F-31 | F-38 | 1 | 1 (PULLED) | fits too few answers |
+
+All old three are retained as rejected with `fit one screen only`, keeping
+their original payloads and examples. The copy contains repeated FLOW answers;
+wider counts do not make their two required kinds fill for a second word.
+This mechanical re-proposal used no writer model; none reached the semantic
+reviewer because the coverage gate refused them. No model call was added.
+There are now **38 rejected, 0 proposed, 0 approved** real forms in the copy.
+`forms.txt` remains empty. The actual page correctly shows an empty queue.
+
+**332 tests pass**, including exact-count refusal, too-few-answers refusal,
+coverage across consumed history, answer-ID deduplication, bound-word diversity,
+repeat signatures, and largest-first review. Earlier passing cases now supply
+actual painted history meeting the new floor; no gate is mocked away. A
+baseline HTTP wrong-content-type test exposed a connection reset from an
+unread body; the handler now consumes its bounded body before returning 400.
+Browser verification used separate synthetic fixtures to show 5-fit before
+3-fit, different-word examples, and working Yes/No; its file/database were read
+back. The real phone URL was then verified to return HTTP 200 and show the
+empty queue. No physical phone was operated.
+
+The copy was backed up to `slice-4b-before.sqlite3` before the pass. The backup
+hash and both integrity checks pass; all original rows remain. Only the old
+three proposal decision fields changed, alongside the new run/results/rechecks
+and coverage table. All 65 saved matches refill exactly. Read
+[docs/forms-slice-4b.md](docs/forms-slice-4b.md) and
+[the proof summary](docs/forms-slice-4b-proof.json). Full traces and screenshots
+remain local because this repository is public.
+
+**Phone link: http://100.111.154.126:8767/forms**. Review PID 58000 runs the new
+worktree against the same copy; its manifest/log are `slice-4b-server.json` and
+`slice-4b-server.log` beside the copy. Only the old review PID 51372 was stopped.
+Live PID 1941 on 8766 is unchanged; no request or database open went to it.
+`NUCLEUS_FORMS_ONLY` stays off. No launchd change, approval, or merge to main.
+The exact request is appended on companion Cowboyai branch
+`codex/forms-slice-4b-ledger`. **Stopped after slice 4b.**

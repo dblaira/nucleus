@@ -77,6 +77,86 @@ def restore_screen(value: dict) -> forms.Screen:
                         tuple(forms.Row(**r) for r in value["rows"]), value["missing_links"])
 
 
+def past_answers(store: Store, kinds: list[str]) -> list[dict]:
+    """The whole painted history, once per answer, independent of consumed night inputs."""
+    inputs = []
+    rows = store.connection.execute(
+        "SELECT q.id,q.question,a.text,a.reply_json FROM questions q "
+        "JOIN answers a ON a.question_id=q.id WHERE a.status='answered' AND "
+        "EXISTS(SELECT 1 FROM steps s WHERE s.question_id=q.id AND "
+        "(s.note='painted from your links, no model' OR s.name LIKE '5 form F-% chosen')) "
+        "ORDER BY a.finished,q.id")
+    for qid, question, text, reply in rows:
+        raw = {"text": text, "reply_json": reply, "painted": True}
+        snapshot = store.connection.execute(
+            "SELECT picture_json FROM form_misses WHERE question_id=? ORDER BY created DESC,id DESC LIMIT 1",
+            (qid,)).fetchone()
+        if snapshot:
+            raw['picture_json'] = snapshot[0]
+        item = {'key': 'past_answer:' + qid + ':' + hashlib.sha256(encoded(raw).encode()).hexdigest(),
+                'source': 'past_answer', 'source_id': qid, 'question_id': qid, 'question': question,
+                'raw': raw, 'screen': None, 'reason': None}
+        try:
+            screen = screen_from_picture(json.loads(snapshot[0]), kinds) if snapshot else saved_screen(raw, kinds)
+            item['screen'] = asdict(screen)
+        except (forms.Refused, ValueError, KeyError, TypeError, AttributeError) as error:
+            item['reason'] = str(error)
+        inputs.append(item)
+    return inputs
+
+
+def matching_answers(form: dict, inputs: list[dict], kinds: list[str]) -> list[dict]:
+    matches, seen = [], set()
+    for item in inputs:
+        if item['screen'] is None or item['question_id'] in seen:
+            continue
+        seen.add(item['question_id'])
+        try:
+            filled = forms.preview(form, restore_screen(item['screen']), kinds=kinds)
+        except forms.Refused as error:
+            raise forms.Refused(f"filled example refused for {item['question_id']}: {error}") from error
+        if filled is not None:
+            # Quote forms require two kinds, so {word} always binds the first displayed word.
+            matches.append({'question_id': item['question_id'], 'question': item['question'],
+                            'input_key': item['key'], 'screen': item['screen'],
+                            'text': filled.text, 'parts': [asdict(p) for p in filled.parts]})
+    return matches
+
+
+def fit_counts(matches: list[dict]) -> tuple[int, int]:
+    return len({e['question_id'] for e in matches}), len({e['screen']['words'][0] for e in matches})
+
+
+def coverage_reason(matches: list[dict]) -> str | None:
+    answers, words = fit_counts(matches)
+    return forms_patterns.TOO_FEW if answers < 3 or words < 2 else None
+
+
+def diverse_examples(matches: list[dict]) -> list[dict]:
+    """Up to three examples, each for a different bound word. Never pad with repeats."""
+    words, result = set(), []
+    for example in matches:
+        word = example['screen']['words'][0]
+        if word not in words:
+            words.add(word)
+            result.append(example)
+            if len(result) == 3:
+                break
+    return result
+
+
+def distinct_fills(matches: list[dict]) -> list[dict]:
+    """The semantic reviewer still sees every different fill, beyond the three shown."""
+    return list({e['text']: e for e in matches}.values())
+
+
+def coverage_for(store: Store, proposal_id: str) -> list[dict]:
+    row = store.connection.execute(
+        "SELECT c.matches_json FROM form_night_coverage c JOIN form_night_runs n ON n.id=c.run_id "
+        "WHERE c.proposal_id=? AND n.status='completed'", (proposal_id,)).fetchone()
+    return json.loads(row[0]) if row else []
+
+
 def collect(store: Store, kinds: list[str], bootstrap: bool) -> list[dict]:
     """A successful run consumes exact inputs; failed runs and later arrivals remain eligible."""
     consumed = set()
@@ -151,16 +231,21 @@ Use common words, short clauses, and a clear subject. Select patterns with simpl
 The whole filled sentence, including its quotes, must be readable by a fifth-grade reader.
 A separate review checks the full examples for grade level, one sentence, and faithful direction.
 Conditions are the existing six: answer, kinds_present, kinds_absent, record_count, word_count,
-missing_links. Use null for unused ones. Non-null conditions must all hold. Counts are nonnegative
-integers or inclusive {min,max}. The kind list is supplied below. Do not invent kinds or conditions.
+missing_links. Use null for unused ones. Non-null conditions must all hold. Counts are ONLY
+nonnegative minimums {min:N} or inclusive ranges {min:N,max:M} with M > N. Never exact integers,
+equal endpoints, or maximum-only conditions. The kind list is supplied below. Do not invent kinds.
 A pattern still needs at least two present middle words, a present opposing middle word, or
 missing_links=true. A new quote form needs both quoted kinds and two usable rows to fill.
 Original blanks remain available: {word}, {other_word}, {kind}, {count}, {word_count}, {strongest_kind}.
 {kind} and {count} still require exactly ONE kinds_present; count is rows with that kind, not all rows.
 {other_word} is the first different displayed word; it never changes the word bound to quote slots.
 Do not hardcode a question, source quote, word, record, or count into the literal template.
-Propose only forms with real matching supplied screens. Use conditions that fit EVERY matching
-screen. Fewer than twelve is fine. Never repeat a previous form, including rejected ones.
+Every proposed form must safely fill at least THREE different past painted answers, bound to at
+least TWO different words, or code refuses it with "fits too few answers". Repeated sources for
+one question_id count once. Two words merely mentioned on one screen do not count as two bound words.
+The full painted history is supplied, including answers already consumed by older night passes.
+Use conditions that fit EVERY matching screen. Fewer than twelve is fine. Never repeat the same
+sentence AND conditions from an earlier form. Widened conditions are distinct from a narrow original.
 """
 
 
@@ -209,20 +294,11 @@ def checked(raw: object, number: str, author: str, inputs: list[dict], kinds: li
     reason = forms_patterns.check(form, kinds)
     if reason:
         return form, reason, []
-    examples, texts = [], set()
-    for item in inputs:
-        if item["screen"] is None:
-            continue
-        try:
-            filled = forms.preview(form, restore_screen(item["screen"]), kinds=kinds)
-        except forms.Refused as error:
-            return form, f"filled example refused for {item['question_id']}: {error}", []
-        if filled is not None and filled.text not in texts:
-            texts.add(filled.text)
-            examples.append({"question_id": item["question_id"], "question": item["question"],
-                             "input_key": item["key"], "screen": item["screen"],
-                             "text": filled.text, "parts": [asdict(p) for p in filled.parts]})
-    return form, None if examples else "no safe filled example from the saved answers", examples
+    try:
+        matches = matching_answers(form, inputs, kinds)
+    except forms.Refused as error:
+        return form, str(error), []
+    return form, coverage_reason(matches), matches
 
 
 def report(store: Store, run_id: str) -> dict:
@@ -247,9 +323,12 @@ def report(store: Store, run_id: str) -> dict:
             "SELECT p.payload, CASE WHEN a.proposal_id IS NOT NULL THEN 'approved' ELSE p.status END "
             "FROM form_proposals p LEFT JOIN form_approvals a ON a.proposal_id=p.id WHERE p.id=?", (pid,)).fetchone()
         payload = json.loads(saved[0]) if saved else None
+        matches = coverage_for(store, pid)
+        fit_count, fit_word_count = fit_counts(matches)
         results.append({"position": position, "proposal_id": pid, "payload": payload,
                         "form": {**payload, "status": saved[1]} if saved else None,
-                        "raw": json.loads(raw), "reason": reason, "examples": json.loads(examples)})
+                        "raw": json.loads(raw), "reason": reason, "examples": json.loads(examples),
+                        "fit_count": fit_count, "fit_word_count": fit_word_count})
     return {"run_id": run_id, "database": str(store.path), "status": status, "provider": provider, "model": engine,
             "error": error, "meaning_reviews": reviews, "prior_proposals_refused": rechecks,
             "inputs": len(inputs), "usable_inputs": sum(i["screen"] is not None for i in inputs),
@@ -260,7 +339,8 @@ def report(store: Store, run_id: str) -> dict:
             "refusal_reasons": dict(Counter(r["reason"] for r in results if r["reason"])), "results": results}
 
 
-def night(path: Path = REVIEW_PATH, *, bootstrap: bool = False, forms_path: Path | None = None, model_call=None) -> dict:
+def night(path: Path = REVIEW_PATH, *, bootstrap: bool = False, forms_path: Path | None = None,
+          model_call=None, widen: tuple[str, ...] = ()) -> dict:
     path = check_copy(path)
     if forms.forms_only():
         raise ValueError("slice 3 requires NUCLEUS_FORMS_ONLY off")
@@ -271,19 +351,46 @@ def night(path: Path = REVIEW_PATH, *, bootstrap: bool = False, forms_path: Path
             raise ValueError("a forms night pass is already running on this copy") from error
         store = Store(path)
         try:
-            return _night(store, bootstrap, forms_path, model_call)
+            return _night(store, bootstrap, forms_path, model_call, widen)
         finally:
             store.connection.close()
 
 
-def _night(store: Store, bootstrap: bool, forms_path: Path | None, model_call) -> dict:
+def widened_candidates(proposals: list[dict], numbers: tuple[str, ...]) -> list[dict]:
+    """Explicit re-proposal: change exact counts to minimums, keep every other field."""
+    if len(numbers) != len(set(numbers)) or len(numbers) > LIMIT:
+        raise ValueError('choose at most 12 distinct forms to widen')
+    candidates = []
+    for number in numbers:
+        old = [p for p in proposals if p['number'] == number]
+        if len(old) != 1 or old[0]['status'] == 'approved':
+            raise ValueError(f'{number}: widening requires one unapproved proposal')
+        form = old[0]['form']
+        if not any(type(form['when'].get(k)) is int for k in ('record_count', 'word_count')):
+            raise ValueError(f'{number}: no exact count to widen')
+        when = {k: {'min': v} if k in ('record_count', 'word_count') and type(v) is int else v
+                for k, v in form['when'].items()}
+        candidates.append({'when': when, 'sentence': form['sentence']})
+    return candidates
+
+
+def _night(store: Store, bootstrap: bool, forms_path: Path | None, model_call, widen=()) -> dict:
     kinds = load_kinds()
     previous = forms.load(forms.FORMS_PATH if forms_path is None else forms_path, kinds=kinds)
+    proposals = store.form_proposals()
+    replacements = widened_candidates(proposals, widen) if widen else []
+    history = past_answers(store, kinds)
     pending_refusals = []
-    for p in store.form_proposals():
+    for p in proposals:
         reason = None
         if p['status'] == 'proposed':
-            reason = forms.check(p['form'], kinds=kinds) or forms_patterns.check(p['form'], kinds)
+            reason = ('fit one screen only' if p['number'] in widen else
+                      forms.check(p['form'], kinds=kinds) or forms_patterns.check(p['form'], kinds))
+            if reason is None:
+                try:
+                    reason = coverage_reason(matching_answers(p['form'], history, kinds))
+                except forms.Refused as error:
+                    reason = str(error)
             if reason:
                 pending_refusals.append((p['id'], reason))
         previous.append({**p['form'], 'refusal_reason': p['reason'], 'current_check_refusal': reason})
@@ -297,15 +404,23 @@ def _night(store: Store, bootstrap: bool, forms_path: Path | None, model_call) -
             previous.append({**value, "status": "rejected", "refusal_reason": reason})
     inputs = collect(store, kinds, bootstrap)
     run_id, started = str(uuid.uuid4()), time.time()
-    prompt = make_prompt(inputs, previous, kinds)
+    prompt = make_prompt([*inputs, *history], previous, kinds)
+    if widen:
+        prompt = 'Explicit count widening requested for ' + ', '.join(widen) + '.\n' + prompt
     store.connection.execute(
         "INSERT INTO form_night_runs (id,started,status,inputs_json,prompt) VALUES (?,?,'running',?,?)",
         (run_id, started, encoded(inputs), prompt))
     store.connection.commit()
     reply = None
     try:
-        candidates = []
-        if any(i["screen"] is not None for i in inputs):
+        candidates = replacements
+        author = 'program/widen-counts'
+        if widen:
+            # Save this mechanical re-proposal without pretending it was a model call.
+            store.connection.execute("UPDATE form_night_runs SET reply=?,provider=?,model=? WHERE id=?",
+                                     (encoded({'forms': candidates}), 'program', 'widen-counts', run_id))
+            store.connection.commit()
+        elif any(i["screen"] is not None for i in inputs):
             reply = (model_call or model.call)(prompt, schema=SCHEMA)
             # Save the complete provider response before parsing it.
             store.save_model_call("forms-night:" + run_id, reply.provider, reply.model, prompt, started, reply.text, True, None)
@@ -316,6 +431,7 @@ def _night(store: Store, bootstrap: bool, forms_path: Path | None, model_call) -
             if not isinstance(payload, dict) or set(payload) != {"forms"} or not isinstance(payload["forms"], list):
                 raise ValueError("reply must contain only a forms array")
             candidates = payload["forms"]
+            author = f'{reply.provider}/{reply.model}'
         used = [int(p["number"][2:]) for p in previous if isinstance(p.get("number"), str)
                 and re.fullmatch(r"F-[1-9][0-9]*", p["number"])]
         next_number = max(used, default=0) + 1
@@ -326,8 +442,8 @@ def _night(store: Store, bootstrap: bool, forms_path: Path | None, model_call) -
                 prepared.append((None, "night limit: more than 12 forms", []))
             else:
                 prepared.append(checked(raw, f"F-{next_number + position - 1}",
-                                        f"{reply.provider}/{reply.model}", inputs, kinds, seen))
-        reviewable = [{"form": f, "examples": e} for f, r, e in prepared if r is None]
+                                        author, history, kinds, seen))
+        reviewable = [{"form": f, "examples": distinct_fills(e)} for f, r, e in prepared if r is None]
         decisions = forms_patterns.review(store, run_id, reviewable, model_call) if reviewable else {}
         with store.connection:
             for proposal_id, reason in pending_refusals:
@@ -347,15 +463,18 @@ def _night(store: Store, bootstrap: bool, forms_path: Path | None, model_call) -
                         reason = f"{category}: {decision['reason']}"
                 if form is not None:
                     pid = store.save_form_proposal(form, reason, commit=False)
+                    store.connection.execute(
+                        "INSERT INTO form_night_coverage (proposal_id,run_id,matches_json) VALUES (?,?,?)",
+                        (pid, run_id, encoded(examples)))
                 store.connection.execute(
                     "INSERT INTO form_night_results (run_id,position,proposal_id,raw_json,reason,examples_json) VALUES (?,?,?,?,?,?)",
-                    (run_id, position, pid, encoded(raw), reason, encoded(examples[:3])))
+                    (run_id, position, pid, encoded(raw), reason, encoded(diverse_examples(examples))))
             store.connection.execute("UPDATE form_night_runs SET status='completed',finished=? WHERE id=?", (time.time(), run_id))
     except Exception as error:
         store.connection.rollback()
-        if reply is None:
+        if reply is None and not widen:
             store.save_model_call("forms-night:" + run_id, "?", "?", prompt, started, None, False, str(error))
-        else:
+        elif reply is not None:
             store.connection.execute("UPDATE model_calls SET ok=0,error=? WHERE question_id=?",
                                      (str(error), "forms-night:" + run_id))
         store.connection.execute("UPDATE form_night_runs SET status='failed',finished=?,error=? WHERE id=?",
@@ -369,9 +488,11 @@ def main() -> None:
     parser.add_argument("command", choices=["night"])
     parser.add_argument("--store", type=Path, default=REVIEW_PATH, help="existing SQLite copy; live file is refused")
     parser.add_argument("--bootstrap", action="store_true", help="also read saved painted answers for the first pass")
+    parser.add_argument('--widen', nargs='+', default=[], metavar='F-N',
+                        help='re-propose named exact-count forms with minimums, under new numbers')
     args = parser.parse_args()
     try:
-        result = night(args.store, bootstrap=args.bootstrap)
+        result = night(args.store, bootstrap=args.bootstrap, widen=tuple(args.widen))
     except (ValueError, OSError, forms.Refused) as error:
         parser.exit(1, f"forms night: {error}\n")
     print(json.dumps(result, ensure_ascii=False, indent=2))

@@ -69,8 +69,17 @@
                     "type": "null"
                   },
                   {
-                    "type": "integer",
-                    "minimum": 0
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "min"
+                    ],
+                    "properties": {
+                      "min": {
+                        "type": "integer",
+                        "minimum": 0
+                      }
+                    }
                   },
                   {
                     "type": "object",
@@ -98,8 +107,17 @@
                     "type": "null"
                   },
                   {
-                    "type": "integer",
-                    "minimum": 0
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "min"
+                    ],
+                    "properties": {
+                      "min": {
+                        "type": "integer",
+                        "minimum": 0
+                      }
+                    }
                   },
                   {
                     "type": "object",

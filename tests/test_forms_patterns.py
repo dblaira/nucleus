@@ -7,7 +7,7 @@ import pytest
 
 from nucleus import forms, forms_patterns as patterns, forms_night as night
 from nucleus.model import ModelReply
-from test_forms_night import KINDS, candidate, copy, miss, model_reply, picture, run
+from test_forms_night import KINDS, candidate, copy, history, miss, model_reply, painted, picture, run
 
 
 def checked_form(**changes):
@@ -98,6 +98,7 @@ def test_reworded_counts_and_vague_filler_need_real_row_quotes(copy, sentence):
 
 
 def test_explanation_is_not_approved_by_a_favorable_review(copy):
+    history(copy)
     miss(copy)
     result = night.night(copy.path, model_call=reviewing('explains_pattern', 'Joins two real row contents in simple words.'))
     assert result['proposed'] == 1
@@ -108,6 +109,7 @@ def test_explanation_is_not_approved_by_a_favorable_review(copy):
 
 
 def test_direction_reversal_is_refused_and_explanation_retained(copy):
+    history(copy)
     miss(copy)
     reason = 'The row means FLOW rejects a record, not that FLOW is rejected.'
     result = night.night(copy.path, model_call=reviewing('unsupported_meaning', reason,
@@ -117,9 +119,10 @@ def test_direction_reversal_is_refused_and_explanation_retained(copy):
 
 
 def test_missing_links_form_fires_only_for_real_missing_snapshot(copy):
-    qid = copy.new_question('What is FLOW?', 'test')
-    value = picture(); value['missing'] = ['LIFT']; value['words'].append({'word': 'LIFT'})
-    copy.save_form_miss(qid, value, 'missing links')
+    for word in ['FLOW', 'LIFT', 'VALUE']:
+        qid = painted(copy, word)
+        value = picture(word); value['missing'] = ['MOMENTUM']; value['words'].append({'word': 'MOMENTUM'})
+        copy.save_form_miss(qid, value, 'missing links')
     proposal = candidate(when={'missing_links': True, 'kinds_present': ['depends on', 'rejects']})
     result = run(copy, [proposal])
     assert result['proposed'] == 1
@@ -130,10 +133,11 @@ def test_missing_links_form_fires_only_for_real_missing_snapshot(copy):
 
 
 def test_two_kinds_form_needs_both_and_preserves_all_part_origins(copy):
-    qid = copy.new_question('What is FLOW?', 'test')
-    value = picture(); value['records'][0]['kind'] = 'supports'; value['records'][1]['kind'] = 'requires'
-    copy.save_form_miss(qid, value, 'no form fits')
-    proposal = candidate(when={'kinds_present': ['supports', 'requires'], 'word_count': 1},
+    for word in ['FLOW', 'LIFT', 'VALUE']:
+        qid = painted(copy, word)
+        value = picture(word); value['records'][0]['kind'] = 'supports'; value['records'][1]['kind'] = 'requires'
+        copy.save_form_miss(qid, value, 'no form fits')
+    proposal = candidate(when={'kinds_present': ['supports', 'requires'], 'word_count': {'min': 1}},
         sentence='{word} supports “{quote:supports}” and requires “{quote:requires}”.')
     result = run(copy, [proposal])
     assert result['proposed'] == 1
@@ -150,6 +154,7 @@ def test_two_kinds_form_needs_both_and_preserves_all_part_origins(copy):
     {'number': 'F-1', 'verdict': 'explains_pattern', 'reason': 'ok'},
     {'number': 'F-1', 'verdict': 'explains_pattern', 'reason': 'duplicate'}], 'timeout', 'malformed JSON'])
 def test_incomplete_invalid_or_failed_review_fails_closed_and_retries(copy, reviews):
+    history(copy)
     miss(copy)
     def call(prompt, *, schema):
         if schema == night.SCHEMA:
@@ -181,6 +186,7 @@ def test_old_inventory_proposal_rejected_once_without_erasing_original(copy):
 
 
 def test_failed_review_does_not_partially_reject_previous_proposals(copy):
+    history(copy)
     miss(copy)
     pid = copy.save_form_proposal(checked_form(when={'kinds_present': ['supports']}, sentence='{word} supports {count} things.'))
     def call(prompt, *, schema):
@@ -214,6 +220,7 @@ def test_old_successful_inputs_are_revisited_once_for_new_policy(copy):
     (5, False, 'not one plain sentence'),
 ])
 def test_reading_level_and_one_sentence_veto_favorable_meaning(copy, grade, one_sentence, reason):
+    history(copy)
     miss(copy)
     result = night.night(copy.path, model_call=reviewing('explains_pattern', 'Review result.',
         reading_grade=grade, one_sentence=one_sentence))
@@ -223,6 +230,7 @@ def test_reading_level_and_one_sentence_veto_favorable_meaning(copy, grade, one_
 
 
 def test_fifth_grade_is_allowed_but_never_approved(copy):
+    history(copy)
     miss(copy)
     result = night.night(copy.path, model_call=reviewing('explains_pattern', 'Plain words.', reading_grade=5))
     assert result['proposed'] == 1
@@ -231,6 +239,7 @@ def test_fifth_grade_is_allowed_but_never_approved(copy):
 
 @pytest.mark.parametrize('grade', [True, '5', 0, 13, None])
 def test_invalid_reading_grade_fails_closed(copy, grade):
+    history(copy)
     miss(copy)
     result = night.night(copy.path, model_call=reviewing('explains_pattern', 'Plain words.', reading_grade=grade))
     assert result['status'] == 'failed'
@@ -253,6 +262,7 @@ def test_reviewer_sees_every_distinct_fill_while_saved_examples_stay_at_three(co
 
 @pytest.mark.parametrize('one_sentence', ['true', 1, None])
 def test_invalid_sentence_verdict_fails_closed(copy, one_sentence):
+    history(copy)
     miss(copy)
     result = night.night(copy.path, model_call=reviewing('explains_pattern', 'Plain words.', one_sentence=one_sentence))
     assert result['status'] == 'failed'

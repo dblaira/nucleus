@@ -1,0 +1,93 @@
+{
+  "run_id": "3bd5aeff-5019-425b-8196-771924c735d4",
+  "status": "completed",
+  "provider": "program",
+  "model": "widen-counts",
+  "inputs": 120,
+  "usable_inputs": 106,
+  "proposed": 0,
+  "refused": 3,
+  "refusal_reasons": {
+    "fits too few answers": 3
+  },
+  "prior_proposals_refused": [
+    {
+      "proposal_id": "4d60d407-dd8c-48c8-8667-edc39c78fd8e",
+      "number": "F-25",
+      "reason": "fit one screen only"
+    },
+    {
+      "proposal_id": "4e6ae3af-14c7-4ed1-a6ce-a5f0044e7c71",
+      "number": "F-26",
+      "reason": "fit one screen only"
+    },
+    {
+      "proposal_id": "299612a7-42c3-41d3-848f-27397103582d",
+      "number": "F-31",
+      "reason": "fit one screen only"
+    }
+  ],
+  "results": [
+    {
+      "number": "F-36",
+      "when": {
+        "answer": "aligned",
+        "kinds_present": [
+          "values",
+          "enables"
+        ],
+        "record_count": {
+          "min": 15
+        },
+        "word_count": {
+          "min": 1
+        },
+        "missing_links": false
+      },
+      "fit_count": 32,
+      "fit_word_count": 1,
+      "reason": "fits too few answers"
+    },
+    {
+      "number": "F-37",
+      "when": {
+        "answer": "aligned",
+        "kinds_present": [
+          "values",
+          "explains"
+        ],
+        "record_count": {
+          "min": 15
+        },
+        "word_count": {
+          "min": 1
+        },
+        "missing_links": false
+      },
+      "fit_count": 32,
+      "fit_word_count": 1,
+      "reason": "fits too few answers"
+    },
+    {
+      "number": "F-38",
+      "when": {
+        "answer": "aligned",
+        "kinds_present": [
+          "is similar to",
+          "happens before"
+        ],
+        "record_count": {
+          "min": 12
+        },
+        "word_count": {
+          "min": 3
+        },
+        "missing_links": false
+      },
+      "fit_count": 1,
+      "fit_word_count": 1,
+      "reason": "fits too few answers"
+    }
+  ],
+  "full_report_local": "/Users/adamblair/Library/Application Support/nucleus/forms-review/slice-4b-night.json"
+}

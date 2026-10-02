@@ -12,12 +12,13 @@ import pytest
 
 from nucleus import forms, forms_review as review, serve, STORE_PATH
 from nucleus.store import Store
-from test_forms_night import candidate, copy, miss, run, picture, KINDS
+from test_forms_night import candidate, copy, history, miss, run, picture, KINDS
 from nucleus.forms_night import screen_from_picture
 
 
 @pytest.fixture
 def ready(copy):
+    history(copy)
     miss(copy)
     result = run(copy, [candidate(), candidate(sentence='{word} rejects “{quote:rejects}” and depends on “{quote:depends on}”.')])
     assert result['proposed'] == 2

@@ -28,8 +28,8 @@ def examples_for(store: Store, proposal_id: str) -> list[dict]:
     return json.loads(row[0]) if row else []
 
 
-def version(proposal: dict, examples: list[dict]) -> str:
-    raw = json.dumps([proposal['payload'], examples], ensure_ascii=False, sort_keys=True)
+def version(proposal: dict, examples: list[dict], matches: list[dict]) -> str:
+    raw = json.dumps([proposal['payload'], examples, matches], ensure_ascii=False, sort_keys=True)
     return hashlib.sha256(raw.encode()).hexdigest()
 
 
@@ -37,7 +37,7 @@ def approved_form(proposal: dict) -> dict:
     return {**proposal['payload'], 'status': 'approved'}
 
 
-def check_examples(proposal: dict, examples: list[dict]) -> None:
+def check_examples(proposal: dict, examples: list[dict], matches: list[dict]) -> None:
     form = {**proposal['payload'], 'status': 'proposed'}
     kinds = forms.load_kinds()
     reason = forms.check(form, kinds=kinds) or forms_patterns.check(form, kinds)
@@ -45,7 +45,12 @@ def check_examples(proposal: dict, examples: list[dict]) -> None:
         raise forms.Refused(reason)
     if not examples or len(examples) > 3:
         raise forms.Refused('Saved examples are missing.')
-    for example in examples:
+    reason = forms_night.coverage_reason(matches)
+    if reason:
+        raise forms.Refused(reason)
+    if examples != forms_night.diverse_examples(matches):
+        raise forms.Refused('Saved examples differ from the measured answers.')
+    for example in matches:
         try:
             filled = forms.preview(form, forms_night.restore_screen(example['screen']), kinds=kinds)
             if (filled is None or filled.text != example['text']
@@ -65,13 +70,17 @@ def pending(store: Store, forms_path: Path) -> list[dict]:
         if approved_form(proposal) in catalog:
             continue
         examples = examples_for(store, proposal['id'])
+        matches = forms_night.coverage_for(store, proposal['id'])
+        fit_count, fit_word_count = forms_night.fit_counts(matches)
         reason = None
         try:
-            check_examples(proposal, examples)
+            check_examples(proposal, examples, matches)
         except forms.Refused as error:
             reason = str(error)
-        result.append({**proposal, 'examples': examples, 'version': version(proposal, examples), 'error': reason})
-    return sorted(result, key=lambda p: int(p['number'][2:]) if re.fullmatch(r'F-[1-9][0-9]*', p['number'] or '') else float('inf'))
+        result.append({**proposal, 'examples': examples, 'version': version(proposal, examples, matches),
+                       'error': reason, 'fit_count': fit_count, 'fit_word_count': fit_word_count})
+    return sorted(result, key=lambda p: (-p['fit_count'], int(p['number'][2:])
+                  if re.fullmatch(r'F-[1-9][0-9]*', p['number'] or '') else float('inf')))
 
 
 def _toml(value) -> str:
@@ -132,7 +141,8 @@ def decide(store_path: Path, forms_path: Path, proposal_id: str, choice: str, ex
                 if proposal is None:
                     raise Conflict('This form is no longer on this page.')
                 examples = examples_for(store, proposal_id)
-                if expected_version != version(proposal, examples):
+                matches = forms_night.coverage_for(store, proposal_id)
+                if expected_version != version(proposal, examples, matches):
                     raise Conflict('This form changed. Reload the page before choosing.')
                 catalog = forms.load(forms_path)
                 approved = approved_form(proposal)
@@ -150,7 +160,7 @@ def decide(store_path: Path, forms_path: Path, proposal_id: str, choice: str, ex
                     store.reject_form_proposal(proposal_id, 'Adam said no on /forms.', commit=False)
                     return proposal['number']
                 else:
-                    check_examples(proposal, examples)
+                    check_examples(proposal, examples, matches)
                     if any(f['number'] == approved['number'] for f in catalog):
                         raise Conflict('This form number already exists in forms.txt.')
                     original = forms_path.read_bytes()
@@ -182,9 +192,9 @@ def fires_when(when: dict) -> str:
         elif 'min' in count and 'max' in count:
             phrases.append(f'{count["min"]} to {count["max"]} {noun}s')
         elif 'min' in count:
-            phrases.append(f'At least {count["min"]} {noun}s')
+            phrases.append(f'At least {count["min"]} {noun}' + ('' if count['min'] == 1 else 's'))
         else:
-            phrases.append(f'At most {count["max"]} {noun}s')
+            phrases.append(f'At most {count["max"]} {noun}' + ('' if count['max'] == 1 else 's'))
     if 'missing_links' in when:
         phrases.append('A word has missing links' if when['missing_links'] else 'Every word has links')
     return ' · '.join(phrases)

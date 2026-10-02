@@ -53,7 +53,7 @@ def copy(tmp_path, monkeypatch):
 
 
 def miss(store, word='FLOW', kind='depends on'):
-    qid = store.new_question(f'What is {word}?', 'test')
+    qid = painted(store, word, kind)
     store.save_form_miss(qid, picture(word, kind), 'no approved forms')
     return qid
 
@@ -68,6 +68,11 @@ def painted(store, word='FLOW', kind='depends on', printed_kind=None):
     store.start_step(qid, '5 model')
     store.finish_step(qid, '5 model', 'painted from your links, no model')
     return qid
+
+
+def history(store):
+    """Three actual painted answers for two words; no new night trigger events."""
+    return [painted(store, word) for word in ['FLOW', 'LIFT', 'FLOW']]
 
 
 def run(store, candidates=None, **kwargs):
@@ -115,7 +120,7 @@ def test_one_pass_retains_exact_trace_and_three_real_distinct_examples(copy):
     (candidate(sentence='You should follow {word}.'), 'advice'),
     (candidate(sentence='{word}. Two. Three. Four. Five.'), 'more than 4 sentences'),
     (candidate(sentence='pre{word} depends on “{quote:depends on}” and rejects “{quote:rejects}”.'), 'kill switch'),
-    (candidate(when={'answer': 'dont_know', 'kinds_present': ['depends on', 'rejects']}), 'no safe filled example'),
+    (candidate(when={'answer': 'dont_know', 'kinds_present': ['depends on', 'rejects']}), 'fits too few answers'),
     ({**candidate(), 'status': 'approved'}, 'unknown or missing proposal fields'),
     ('malformed', 'unknown or missing proposal fields'),
 ])
@@ -130,6 +135,7 @@ def test_every_refused_form_and_original_payload_are_retained(copy, value, reaso
 
 
 def test_null_conditions_are_wire_format_only(copy):
+    history(copy)
     miss(copy)
     result = run(copy, [candidate(when={'answer': 'aligned', 'kinds_present': ['depends on', 'rejects'],
         'kinds_absent': None, 'record_count': None, 'word_count': None, 'missing_links': None})])
@@ -147,6 +153,7 @@ def test_fill_checks_all_matching_answers_not_just_first_three(copy):
 
 
 def test_limit_never_writes_more_than_twelve_proposal_rows_but_keeps_overflow(copy):
+    history(copy)
     miss(copy)
     values = [candidate(sentence=f'In case {i}, {{word}} depends on “{{quote:depends on}}” and rejects “{{quote:rejects}}”.') for i in range(14)]
     result = run(copy, values)
@@ -157,6 +164,7 @@ def test_limit_never_writes_more_than_twelve_proposal_rows_but_keeps_overflow(co
 
 
 def test_duplicate_previous_rejected_proposed_approved_and_same_batch(copy):
+    history(copy)
     miss(copy)
     first = run(copy)
     copy.reject_form_proposal(first['results'][0]['proposal_id'], 'Adam said no')
@@ -183,6 +191,7 @@ answer = "aligned"
 
 
 def test_success_consumes_only_inputs_present_before_the_call(copy):
+    history(copy)
     miss(copy)
     def call(prompt, *, schema):
         miss(copy, 'LIFT')
@@ -197,6 +206,7 @@ def test_success_consumes_only_inputs_present_before_the_call(copy):
 
 @pytest.mark.parametrize('response', ['timeout', 'not JSON', '[]', '{"forms": {}}'])
 def test_failed_model_or_shape_retains_trace_and_retries_inputs(copy, response):
+    history(copy)
     miss(copy)
     def call(prompt, **kwargs):
         if response == 'timeout':
@@ -212,6 +222,7 @@ def test_failed_model_or_shape_retains_trace_and_retries_inputs(copy, response):
 
 
 def test_atomic_write_failure_keeps_no_half_proposals_and_does_not_consume(copy, monkeypatch):
+    history(copy)
     miss(copy)
     original = Store.save_form_proposal
     def fail(self, payload, reason=None, **kwargs):
@@ -229,6 +240,7 @@ def test_atomic_write_failure_keeps_no_half_proposals_and_does_not_consume(copy,
 
 def test_bootstrap_uses_historical_printed_kind_never_current_links(copy):
     qid = painted(copy)
+    painted(copy, 'LIFT'); painted(copy, 'FLOW')
     copy.connection.execute("INSERT INTO links(word,record,quote,why,source,found_at,kind) VALUES ('FLOW','r1','Quote','','test',1,'supports')")
     copy.connection.commit()
     assert run(copy)['inputs'] == 0
@@ -264,6 +276,7 @@ def test_downvote_after_old_answer_is_consumed_once_and_sent_with_explanation(co
 
 
 def test_downvote_uses_miss_snapshot_when_historical_text_has_no_middle(copy):
+    history(copy)
     qid = painted(copy, printed_kind='unknown')
     copy.save_form_miss(qid, picture(), 'no form fits')
     run(copy)

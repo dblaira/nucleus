@@ -75,6 +75,9 @@ CREATE TABLE IF NOT EXISTS form_night_rechecks (
 CREATE TABLE IF NOT EXISTS form_approvals (
   proposal_id TEXT PRIMARY KEY, approved_at REAL NOT NULL, forms_path TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS form_night_coverage (
+  proposal_id TEXT PRIMARY KEY, run_id TEXT NOT NULL, matches_json TEXT NOT NULL
+);
 """
 
 

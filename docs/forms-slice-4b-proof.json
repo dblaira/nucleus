@@ -1,0 +1,203 @@
+{
+  "base_commit": "3dba8c53d30d02acceeb6ba3bf5fe25374509eb6",
+  "copy_manifest": {
+    "created_utc": "2026-10-02T16:58:17.969354+00:00",
+    "base_commit": "3dba8c53d30d02acceeb6ba3bf5fe25374509eb6",
+    "source_copy": "/Users/adamblair/Library/Application Support/nucleus/forms-review/nucleus.sqlite3",
+    "backup": "/Users/adamblair/Library/Application Support/nucleus/forms-review/slice-4b-before.sqlite3",
+    "backup_sha256": "6933012a79447e1141b49b5d14e8561f1b67b8a9b100e752634c3289a4c5f4a5",
+    "integrity_check": "ok",
+    "live_database_opened": false,
+    "stopped_review_pid": 51372
+  },
+  "copy_integrity": "ok",
+  "backup_integrity": "ok",
+  "backup_hash_unchanged": true,
+  "tables": {
+    "answers": {
+      "original_rows": 270,
+      "added_rows": 0,
+      "changed_rows": 0
+    },
+    "candidates": {
+      "original_rows": 33,
+      "added_rows": 0,
+      "changed_rows": 0
+    },
+    "explanations": {
+      "original_rows": 108,
+      "added_rows": 0,
+      "changed_rows": 0
+    },
+    "form_approvals": {
+      "original_rows": 0,
+      "added_rows": 0,
+      "changed_rows": 0
+    },
+    "form_misses": {
+      "original_rows": 0,
+      "added_rows": 0,
+      "changed_rows": 0
+    },
+    "form_night_rechecks": {
+      "original_rows": 23,
+      "added_rows": 3,
+      "changed_rows": 0
+    },
+    "form_night_results": {
+      "original_rows": 35,
+      "added_rows": 3,
+      "changed_rows": 0
+    },
+    "form_night_runs": {
+      "original_rows": 3,
+      "added_rows": 1,
+      "changed_rows": 0
+    },
+    "form_proposals": {
+      "original_rows": 35,
+      "added_rows": 3,
+      "only_decisions_changed": [
+        "F-25",
+        "F-26",
+        "F-31"
+      ]
+    },
+    "grades": {
+      "original_rows": 126,
+      "added_rows": 0,
+      "changed_rows": 0
+    },
+    "links": {
+      "original_rows": 1400,
+      "added_rows": 0,
+      "changed_rows": 0
+    },
+    "model_calls": {
+      "original_rows": 383,
+      "added_rows": 0,
+      "changed_rows": 0
+    },
+    "phrase_hits": {
+      "original_rows": 147,
+      "added_rows": 0,
+      "changed_rows": 0
+    },
+    "questions": {
+      "original_rows": 270,
+      "added_rows": 0,
+      "changed_rows": 0
+    },
+    "searched_words": {
+      "original_rows": 143,
+      "added_rows": 0,
+      "changed_rows": 0
+    },
+    "steps": {
+      "original_rows": 1485,
+      "added_rows": 0,
+      "changed_rows": 0
+    }
+  },
+  "new_table_rows": {
+    "form_night_coverage": 3
+  },
+  "run_id": "3bd5aeff-5019-425b-8196-771924c735d4",
+  "candidates": 3,
+  "proposed": 0,
+  "refused": 3,
+  "refusal_reasons": {
+    "fits too few answers": 3
+  },
+  "forms": [
+    {
+      "number": "F-36",
+      "when": {
+        "answer": "aligned",
+        "kinds_present": [
+          "values",
+          "enables"
+        ],
+        "record_count": {
+          "min": 15
+        },
+        "word_count": {
+          "min": 1
+        },
+        "missing_links": false
+      },
+      "fit_count": 32,
+      "fit_word_count": 1,
+      "reason": "fits too few answers"
+    },
+    {
+      "number": "F-37",
+      "when": {
+        "answer": "aligned",
+        "kinds_present": [
+          "values",
+          "explains"
+        ],
+        "record_count": {
+          "min": 15
+        },
+        "word_count": {
+          "min": 1
+        },
+        "missing_links": false
+      },
+      "fit_count": 32,
+      "fit_word_count": 1,
+      "reason": "fits too few answers"
+    },
+    {
+      "number": "F-38",
+      "when": {
+        "answer": "aligned",
+        "kinds_present": [
+          "is similar to",
+          "happens before"
+        ],
+        "record_count": {
+          "min": 12
+        },
+        "word_count": {
+          "min": 3
+        },
+        "missing_links": false
+      },
+      "fit_count": 1,
+      "fit_word_count": 1,
+      "reason": "fits too few answers"
+    }
+  ],
+  "all_matches_refilled_exactly": 65,
+  "approved_forms": 0,
+  "NUCLEUS_FORMS_ONLY": false,
+  "live_database_opened": false,
+  "tests_passed": 332,
+  "browser_test_forms": {
+    "F-1": "rejected",
+    "F-2": "approved"
+  },
+  "browser_fit_order": [
+    5,
+    3
+  ],
+  "browser_distinct_example_words": [
+    3,
+    2
+  ],
+  "browser_narrow_width": 480,
+  "browser_no_horizontal_overflow": true,
+  "browser_button_height": 50,
+  "phone_url": "http://100.111.154.126:8767/forms",
+  "physical_phone_inspected": false,
+  "review_process_pid": 58000,
+  "existing_8766_process_pid": 1941,
+  "real_forms_approved": 0,
+  "coverage_recomputed_for_forms": 3,
+  "source_parts_rechecked": 390,
+  "painted_answers": 120,
+  "recoverable_painted_answers": 106
+}

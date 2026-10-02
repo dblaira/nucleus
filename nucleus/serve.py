@@ -194,6 +194,7 @@ document.getElementById('f').onsubmit = async (e) => {
 FORMS_STYLE = """
 .review-card{background:var(--paper);border-radius:16px;padding:20px;margin:0 0 20px;box-shadow:0 10px 26px rgba(40,30,10,.12)}
 .review-card h2{font-size:18px;letter-spacing:.04em;color:var(--lapis);margin:0 0 12px}
+.fit-count{font-size:18px;font-weight:700;margin:0 0 20px}
 .example{font-family:Georgia,serif;font-size:25px;line-height:1.4;margin:0 0 20px;white-space:pre-wrap;overflow-wrap:anywhere}
 .fires{font-size:15px;line-height:1.5;color:var(--soft);margin:0 0 18px}
 .choices{display:flex;gap:12px}
@@ -218,7 +219,8 @@ def forms_page(proposals: list[dict], token: str, error: str | None = None) -> s
         condition = forms_review.fires_when(p['form']['when']) if not p['error'] else 'Saved examples need checking.'
         disabled = ' disabled' if p['error'] else ''
         cards.append(f'<article class="review-card" aria-labelledby="form-{number}">'
-                     f'<h2 id="form-{number}">{number}</h2>{examples}'
+                     f'<h2 id="form-{number}">{number}</h2>'
+                     f'<p class="fit-count">Fits {p["fit_count"]} past answers · {p["fit_word_count"]} words</p>{examples}'
                      f'<p class="fires"><b>Fires when</b><br>{escape(condition)}</p>'
                      '<form class="choices" action="/forms/decision" method="post">'
                      f'<input type="hidden" name="proposal_id" value="{escape(p["id"])}">'
@@ -270,9 +272,10 @@ class Handler(BaseHTTPRequestHandler):
             length = int(self.headers.get('content-length', '0'))
             if not 0 < length <= 4096:
                 raise ValueError('Choose Yes or No on the forms page.')
+            body = self.rfile.read(length)
             if self.headers.get_content_type() != 'application/x-www-form-urlencoded':
                 raise ValueError('Choose Yes or No on the forms page.')
-            payload = parse_qs(self.rfile.read(length).decode('utf-8'), keep_blank_values=True, strict_parsing=True)
+            payload = parse_qs(body.decode('utf-8'), keep_blank_values=True, strict_parsing=True)
             if set(payload) != {'proposal_id', 'choice', 'version', 'token'} or any(len(v) != 1 for v in payload.values()):
                 raise ValueError('Choose Yes or No on the forms page.')
             payload = {k: v[0] for k, v in payload.items()}

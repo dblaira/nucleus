@@ -8,13 +8,28 @@ import time
 
 from . import forms, model
 
-POLICY = 'quotes-v1'
+POLICY = 'coverage-v1'
 REVIEW_SCHEMA = Path(__file__).with_name('forms-review.schema.json')
 PUSHING_KINDS = frozenset({'rejects', 'contradicts', 'prevents', 'inhibits', 'constrains', 'limits'})
 NO_PATTERN = 'conditions do not require a row pattern'
 RESTATEMENT = 'sentence only restates counts or middle words'
 NEEDS_QUOTES = 'sentence must join two or more named row quotes'
 ONE_SENTENCE = 'form must be one plain sentence'
+EXACT_COUNTS = 'exact counts refused'
+TOO_FEW = 'fits too few answers'
+
+
+def count_reason(when: dict) -> str | None:
+    """Night proposals use minimums or genuine ranges, never one-screen counts."""
+    for name in ('record_count', 'word_count'):
+        if name not in when:
+            continue
+        value = when[name]
+        if type(value) is int or (isinstance(value, dict) and value.get('min') == value.get('max')):
+            return EXACT_COUNTS
+        if not isinstance(value, dict) or 'min' not in value:
+            return 'counts must be minimums or ranges'
+    return None
 
 # A narrow deterministic veto for inventory sentences. Novel wording still goes
 # through the separate meaning review; a token outside this list is NOT a pass.
@@ -59,7 +74,7 @@ def check(form: dict, kinds: list[str]) -> str | None:
     frame = re.sub(r'\{[^{}]+\}', 'value', form['sentence'])
     if len([p for p in re.split(r'[.!?]+', frame) if p.strip()]) != 1:
         return ONE_SENTENCE
-    return None
+    return count_reason(form['when'])
 
 
 
