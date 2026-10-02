@@ -1,0 +1,139 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "forms"
+  ],
+  "properties": {
+    "forms": {
+      "type": "array",
+      "maxItems": 12,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "when",
+          "sentence"
+        ],
+        "properties": {
+          "when": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "answer",
+              "kinds_present",
+              "kinds_absent",
+              "record_count",
+              "word_count",
+              "missing_links"
+            ],
+            "properties": {
+              "answer": {
+                "anyOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "type": "string",
+                    "enum": [
+                      "aligned",
+                      "not_sure",
+                      "dont_know"
+                    ]
+                  }
+                ]
+              },
+              "kinds_present": {
+                "type": [
+                  "array",
+                  "null"
+                ],
+                "items": {
+                  "type": "string"
+                },
+                "minItems": 1
+              },
+              "kinds_absent": {
+                "type": [
+                  "array",
+                  "null"
+                ],
+                "items": {
+                  "type": "string"
+                },
+                "minItems": 1
+              },
+              "record_count": {
+                "anyOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "min",
+                      "max"
+                    ],
+                    "properties": {
+                      "min": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "max": {
+                        "type": "integer",
+                        "minimum": 0
+                      }
+                    }
+                  }
+                ]
+              },
+              "word_count": {
+                "anyOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "min",
+                      "max"
+                    ],
+                    "properties": {
+                      "min": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "max": {
+                        "type": "integer",
+                        "minimum": 0
+                      }
+                    }
+                  }
+                ]
+              },
+              "missing_links": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              }
+            }
+          },
+          "sentence": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

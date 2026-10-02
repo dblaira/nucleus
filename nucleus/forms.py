@@ -229,11 +229,20 @@ def fill(form: dict, screen: Screen, *, kinds: list[str] | None = None) -> Fille
     Nonapproved forms cannot produce text. Every part retains its origin. Counts are
     derived only from this snapshot; no dictionary, question, database, or model is read.
     """
+    return _fill(form, screen, kinds=kinds, statuses={"approved"})
+
+
+def preview(form: dict, screen: Screen, *, kinds: list[str] | None = None) -> Filled | None:
+    """Night-only example for review. Never changes status or enters the day picker."""
+    return _fill(form, screen, kinds=kinds, statuses={"proposed", "approved"})
+
+
+def _fill(form: dict, screen: Screen, *, kinds: list[str] | None, statuses: set[str]) -> Filled | None:
     kinds = load_kinds() if kinds is None else kinds
     reason = check(form, kinds=kinds)
     if reason:
         raise Refused(reason)
-    if form["status"] != "approved":
+    if form["status"] not in statuses:
         return None
     _check_screen(screen, kinds)
     when = form["when"]
@@ -295,3 +304,8 @@ def fill(form: dict, screen: Screen, *, kinds: list[str] | None = None) -> Fille
     if reason:
         raise Refused(reason)
     return Filled(form["number"], text, tuple(parts))
+
+
+if __name__ == "__main__":
+    from .forms_night import main
+    main()

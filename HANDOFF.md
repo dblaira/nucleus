@@ -143,3 +143,43 @@ in the live database. Existing dirty/untracked files remain in the original
 checkout. The code and handoff are on the pushed slice 2 branch.
 
 **Stopped before slice 3. No night pass, schedule, or approval page was built.**
+
+## Forms slice 3 — October 1, 2026 Pacific
+
+Adam's next request in the same Codex chat:
+
+> Read FORMS-PLAN.md in /Users/adamblair/Documents/nucleus. Build slice 3 only, starting from commit 5aded94 on codex/forms-slice-2, on a new branch codex/forms-slice-3. Run the first night pass by hand against a copy of ~/Library/Application Support/nucleus/nucleus.sqlite3, never the live file. Write the com.nucleus.forms launchd plist into the repo but do not install or load it. Keep NUCLEUS_FORMS_ONLY off. Report how many forms were proposed, how many the checks refused and why, and paste three filled examples. All tests pass. Push, do not merge to main, update HANDOFF.md, and stop before slice 4.
+
+Slice 3 is built on `codex/forms-slice-3`, based exactly on
+`5aded943ab80b64c5ce049452aa4320825d7bdb6`, in
+`/Users/adamblair/.codex/worktrees/nucleus-forms-slice-3`.
+The new night command reads misses, thumbed-down explanations, and prior forms;
+calls the existing model door once; checks and previews up to 12 proposals;
+and retains raw replies, refusals, filled examples, and source snapshots.
+`forms.txt` is still empty and `NUCLEUS_FORMS_ONLY` is still off.
+
+The first manual pass ran on
+`~/Library/Application Support/nucleus/forms-review/nucleus.sqlite3`, made by
+SQLite backup from the live database, with an untouched original backup beside
+it. **12 forms were proposed; 0 were refused; 31 filled examples were saved.**
+Of 120 historical painted answers, 106 were reconstructable; 14 lack an
+unambiguous saved middle word and were kept as skipped inputs with reasons.
+These are separate from the zero refused forms. All 12 remain proposed.
+The pass used Codex `gpt-5.6-sol`, run ID
+`4505483d-8604-4a8e-9c2c-73458bb615d8`.
+
+**184 tests pass.** All original rows in the copied tables are preserved;
+the only addition to those original tables is one night model call. Both the
+backup and working copy pass integrity checks, and the original backup hash
+is unchanged. Every saved example was refilled and compared exactly.
+See [docs/forms-slice-3.md](docs/forms-slice-3.md),
+[the first-run report](docs/forms-slice-3-first-night.json), and
+[the preservation proof](docs/forms-slice-3-proof.json).
+
+The 03:00 `com.nucleus.forms` plist is in `launchd/` only, explicitly targeting
+the review copy; it is **not installed or loaded**. Nothing was merged to main,
+deployed, or migrated in the live database. The original dirty checkout is
+preserved. The exact request is appended on the companion Cowboyai branch
+`codex/forms-slice-3-ledger`.
+
+**Stopped before slice 4. No approval page or approval action was built.**

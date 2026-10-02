@@ -58,6 +58,16 @@ CREATE TABLE IF NOT EXISTS form_misses (
   id TEXT PRIMARY KEY, question_id TEXT NOT NULL, picture_json TEXT NOT NULL,
   reason TEXT NOT NULL, created REAL NOT NULL
 );
+CREATE TABLE IF NOT EXISTS form_night_runs (
+  id TEXT PRIMARY KEY, started REAL NOT NULL, finished REAL,
+  status TEXT NOT NULL CHECK (status IN ('running', 'completed', 'failed')),
+  inputs_json TEXT NOT NULL, prompt TEXT, reply TEXT, provider TEXT, model TEXT, error TEXT
+);
+CREATE TABLE IF NOT EXISTS form_night_results (
+  run_id TEXT NOT NULL, position INTEGER NOT NULL, proposal_id TEXT,
+  raw_json TEXT NOT NULL, reason TEXT, examples_json TEXT NOT NULL,
+  PRIMARY KEY (run_id, position)
+);
 """
 
 
@@ -333,7 +343,7 @@ class Store:
         self.connection.execute("UPDATE explanations SET thumb = ? WHERE question_id = ?", (1 if up else 0, question_id))
         self.connection.commit()
 
-    def save_form_proposal(self, payload: dict, reason: str | None = None) -> str:
+    def save_form_proposal(self, payload: dict, reason: str | None = None, *, commit: bool = True) -> str:
         """Keep the complete proposal, including malformed/refused input. Never approve it."""
         proposal_id = str(uuid.uuid4())
         number = payload.get("number")
@@ -344,7 +354,8 @@ class Store:
             (proposal_id, number if isinstance(number, str) else None, json.dumps(payload, ensure_ascii=False),
              "rejected" if reason is not None else "proposed", reason, now, now if reason is not None else None),
         )
-        self.connection.commit()
+        if commit:
+            self.connection.commit()
         return proposal_id
 
     def save_form_miss(self, question_id: str, picture: dict, reason: str) -> str:

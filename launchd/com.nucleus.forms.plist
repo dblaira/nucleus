@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>com.nucleus.forms</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>/Users/adamblair/Documents/nucleus/.venv/bin/python</string>
+		<string>-m</string>
+		<string>nucleus.forms</string>
+		<string>night</string>
+		<string>--store</string>
+		<string>/Users/adamblair/Library/Application Support/nucleus/forms-review/nucleus.sqlite3</string>
+	</array>
+	<key>WorkingDirectory</key>
+	<string>/Users/adamblair/Documents/nucleus</string>
+	<key>EnvironmentVariables</key>
+	<dict>
+		<key>PATH</key>
+		<string>/Users/adamblair/.local/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
+	</dict>
+	<key>StartCalendarInterval</key>
+	<dict>
+		<key>Hour</key>
+		<integer>3</integer>
+		<key>Minute</key>
+		<integer>0</integer>
+	</dict>
+	<key>StandardOutPath</key>
+	<string>/Users/adamblair/Library/Logs/nucleus-forms.log</string>
+	<key>StandardErrorPath</key>
+	<string>/Users/adamblair/Library/Logs/nucleus-forms.log</string>
+</dict>
+</plist>

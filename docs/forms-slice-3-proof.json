@@ -1,0 +1,72 @@
+{
+  "copy_manifest": {
+    "created_utc": "2026-10-02T05:58:00.286576+00:00",
+    "source": "/Users/adamblair/Library/Application Support/nucleus/nucleus.sqlite3",
+    "source_open_mode": "ro; SQLite backup API",
+    "snapshot": "/Users/adamblair/Library/Application Support/nucleus/forms-review/slice-3-original.sqlite3",
+    "run_copy": "/Users/adamblair/Library/Application Support/nucleus/forms-review/nucleus.sqlite3",
+    "snapshot_sha256": "a78cd914fd34690b4bf72a1512d1912c29266e66953d05a22e2a53b73c081d3d",
+    "integrity_check": "ok"
+  },
+  "run_id": "4505483d-8604-4a8e-9c2c-73458bb615d8",
+  "provider": "codex",
+  "model": "gpt-5.6-sol",
+  "inputs": 120,
+  "usable_inputs": 106,
+  "skipped_input_count": 14,
+  "proposed": 12,
+  "refused": 0,
+  "refusal_reasons": {},
+  "filled_examples": 31,
+  "original_tables": {
+    "questions": {
+      "preserved_rows": 270,
+      "added_rows": 0
+    },
+    "steps": {
+      "preserved_rows": 1485,
+      "added_rows": 0
+    },
+    "model_calls": {
+      "preserved_rows": 378,
+      "added_rows": 1
+    },
+    "answers": {
+      "preserved_rows": 270,
+      "added_rows": 0
+    },
+    "candidates": {
+      "preserved_rows": 33,
+      "added_rows": 0
+    },
+    "grades": {
+      "preserved_rows": 126,
+      "added_rows": 0
+    },
+    "phrase_hits": {
+      "preserved_rows": 147,
+      "added_rows": 0
+    },
+    "links": {
+      "preserved_rows": 1400,
+      "added_rows": 0
+    },
+    "searched_words": {
+      "preserved_rows": 143,
+      "added_rows": 0
+    },
+    "explanations": {
+      "preserved_rows": 108,
+      "added_rows": 0
+    }
+  },
+  "original_backup_unchanged": true,
+  "copy_integrity_check": "ok",
+  "approved_forms": 0,
+  "NUCLEUS_FORMS_ONLY": false,
+  "installed_plist_exists": false,
+  "base_commit": "5aded943ab80b64c5ce049452aa4320825d7bdb6",
+  "tests_passed": 184,
+  "launchd_loaded": false,
+  "launchd_verification": "launchctl print gui/501/com.nucleus.forms: service not found (exit 113)"
+}
