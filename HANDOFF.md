@@ -449,3 +449,40 @@ preserves the exact instruction. See [slice details](docs/forms-slice-5.md),
 [preservation proof](docs/forms-slice-5-proof.json).
 
 **Implementation complete; stopped at the one-pass boundary.**
+
+## Forms slice 5 — authorized additional pass
+
+Adam then replied, exactly: “run one additional copy”. Source: this Codex chat,
+October 2, 2026 Pacific. The exact authorization is appended to the private
+Cowboyai ledger on `codex/forms-slice-5-ledger`.
+
+One additional pass ran on the existing review copy, after a fresh backup to
+`slice-5-additional-before.sqlite3`. The corrected pairing policy is explicitly
+versioned `middle-question-v2`, so previously consumed source screens are
+revisited under the revised eligibility without altering old runs or inputs.
+The only code change for this continuation is that policy version and its test
+expectation. **396 tests pass.**
+
+Run `477f4561-6997-4ee5-885c-4c1c164e19c8` completed with 62 inputs / 44 usable.
+**Three new candidates, zero proposed, three refused:** F-40, F-41 and F-42 each
+fit **one different question and one bound word**, below the three-question,
+two-word floor. All have reason `fits too few answers`. Their conditions require
+2–3 rows and 4–5 words; only one past question meets those bounds and safely
+fills. No candidate reached the separate semantic reviewer. One night writer
+model call was added; no daytime question or answer was made.
+
+The copy now has **42 rejected, 0 proposed, 0 approved** forms; `forms.txt` remains
+empty. F-39 and all earlier rejections, examples and traces remain unchanged.
+Both integrity checks pass, and every original row in the pre-run backup is
+preserved exactly. No third pass was made.
+
+The review page was restarted from the slice-5 worktree on **8767**, against the
+copy only. Phone link: **http://100.111.154.126:8767/forms**. The actual page
+correctly shows “No forms waiting for your yes.” Live PID 1941 on 8766 remains
+untouched; no request or database open went to it. `NUCLEUS_FORMS_ONLY` is off.
+Nothing is approved or merged.
+
+See [additional night summary](docs/forms-slice-5-additional-night.json) and
+[preservation proof](docs/forms-slice-5-additional-proof.json). Full questions,
+source quotes, traces and screenshots remain local because this repository is
+public. **Stopped after the one authorized additional pass.**

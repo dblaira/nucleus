@@ -119,7 +119,7 @@ def test_middle_writer_and_reviewer_describe_scoped_exact_source_exception(copy)
     assert 'whole safe source' in writer and 'never clips' in writer
     assert 'narrowly scoped middle-option rule' in reviewer
     assert 'No invented cause' in reviewer and 'joining frame' in reviewer
-    assert patterns.POLICY == 'middle-question-v1'
+    assert patterns.POLICY == 'middle-question-v2'
 
 
 def test_middle_schema_requires_nullable_missing_why():

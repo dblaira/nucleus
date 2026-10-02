@@ -1,0 +1,97 @@
+{
+  "backup_sha256": "9d061e7937098bfa1411daed9f3a6c179a3c13eca8ef6e3935bcf8c8b248ea0c",
+  "backup_integrity": "ok",
+  "copy_integrity": "ok",
+  "tables": {
+    "questions": {
+      "before": 270,
+      "after": 270,
+      "original_rows_kept": 270
+    },
+    "steps": {
+      "before": 1485,
+      "after": 1485,
+      "original_rows_kept": 1485
+    },
+    "model_calls": {
+      "before": 385,
+      "after": 386,
+      "original_rows_kept": 385
+    },
+    "answers": {
+      "before": 270,
+      "after": 270,
+      "original_rows_kept": 270
+    },
+    "candidates": {
+      "before": 33,
+      "after": 33,
+      "original_rows_kept": 33
+    },
+    "grades": {
+      "before": 126,
+      "after": 126,
+      "original_rows_kept": 126
+    },
+    "phrase_hits": {
+      "before": 147,
+      "after": 147,
+      "original_rows_kept": 147
+    },
+    "links": {
+      "before": 1400,
+      "after": 1400,
+      "original_rows_kept": 1400
+    },
+    "searched_words": {
+      "before": 143,
+      "after": 143,
+      "original_rows_kept": 143
+    },
+    "explanations": {
+      "before": 108,
+      "after": 108,
+      "original_rows_kept": 108
+    },
+    "form_proposals": {
+      "before": 39,
+      "after": 42,
+      "original_rows_kept": 39
+    },
+    "form_misses": {
+      "before": 0,
+      "after": 0,
+      "original_rows_kept": 0
+    },
+    "form_night_runs": {
+      "before": 5,
+      "after": 6,
+      "original_rows_kept": 5
+    },
+    "form_night_results": {
+      "before": 39,
+      "after": 42,
+      "original_rows_kept": 39
+    },
+    "form_night_rechecks": {
+      "before": 26,
+      "after": 26,
+      "original_rows_kept": 26
+    },
+    "form_approvals": {
+      "before": 0,
+      "after": 0,
+      "original_rows_kept": 0
+    },
+    "form_night_coverage": {
+      "before": 4,
+      "after": 7,
+      "original_rows_kept": 4
+    }
+  },
+  "night_runs_added": 1,
+  "forms_only": false,
+  "live_service_pid": 1941,
+  "live_database_opened": false,
+  "live_service_requested": false
+}

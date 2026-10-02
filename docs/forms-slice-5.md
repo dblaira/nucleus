@@ -79,3 +79,22 @@ full reports and screenshots remain local; this repository is public.
 See [night summary](forms-slice-5-night.json) and
 [preservation proof](forms-slice-5-proof.json). The exact instruction is appended
 on private companion branch `codex/forms-slice-5-ledger`.
+
+## Authorized additional pass
+
+Adam subsequently authorized “run one additional copy”. One additional pass ran
+on the same copy with the corrected `middle-question-v2` eligibility. That
+version revisits previously consumed sources without changing their history.
+A fresh pre-run backup and integrity check preceded it.
+
+Run `477f4561-6997-4ee5-885c-4c1c164e19c8` produced three candidates: F-40, F-41,
+F-42. **All three were refused: `fits too few answers`.** Each fit one different
+question and one word; its 2–3 row / 4–5 word conditions did not reach three
+questions and two bound words. No semantic review was called; one writer call
+was added. The earlier F-39 refusal remains intact. There are now 42 rejected,
+zero proposed and zero approved forms; the real queue remains empty.
+
+396 tests pass. The running 8767 page and all preserved rows were read back.
+Live 8766, the live database, forms-only and main remain unchanged. No third
+pass occurred. Read [additional summary](forms-slice-5-additional-night.json) and
+[additional preservation proof](forms-slice-5-additional-proof.json).

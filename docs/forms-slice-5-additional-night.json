@@ -1,0 +1,79 @@
+{
+  "run_id": "477f4561-6997-4ee5-885c-4c1c164e19c8",
+  "status": "completed",
+  "provider": "codex",
+  "model": "gpt-5.6-sol",
+  "inputs": 62,
+  "usable_inputs": 44,
+  "proposed": 0,
+  "refused": 3,
+  "refusal_reasons": {
+    "fits too few answers": 3
+  },
+  "policy": "middle-question-v2",
+  "results": [
+    {
+      "number": "F-40",
+      "status": "rejected",
+      "when": {
+        "answer": "not_sure",
+        "record_count": {
+          "min": 2,
+          "max": 3
+        },
+        "word_count": {
+          "min": 4,
+          "max": 5
+        },
+        "missing_why": true
+      },
+      "fit_count": 1,
+      "fit_word_count": 1,
+      "reason": "fits too few answers"
+    },
+    {
+      "number": "F-41",
+      "status": "rejected",
+      "when": {
+        "answer": "not_sure",
+        "record_count": {
+          "min": 2,
+          "max": 3
+        },
+        "word_count": {
+          "min": 4,
+          "max": 5
+        },
+        "missing_why": true
+      },
+      "fit_count": 1,
+      "fit_word_count": 1,
+      "reason": "fits too few answers"
+    },
+    {
+      "number": "F-42",
+      "status": "rejected",
+      "when": {
+        "answer": "not_sure",
+        "record_count": {
+          "min": 2,
+          "max": 3
+        },
+        "word_count": {
+          "min": 4,
+          "max": 5
+        },
+        "missing_why": true
+      },
+      "fit_count": 1,
+      "fit_word_count": 1,
+      "reason": "fits too few answers"
+    }
+  ],
+  "model_calls_added": 1,
+  "semantic_review_calls": 0,
+  "approved": 0,
+  "copy_form_statuses": {
+    "rejected": 42
+  }
+}
