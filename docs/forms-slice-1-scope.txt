@@ -1,0 +1,9 @@
+Objective: implement only FORMS-PLAN.md slice 1, then stop at its kill switch.
+Authoritative inputs: HANDOFF.md, README.md, user-provided FORMS-PLAN.md, Cowboyai/AGENTS.md, explain.check/ADVICE, kinds.load_kinds, current displayed-row structures.
+Base: c80d471ebb394821e680c35cb98b8e9227d0c2ab.
+Exclusive write scope: nucleus/forms.py, nucleus/store.py (additive proposal storage), forms.txt, tests/test_forms.py, HANDOFF.md, docs/forms-slice-1.md, exact copy of FORMS-PLAN.md.
+Companion scope: append the exact user instruction to Cowboyai claude/ledger.md on codex/forms-slice-1-ledger from 38c2636fc959404c5bd1c06f2233ee083565c703.
+Forbidden: ask.py/serve.py/phone UI, live databases/services, Adam's meanings/routes/graph/decision ledger, existing dirty/untracked files, forms approval, slices 2-4.
+Dependencies: existing explanation validator and current allowed middle words; Python stdlib only.
+Acceptance: baseline regression suite; legal fill and all allowed conditions/blanks; invalid fields/conditions/kinds/advice/5+ sentences refused; nonapproved forms cannot fill; each emitted token from template or exact screen strings or counts calculated from screen; proposal persistence never overwrites records; real saved rows exercised read-only.
+Handoff: commit, test results, inspected real-row result, explicit stop at slice 1 with zero approved forms.

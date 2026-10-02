@@ -92,3 +92,25 @@ Rule from this: never tell Adam something will be faster until it is timed next 
 - His product notes: Apple Notes ("Cowboyai.", "Marketing Cowboyai", "The Mythic Layer"), `Main/🗯 Narrative vs 🔥 Relational.md`, Cowboyai `docs/product/*.md`.
 - Remote Control to this Mac: tmux session `cowboy` in `~/Documents/Cowboyai` (`tmux attach -t cowboy`).
 - Apple's free server model: Small Business Program enrollment submitted 2026-09-10; permission form opens after approval; fmtest/ holds the Swift probe.
+
+## Forms slice 1 — October 1, 2026 Pacific
+
+Adam's request in Codex:
+
+> "Read HANDOFF.md, README.md, then FORMS-PLAN.md in /Users/adamblair/Documents/nucleus. Build slice 1, then stop at each slice's kill switch."
+
+The supplied plan is dated October 2. Slice 1 is built on `codex/forms-slice-1`
+from `c80d471ebb394821e680c35cb98b8e9227d0c2ab` in
+`/Users/adamblair/.codex/worktrees/nucleus-forms-slice-1`.
+Read [docs/forms-slice-1.md](docs/forms-slice-1.md) for the format, blank
+bindings, storage API, source-boundary checks, and verification. The exact
+supplied plan is preserved in [FORMS-PLAN.md](FORMS-PLAN.md).
+
+`nucleus/forms.py` loads/checks/fills; `forms.txt` is empty; proposal storage is
+additive in `Store`. Baseline 58 tests and 74 new cases pass (132 total).
+The F-7 example was filled against the running service's real saved FLOW rows
+in an isolated test, with every output part traced. No product form was
+approved. No live schema, service, answer path, or phone change was made.
+
+**Stopped after slice 1. The kill-switch source check passes. Do not infer
+authorization to proceed from this handoff. Slice 2 has not been started.**

@@ -1,0 +1,51 @@
+{
+  "source": "GET http://127.0.0.1:8766/ask/71e3ef11-9680-461d-b6d1-63a0b843e9c6",
+  "question": "What is FLOW?",
+  "row_count": 15,
+  "allowed_kind_count": 43,
+  "counted_rows": [
+    {
+      "word": "FLOW",
+      "record": "conn-obs-fable5-2026-07-10-affect-work-momentum-compass",
+      "kind": "depends on"
+    },
+    {
+      "word": "FLOW",
+      "record": "conn-obs-mined-2026-07-10-external-scaffolding-by-design",
+      "kind": "depends on"
+    },
+    {
+      "word": "FLOW",
+      "record": "conn-obs-mined-2026-07-10-affect-is-his-blind-spot",
+      "kind": "depends on"
+    }
+  ],
+  "fixture_is_not_product_approval": true,
+  "result": {
+    "number": "F-7",
+    "text": "Your rows say FLOW depends on 3 things you have written down.",
+    "parts": [
+      {
+        "text": "Your rows say ",
+        "source": "form.sentence"
+      },
+      {
+        "text": "FLOW",
+        "source": "screen.words[0]"
+      },
+      {
+        "text": " depends on ",
+        "source": "form.sentence"
+      },
+      {
+        "text": "3",
+        "source": "count(screen.rows.kind == 'depends on')"
+      },
+      {
+        "text": " things you have written down.",
+        "source": "form.sentence"
+      }
+    ]
+  },
+  "approved_forms": 0
+}

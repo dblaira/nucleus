@@ -49,6 +49,11 @@ CREATE TABLE IF NOT EXISTS grades (
   run_id TEXT NOT NULL, question_id TEXT, question TEXT NOT NULL, expected TEXT, got TEXT,
   status TEXT, gate_ok INTEGER, seconds REAL, at REAL NOT NULL
 );
+CREATE TABLE IF NOT EXISTS form_proposals (
+  id TEXT PRIMARY KEY, form_number TEXT, payload TEXT NOT NULL,
+  status TEXT NOT NULL CHECK (status IN ('proposed', 'rejected')),
+  reason TEXT, created REAL NOT NULL, decided REAL
+);
 """
 
 
@@ -323,3 +328,42 @@ class Store:
     def thumb_explanation(self, question_id: str, up: bool) -> None:
         self.connection.execute("UPDATE explanations SET thumb = ? WHERE question_id = ?", (1 if up else 0, question_id))
         self.connection.commit()
+
+    def save_form_proposal(self, payload: dict, reason: str | None = None) -> str:
+        """Keep the complete proposal, including malformed/refused input. Never approve it."""
+        proposal_id = str(uuid.uuid4())
+        number = payload.get("number")
+        now = time.time()
+        self.connection.execute(
+            "INSERT INTO form_proposals (id, form_number, payload, status, reason, created, decided)"
+            " VALUES (?, ?, ?, ?, ?, ?, ?)",
+            (proposal_id, number if isinstance(number, str) else None, json.dumps(payload, ensure_ascii=False),
+             "rejected" if reason is not None else "proposed", reason, now, now if reason is not None else None),
+        )
+        self.connection.commit()
+        return proposal_id
+
+    def form_proposals(self) -> list[dict]:
+        """payload is the original evidence; form carries the database's nonapproved status.
+
+        A model claiming status=approved in its payload cannot approve the returned form.
+        Only the approved file is an input to the eventual day-path loader.
+        """
+        rows = self.connection.execute(
+            "SELECT id, form_number, payload, status, reason, created, decided FROM form_proposals ORDER BY created, id"
+        ).fetchall()
+        return [{"id": i, "number": n, "payload": json.loads(p), "form": {**json.loads(p), "status": s},
+                 "status": s, "reason": r,
+                 "created": c, "decided": d} for i, n, p, s, r, c, d in rows]
+
+    def reject_form_proposal(self, proposal_id: str, reason: str) -> None:
+        """Retain the original payload. A second rejection cannot rewrite the first decision."""
+        if not isinstance(reason, str) or not reason.strip():
+            raise ValueError("a rejection needs a reason")
+        cursor = self.connection.execute(
+            "UPDATE form_proposals SET status = 'rejected', reason = ?, decided = ? WHERE id = ? AND status = 'proposed'",
+            (reason, time.time(), proposal_id),
+        )
+        self.connection.commit()
+        if cursor.rowcount != 1:
+            raise ValueError("proposal missing or already rejected")
