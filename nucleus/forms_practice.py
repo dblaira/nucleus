@@ -11,6 +11,7 @@ from . import NUCLEUS_FILES, ask, dictionary, forms, links, model
 from .graph import Graph
 from .phrases import PhraseIndex
 from .store import Store, normalize_question
+from .question_parts import split_question
 
 SCHEMA = Path(__file__).with_name('forms-practice.schema.json')
 LIMIT = 20
@@ -23,6 +24,9 @@ Each question aims at one exact word from his dictionary. Put that exact word in
 Use the word itself or a phrase from its exact meaning in the question so the existing dictionary
 reader can find it. Do not invent a meaning, link, route, record, answer, or advice.
 Favor varied situations where part lines up with a settled meaning and another part is unknown.
+At least HALF of the valid new questions must have two or more parts, split at but, yet, still,
+though, although, or sentence breaks. Aim for twelve or more of twenty. Keep each part a clear
+piece of the situation; a target word in one part never makes the other part connect by itself.
 Use at least two different target words across the batch. Include questions about an app, work,
 trust, feelings, or a choice only when shaped by his questions below. These are questions,
 not an assumed not_sure answer: the normal ask path and gate will check each screen.
@@ -75,12 +79,16 @@ def report(store: Store, run_id: str) -> dict | None:
         'SELECT count(*) FROM model_calls WHERE question_id=? OR question_id IN '
         '(SELECT question_id FROM form_practice_results WHERE run_id=?)',
         ('forms-practice:' + run_id, run_id)).fetchone()[0]
+    asked = [r for r in results if r['question_id'] is not None]
+    counts = Counter(r['result']['answer'] for r in asked if r['result'] and r['result']['status'] == 'answered')
     return {'run_id': run_id, 'started': row[0], 'finished': row[1], 'status': row[2],
             'provider': row[3], 'model': row[4], 'error': row[5], 'generated': len(results),
             'asked': sum(r['question_id'] is not None for r in results),
             'answered': sum(r['result'] is not None and r['result']['status'] == 'answered' for r in results),
             'refused': sum(r['reason'] is not None for r in results),
             'refusal_reasons': dict(Counter(r['reason'] for r in results if r['reason'])),
+            'two_part_questions': sum(len(split_question(r['raw']['question'])) >= 2 for r in asked),
+            'labels': {'aligned': counts['aligned'], 'middle': counts['not_sure'], 'dont_know': counts['dont_know']},
             'model_calls': call_count, 'results': results}
 
 
@@ -115,6 +123,7 @@ def run(store: Store, run_id: str, model_call=None, ask_call=None) -> dict:
         if not isinstance(payload, dict) or set(payload) != {'questions'} or not isinstance(payload['questions'], list):
             raise ValueError('practice reply must contain only a questions array')
         existing = {question_key(q) for (q,) in store.connection.execute('SELECT question FROM questions')}
+        prepared = []
         for position, raw in enumerate(payload['questions'], 1):
             reason = None
             question = word = reading = result = qid = None
@@ -138,31 +147,43 @@ def run(store: Store, run_id: str, model_call=None, ask_call=None) -> dict:
                             reason = 'dictionary stopped practice question'
                         elif word not in links.touched_words(reading, index.lookup(question), known):
                             reason = 'dictionary did not find target word'
-                        else:
-                            # Like the web door, save the question before calling ask so even an
-                            # unexpected exception retains its exact input and partial trace.
-                            qid = store.new_question(question, 'practice')
-                            result = (ask_call or ask.ask)(question, store=store, surface='practice',
-                                brief=lambda _question, saved=reading: saved, model_call=model_call,
-                                question_id=qid)
-                            if result.question_id != qid:
-                                raise ValueError('normal ask returned a different practice question id')
-                            saved = store.question(qid)
-                            if (saved is None or saved['surface'] != 'practice' or
-                                    question_key(saved['question']) != question_key(question)):
-                                raise ValueError('normal ask did not save a matching practice question')
-                            result = result.to_dict()
-                            if result['status'] != 'answered':
-                                reason = result.get('reason') or 'practice ask ' + result['status']
                     except Exception as error:
-                        reason = 'practice ask failed: ' + str(error)
-                        if not isinstance(result, dict):
-                            result = None
+                        reason = 'practice dictionary failed: ' + str(error)
+            prepared.append((position, raw, question, word, reading, reason))
+        eligible = [p for p in prepared if p[-1] is None]
+        quota_miss = sum(len(split_question(p[2])) >= 2 for p in eligible) * 2 < len(eligible)
+        quota_reason = 'practice needs at least half two-part questions'
+        for position, raw, question, word, reading, reason in prepared:
+            result = qid = None
+            if reason is None and quota_miss:
+                reason = quota_reason
+            if reason is None:
+                try:
+                    # The quota is checked before ANY ask. Never repair an AI question,
+                    # drop a hard case, or force a label to satisfy the batch requirement.
+                    qid = store.new_question(question, 'practice')
+                    result = (ask_call or ask.ask)(question, store=store, surface='practice',
+                        brief=lambda _question, saved=reading: saved, model_call=model_call, question_id=qid)
+                    if result.question_id != qid:
+                        raise ValueError('normal ask returned a different practice question id')
+                    saved = store.question(qid)
+                    if (saved is None or saved['surface'] != 'practice' or
+                            question_key(saved['question']) != question_key(question)):
+                        raise ValueError('normal ask did not save a matching practice question')
+                    result = result.to_dict()
+                    if result['status'] != 'answered':
+                        reason = result.get('reason') or 'practice ask ' + result['status']
+                except Exception as error:
+                    reason = 'practice ask failed: ' + str(error)
+                    if not isinstance(result, dict):
+                        result = None
             store.connection.execute(
                 'INSERT INTO form_practice_results(run_id,position,raw_json,target_word,question_id,reading_json,result_json,reason) '
                 'VALUES (?,?,?,?,?,?,?,?)', (run_id, position, encoded(raw), word if isinstance(word, str) else None,
                 qid, encoded(reading) if reading is not None else None, encoded(result) if result is not None else None, reason))
             store.connection.commit()
+        if quota_miss:
+            raise ValueError(quota_reason)
         store.connection.execute("UPDATE form_practice_runs SET status='completed',finished=? WHERE run_id=?",
                                  (time.time(), run_id))
     except Exception as error:

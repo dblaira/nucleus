@@ -93,13 +93,14 @@ def test_incomplete_model_middle_word_display_cannot_prove_absent_kind():
     assert forms.fill(f, rejected, kinds=KINDS) is None
 
 
-def test_exact_negative_word_quote_is_preserved_but_advice_stays_refused():
+def test_exact_negative_and_advice_source_quotes_are_preserved_with_their_binding():
     saved, _ = screen()
     negative = replace(saved, meanings=(forms.Meaning('FLOW', 'thinking momentum is not feeling momentum'),), rows=(forms.Row('FLOW','r1',None,'Interest lasts when there is feeling momentum.'),))
     assert 'thinking momentum is not feeling momentum' in forms.fill(form(), negative, kinds=KINDS).text
-    advice = replace(saved, meanings=(forms.Meaning('FLOW', 'You should build it.'),))
-    assert forms.fill(form(), advice, kinds=KINDS) is None
-    # The exception does not weaken an old form's negative veto.
+    advice = replace(saved, meanings=(forms.Meaning('FLOW', 'You should build it.'),),
+                     rows=(forms.Row('FLOW','r1','supports','You should build it.'),))
+    assert 'You should build it.' in forms.fill(form(), advice, kinds=KINDS).text
+    # Author-written negative words still fail.
     old = form(when={'answer':'not_sure'},sentence='{word} does not fit.')
     assert 'negative or caveat' in forms.check(old,kinds=KINDS)
 

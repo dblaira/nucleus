@@ -116,10 +116,10 @@ def test_middle_writer_and_reviewer_describe_scoped_exact_source_exception(copy)
     reviewer = next(p for s, p in prompts if s == patterns.REVIEW_SCHEMA)
     assert 'ONLY forms requiring answer=not_sure' in writer
     assert 'Repeated questions count once' in writer
-    assert 'whole safe source' in writer and 'never clips' in writer
+    assert 'whole displayed source' in writer and 'never clips' in writer
     assert 'narrowly scoped middle-option rule' in reviewer
     assert 'No invented cause' in reviewer and 'joining frame' in reviewer
-    assert patterns.POLICY == 'graph-real-practice-question-v1'
+    assert patterns.POLICY == 'graph-parts-own-words-v2'
 
 
 def test_middle_schema_requires_nullable_missing_why():
@@ -137,7 +137,7 @@ def test_cli_passes_middle_only_option(monkeypatch, capsys):
     monkeypatch.setattr(night, 'night', capture)
     monkeypatch.setattr(sys, 'argv', ['forms', 'night', '--bootstrap', '--middle-only', '--store', 'copy.sqlite3'])
     night.main()
-    assert seen == {'bootstrap': True, 'widen': (), 'middle_only': True, 'graph_mode': True}
+    assert seen == {'bootstrap': True, 'widen': (), 'middle_only': True, 'graph_mode': True, 'recheck': ()}
     assert json.loads(capsys.readouterr().out)['status'] == 'completed'
 
 

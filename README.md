@@ -43,10 +43,10 @@ Under "Not sure" there is a second box, in his word: **possibility**. "So it's t
 The server accepts `--port` and `--store`. With no options it still uses port
 8766 and `~/Library/Application Support/nucleus/nucleus.sqlite3`.
 
-The slice 7 review runs from its separate worktree against the existing copy:
+The slice 7b review runs from its separate worktree against the existing copy:
 
 ```sh
-cd /Users/adamblair/.codex/worktrees/nucleus-forms-slice-7
+cd /Users/adamblair/.codex/worktrees/nucleus-forms-slice-7b
 NUCLEUS_FORMS_ONLY=0 .venv/bin/python -m nucleus.serve \
   --port 8767 \
   --store "$HOME/Library/Application Support/nucleus/forms-review/nucleus.sqlite3"
@@ -54,11 +54,14 @@ NUCLEUS_FORMS_ONLY=0 .venv/bin/python -m nucleus.serve \
 
 `/forms` shows pending forms with Yes / No. Yes writes an approved block to
 `forms.txt` in the running code's worktree; No keeps the rejected proposal in
-the selected database. See [slice 7](docs/forms-slice-7.md) for the running copy
+the selected database. See [slice 7b](docs/forms-slice-7b.md) for the running copy
 and verification. `NUCLEUS_FORMS_ONLY` remains off.
 
 The review copy reads his accepted Turtle set and uses forward RDF paths for
-the three labels. Forms use generated SPARQL ASK over the exact screen inside
+the three labels. Questions split at but, yet, still, though, although and
+sentence breaks. Each part needs a word with a path to his records: every part
+connects means aligned, some means middle, none means dont_know. A one-part
+question keeps the word rule. Forms use generated SPARQL ASK over the exact screen inside
 that graph. Graph build and answer query times are saved in steps. All graph
 questions share 300 ms; failure or a budget miss uses the old rule, marked
 `count rule`. AI runs only at night on this graph path. Source files are read
@@ -74,9 +77,17 @@ cowboyai-iphone surfaces. The page shows real and practice fits separately.
 
 The copy-only night pass first asks AI for up to 20 new dictionary-targeted
 practice questions, shaped by Adam's own real questions. Each uses normal ask
-and quote checking, saved with surface `practice`. Practice never appears in
+and quote checking, saved with surface `practice`. At least half must have two
+parts; code checks the quota after target/newness checks and before any ask.
+The night report counts aligned, middle and dont_know. Practice never appears in
 history, real repeats, link seeding or the morning grade. Conditions identify
 one form; wording variants are refused as `same form`.
+
+Style, negatives, advice and fifth-grade reading checks judge only the form's
+own words outside blanks. Exact dictionary, record and why text filled into
+blanks is never judged for its wording. Binding and source checks still apply.
+An explicit `--recheck F-N ...` rechecks named rejected forms under new numbers,
+keeps the originals and their reasons, and preserves normal duplicate checks.
 
 ## The model
 

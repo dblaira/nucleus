@@ -113,8 +113,8 @@ def test_default_night_creates_practice_screens_before_measuring_forms(copy, mon
         calls.append(schema)
         if schema == practice.SCHEMA:
             return ModelReply('test', 'writer', json.dumps({'questions': [
-                {'question': 'Where does FLOW fit at work?', 'target_word': 'FLOW'},
-                {'question': 'Where does LIFT fit at work?', 'target_word': 'LIFT'}]}))
+                {'question': 'Where does FLOW fit at work, but what happened with the app?', 'target_word': 'FLOW'},
+                {'question': 'Where does LIFT fit at work, but what happened with the app?', 'target_word': 'LIFT'}]}))
         return model_reply([candidate()])(prompt, schema=schema)
 
     def checked_screen(question, *, store, surface, brief, question_id, model_call):

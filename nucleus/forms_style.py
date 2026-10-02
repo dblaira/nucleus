@@ -1,4 +1,4 @@
-"""Literal and filled-text vetoes. Checking never changes the saved wording."""
+"""Veto only form-authored literal words, never text copied into a blank."""
 import re
 import unicodedata
 

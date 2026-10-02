@@ -8,8 +8,8 @@ import time
 
 from . import forms, forms_middle, model
 
-# Revisit source screens under separate real/practice coverage and conditions-only identity.
-POLICY = 'graph-real-practice-question-v1'
+# Revisit exact source screens under literal-only author style checks.
+POLICY = 'graph-parts-own-words-v2'
 REVIEW_SCHEMA = Path(__file__).with_name('forms-review.schema.json')
 PUSHING_KINDS = frozenset({'rejects', 'contradicts', 'prevents', 'inhibits', 'constrains', 'limits'})
 NO_PATTERN = 'conditions do not require a row pattern'
@@ -91,24 +91,30 @@ A form still requires a pattern: two or more kinds together, an opposing kind, o
 The new sentence must join at least two distinct rows, from the same displayed word, with their
 exact quotes. The named quote slots require their kinds_present conditions. For multiple kinds,
 {word} is the FIRST displayed word. Every selected quote belongs to that same word and named kind.
-The filler chooses the shortest safe WHOLE displayed quote (word count, length, then row order).
+The filler chooses the shortest WHOLE displayed quote (word count, length, then row order).
 It never clips, paraphrases, cleans punctuation, or combines different records inside a quote.
 For each form give exactly one verdict:
 - explains_pattern: joins two or more real row contents faithfully in simple language.
 - restates_rows: counts rows or names middle words without connecting their actual contents.
-- unsupported_meaning: reverses word -> kind -> record direction or adds an unstated causal link,
-  a contradiction about the same target, a guess, a negative, a caveat, or advice.
+- unsupported_meaning: reverses word -> kind -> record direction or the joining frame adds an
+  unstated causal link, a contradiction about the same target, a guess, or advice.
 Judge what the conditions and binding GUARANTEE for any matching screen, not just one example.
-Judge the FULL filled text, including the quotes. Any negative or caveat is a refusal: not,
+Judge negative/caveat wording, abstract words, advice and fifth-grade reading level ONLY in
+literal_words: the form's own words outside blanks. Never judge vocabulary or style in filled
+dictionary words, middle words, meanings, record quotes, or source why lines. Source examples
+are supplied only to check exact copying, binding, row direction and unsupported added meaning.
+Any negative or caveat in the author's literal words is a refusal: not,
 does not, cannot, no evidence, contractions such as can't, hedges such as might, and similar wording.
 Also refuse establish, claim, prerequisite, containment, necessity, coexistence, and their inflections.
 The named middle words rejects, contradicts, prevents, inhibits, constrains, limits are allowed;
 they name an actual row relationship. They are not a license to add a caveat.
-Keep exact quotes intact. If a quote is too hard to read, refuse the sentence; never rewrite it.
-For every form return reading_grade: an integer 1 through 12 for the HARDEST filled example,
-and one_sentence: whether each complete example reads as one joined sentence. Assess common
-words, clear subject and verbs, short clauses, and whether a fifth-grade reader can follow the
-whole statement. Grades above 5 fail. Technical terms and long tangled clauses raise the grade.
+Keep exact quotes intact even when they contain hard words, negatives, caveats, advice,
+abstract words or sentence marks. Never refuse, clip or rewrite a source for its vocabulary/style.
+For every form return reading_grade: an integer 1 through 12 for the AUTHOR'S JOINING FRAME ONLY,
+and one_sentence: whether that frame is one sentence, ignoring sentence marks inside blanks.
+Assess the author's own common words, subject and verbs, and short clauses. Grades above 5 fail.
+Technical terms and long tangled clauses in the author's literal words raise the grade;
+source wording never raises it. Blank names themselves are not author-written vocabulary.
 Short, simple conjunctions such as and are enough. Do not demand an extra explanatory claim.
 Return {"reviews":[{"number":"F-N","verdict":"explains_pattern|restates_rows|unsupported_meaning",
 "reading_grade":5,"one_sentence":true,"reason":"a concrete reason for this result"}]}.
@@ -125,9 +131,11 @@ why clauses. Named painted rows retain their actual word binding. Merely putting
 short quotes beside each other cannot fill. Still veto any unsupported meaning.
 The missing half can be an exact displayed why suffix naming absent records or evidence,
 a displayed word explicitly recorded as having no links, or one named middle word absent from
-this complete screen. No invented cause, behavior, row connection, or advice is allowed.
-Negative wording is allowed ONLY as part of those exact source quotes or the grounded missing
-half. It never licenses a new negative, an unsupported conclusion, or a caveat in the frame.
+this complete screen. No invented cause, behavior, row connection, or author-written advice is allowed.
+The existing exact grounded tail "{missing_word} has no links." remains allowed only when its
+source word is explicitly missing links. The exact absent_kind tail remains allowed only on a
+complete screen. These existing grounded tails never license another negative or caveat in the frame.
+All copied source words are exempt from vocabulary/style judging, as in every other form.
 Keep Adam's source words whole, including their punctuation; never improve their reading level
 by clipping or rewriting a quote. Assess the fifth-grade reading level of the joining frame;
 source quotes remain Adam's exact words. One joined sentence means the frame, because copied
@@ -141,7 +149,9 @@ def review(store, run_id: str, candidates: list[dict], model_call=None) -> dict[
     contract = REVIEW_CONTRACT
     if any(forms_middle.is_middle(c['form']) for c in candidates):
         contract += '\n' + MIDDLE_REVIEW_CONTRACT
-    prompt = contract + '\nCandidates:\n' + json.dumps(candidates, ensure_ascii=False, sort_keys=True)
+    reviewed = [{**candidate, 'literal_words': forms.literal_words(candidate['form']['sentence'])}
+                for candidate in candidates]
+    prompt = contract + '\nCandidates:\n' + json.dumps(reviewed, ensure_ascii=False, sort_keys=True)
     call_id = 'forms-night:' + run_id + ':review'
     started = time.time()
     reply = None

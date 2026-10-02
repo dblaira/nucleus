@@ -631,3 +631,70 @@ installation/loading, approval or merge to main.
 See [slice details](docs/forms-slice-7.md),
 [night summary](docs/forms-slice-7-night.json) and
 [preservation/timing proof](docs/forms-slice-7-proof.json). **Stop after slice 7.**
+
+## Forms slice 7b — October 2, 2026 Pacific
+
+Adam authorized slice 7b from exactly
+`f3d94971ceb9281b3c6000ae3ff55ea9eff3223f`, branch
+`codex/forms-slice-7b`, worktree
+`/Users/adamblair/.codex/worktrees/nucleus-forms-slice-7b`. The complete exact
+request is appended on private companion branch `codex/forms-slice-7b-ledger`.
+
+Style and reading checks judge only the author's words outside blanks. Exact
+dictionary words, meanings, record quotes and source why text filled into
+blanks receive no vocabulary, negatives, advice, length or sentence-style veto.
+Source/binding, pattern, approval and coverage gates remain. Semantic review
+sees `literal_words`, grades only the frame, and checks example copying and row
+direction. Existing grounded middle-half tails remain allowed.
+
+Questions split at but, yet, still, though, although and sentence breaks. The
+normal dictionary reads each exact part. One shared forward SPARQL query maps
+reachable accepted records to each part. Every part connected: aligned; some:
+middle (`not_sure`); none: dont_know. Single-part questions keep the word rule.
+Unconnected parts are printed exactly in visible missing why lines. Stopped
+or ambiguous parts cannot supply hits. Graph query and dictionary times are
+separate; label and form ASK queries share the 300 ms budget/count fallback.
+Historical replay preserves every saved answer and screen-source field.
+
+Practice requires at least half valid new questions to have two parts, rounding
+up, checked before any ask. Insufficient batches fail closed and retain their
+reasons. Practice stays copy-only, model-free while answering, and excluded from
+Adam's history, real repeats, links and grades. Distinct questions, two bound
+words, one real question, count ranges/minimums and same-form refusal remain.
+Explicit rejected-form rechecks keep originals and exempt only their own
+signature once; catalog entries and later variants remain protected.
+
+**546 tests pass. One manual night pass completed**, run
+`cabffe5e-af43-4e20-883f-b0bb61cb832b`, **176 inputs / 168 usable**. Twenty new
+practice questions across twenty target words; all twenty have two parts.
+**Practice: 3 aligned, 17 middle, 0 dont_know.** Three night model calls, zero
+per-question calls. **12 candidates, 10 proposed, 2 refused.**
+F-43 → F-47, F-44 → F-48 and F-46 → F-50 pass. F-45 → F-49 fails for the literal
+joining word “correlates”, reading grade 7. F-55 fits too few answers. Old
+F-43–F-46 rows/reasons remain exact. Ten forms wait for Adam's Yes, 48 refusals
+remain, zero approvals and an empty approved `forms.txt` catalog.
+All ten waiting forms require aligned. This pass produced no new middle form;
+its seventeen middle practice answers verify the new label behavior.
+
+Twenty saved graph/form-query totals **3.447–47.901 ms**, median **8.3345 ms**,
+zero misses/fallbacks. Separate multipart dictionary reading **565.311–811.772
+ms**, median **598.903 ms**; these are not full-answer latency measurements.
+The running graph has 14,591 triples; startup **351.679 ms**, outside the query
+budget. Backup `slice-7b-before.sqlite3` and copy integrity both pass; SHA-256
+`78d8675752d9d61f5baf0aa434152a724e62b65e66f5a3f0ddf321e24205057a`.
+All **5,095 original rows** and all 13 source hashes/sizes/mtimes stay exact.
+Full private quotes, questions, model traces, RDF and screenshots stay local;
+the nucleus repository is public.
+
+**Phone: http://100.111.154.126:8767/forms**. Review PID 8264 runs this worktree
+against the existing copy; `slice-7b-server.json`, `slice-7b-start.py` and
+`slice-7b-server.log` are beside the copy. Browser/HTTP show ten pending cards
+in descending fit order, up to three examples from distinct words, Yes/No only,
+no editing fields or horizontal overflow. Practice direct history is 404.
+Only old review PID 90996 was stopped. Live PID 1941 on 8766 and its database
+remain untouched; no live request was made. `NUCLEUS_FORMS_ONLY=0`; no approval,
+merge, or launchd installation/loading.
+
+See [slice details](docs/forms-slice-7b.md),
+[night summary](docs/forms-slice-7b-night.json) and
+[preservation/timing proof](docs/forms-slice-7b-proof.json). **Stop after slice 7b.**

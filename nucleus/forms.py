@@ -91,7 +91,14 @@ def _parts(sentence: str) -> list[tuple[str, str | None]]:
     return parts
 
 
-def _paragraph_reason(text: str, words: list[str]) -> str | None:
+def literal_words(sentence: str) -> str:
+    """Only the author's words outside blanks; slot names are not author words."""
+    return ''.join(literal + (' ' if blank is not None else '')
+                   for literal, blank in _parts(sentence))
+
+
+def _paragraph_reason(text: str, words: list[str], *, frame: str | None = None) -> str | None:
+    """Author-written literal text only. Copied sources never enter this check."""
     reason = explain.check(text, words)
     if reason:
         return reason
@@ -101,7 +108,7 @@ def _paragraph_reason(text: str, words: list[str]) -> str | None:
     if "\n" in text or "\r" in text:
         return "not one paragraph"
     # Conservative: punctuation can overcount abbreviations, never excuse a fifth sentence.
-    sentences = [piece for piece in re.split(r"[.!?]+[\"'”’)]*", text) if piece.strip()]
+    sentences = [piece for piece in re.split(r"[.!?]+[\"'”’)]*", text if frame is None else frame) if piece.strip()]
     if len(sentences) > 4:
         return "more than 4 sentences"
     return None
@@ -172,7 +179,11 @@ def check(form: object, *, kinds: list[str] | None = None) -> str | None:
         return forms_middle.check(form, kinds)
     if "missing_why" in when:
         return "missing_why requires a middle-option form"
-    return _paragraph_reason(sentence, [])
+    literal = literal_words(sentence)
+    if not literal.strip() and sentence.strip():
+        return None  # A form made entirely of checked blanks has no author vocabulary.
+    frame = ''.join(part + ('value' if blank is not None else '') for part, blank in parts)
+    return _paragraph_reason(literal, [], frame=frame)
 
 
 def load(path: Path = FORMS_PATH, *, kinds: list[str] | None = None) -> list[dict]:
@@ -314,13 +325,12 @@ def _fill(form: dict, screen: Screen, *, kinds: list[str] | None, statuses: set[
             if word != focus:
                 values["other_word"] = Part(word, f"screen.words[{i}]")
                 break
-    # Exact, complete displayed quotes only. Choose the shortest safe whole quote
+    # Exact, complete displayed quotes only. Choose the shortest whole quote
     # for this word/kind (word count, then length, then screen order). Never edit it.
     for blank in sorted(b for b in blanks if b.startswith("quote:")):
         kind = blank[len("quote:"):]
         eligible = [i for i, row in enumerate(screen.rows)
-                    if row.word == focus and row.kind == kind and row.quote is not None
-                    and _paragraph_reason(row.quote, []) is None]
+                    if row.word == focus and row.kind == kind and row.quote is not None]
         if eligible:
             i = min(eligible, key=lambda i: (len(_TOKEN.findall(screen.rows[i].quote)), len(screen.rows[i].quote), i))
             values[blank] = Part(screen.rows[i].quote, f"screen.rows[{i}].quote")
@@ -350,9 +360,10 @@ def _fill(form: dict, screen: Screen, *, kinds: list[str] | None, statuses: set[
     allowed_tokens = {token for part in parts for token in _TOKEN.findall(part.text)}
     if set(_TOKEN.findall(text)) - allowed_tokens:
         raise Refused("kill switch: filling joined pieces into a new word")
-    reason = forms_middle.source_reason(text) if middle else _paragraph_reason(text, list(screen.words))
-    if reason:
-        raise Refused(reason)
+    # Exact filled source words are not vocabulary, advice, or reading-level
+    # candidates. Keep the original check that a paragraph names this screen.
+    if screen.words and not any(word.lower() in text.lower() for word in screen.words):
+        raise Refused("does not speak about his words on the screen")
     return Filled(form["number"], text, tuple(parts))
 
 

@@ -121,7 +121,7 @@ def test_one_pass_retains_exact_trace_and_three_real_distinct_examples(copy):
     (candidate(when={'secret': True}), 'unknown or missing conditions'),
     (candidate(when={'answer': 'aligned', 'secret': None}), 'unknown or missing conditions'),
     (candidate(sentence='You should follow {word}.'), 'advice'),
-    (candidate(sentence='{word}. Two. Three. Four. Five.'), 'more than 4 sentences'),
+    (candidate(sentence='{word}. Two. Three. Four. Five. Six.'), 'more than 4 sentences'),
     (candidate(sentence='pre{word} depends on “{quote:depends on}” and rejects “{quote:rejects}”.'), 'kill switch'),
     (candidate(when={'answer': 'dont_know', 'kinds_present': ['depends on', 'rejects']}), 'fits too few answers'),
     ({**candidate(), 'status': 'approved'}, 'unknown or missing proposal fields'),
@@ -147,12 +147,87 @@ def test_null_conditions_are_wire_format_only(copy):
     assert 'kinds_absent' in result['results'][0]['raw']['when']
 
 
+def test_explicit_recheck_keeps_original_and_reproposes_once(copy):
+    history(copy)
+    miss(copy)
+    form = {'number': 'F-43', 'status': 'proposed', 'author': 'old writer',
+            'date': '2026-10-02', **candidate()}
+    pid = copy.save_form_proposal(form, 'negative or caveat: not')
+    original = copy.form_proposals()[0]
+    result = run(copy, [candidate()], recheck=('F-43',))
+    assert result['status'] == 'completed'
+    assert (result['proposed'], result['refused']) == (1, 1)
+    proposals = {p['id']: p for p in copy.form_proposals()}
+    assert proposals[pid] == original
+    replacement = next(p for p in proposals.values() if p['number'] == 'F-44')
+    assert replacement['status'] == 'proposed'
+    assert replacement['form']['when'] == original['form']['when']
+    assert replacement['form']['sentence'] == original['form']['sentence']
+    assert replacement['form']['author'] == 'program/recheck-own-words'
+    assert result['results'][1]['reason'] == 'same form'
+    assert forms.pick(night.screen_from_picture(picture(), KINDS))[0] is None
+
+
+def test_recheck_cannot_override_another_existing_form(copy):
+    history(copy)
+    miss(copy)
+    for number in ('F-43', 'F-44'):
+        copy.save_form_proposal({'number': number, 'status': 'proposed', 'author': 'test',
+                                'date': '2026-10-02', **candidate()}, 'old refusal')
+    result = run(copy, [], recheck=('F-43',))
+    assert result['proposed'] == 0 and result['results'][0]['reason'] == 'same form'
+
+
+def test_recheck_cannot_override_same_number_in_approved_catalog(copy):
+    history(copy)
+    miss(copy)
+    form = {'number': 'F-43', 'status': 'proposed', 'author': 'test',
+            'date': '2026-10-02', **candidate()}
+    copy.save_form_proposal(form, 'old refusal')
+    from nucleus.forms_review import append_text
+    forms.FORMS_PATH.write_text(append_text(forms.FORMS_PATH.read_text(), {**form, 'status': 'approved'}, []))
+    result = run(copy, [], recheck=('F-43',))
+    assert result['proposed'] == 0 and result['results'][0]['reason'] == 'same form'
+
+
+def test_recheck_requires_unique_explicit_rejected_forms(copy):
+    copy.save_form_proposal({'number': 'F-43', 'status': 'proposed', 'author': 'test',
+                            'date': '2026-10-02', **candidate()}, None)
+    with pytest.raises(ValueError, match='one rejected proposal'):
+        night.rechecked_candidates(copy.form_proposals(), ('F-43',))
+    with pytest.raises(ValueError, match='distinct'):
+        night.rechecked_candidates(copy.form_proposals(), ('F-43', 'F-43'))
+
+
+def test_no_input_recheck_failure_records_only_the_attempted_review(copy):
+    history(copy)
+    miss(copy)
+    assert run(copy, [])['status'] == 'completed'  # Consume all current triggers.
+    copy.save_form_proposal({'number': 'F-43', 'status': 'proposed', 'author': 'test',
+                            'date': '2026-10-02', **candidate()}, 'old refusal')
+    original = copy.form_proposals()[0]
+    def call(prompt, *, schema):
+        assert schema == patterns.REVIEW_SCHEMA
+        raise TimeoutError('review timeout')
+    result = night.night(copy.path, practice=False, recheck=('F-43',), model_call=call)
+    assert result['status'] == 'failed' and 'review timeout' in result['error']
+    calls = copy.connection.execute('SELECT question_id FROM model_calls WHERE question_id LIKE ?',
+                                   ('forms-night:' + result['run_id'] + '%',)).fetchall()
+    assert calls == [('forms-night:' + result['run_id'] + ':review',)]
+    assert copy.form_proposals()[0] == original
+
+
 def test_fill_checks_all_matching_answers_not_just_first_three(copy):
     for word in ['FLOW', 'LIFT', 'MOMENTUM', 'you should']:
         miss(copy, word)
     result = run(copy)
-    assert result['proposed'] == 0
-    assert 'advice' in result['results'][0]['reason']
+    assert result['proposed'] == 1
+    pid = result['results'][0]['proposal_id']
+    assert len(night.coverage_for(copy, pid)) == 4
+    review_prompt = copy.connection.execute("SELECT prompt FROM model_calls WHERE question_id LIKE 'forms-night:%:review'").fetchone()[0]
+    reviewed = json.loads(review_prompt.split('\nCandidates:\n', 1)[1])[0]['examples']
+    assert len(reviewed) == 4
+    assert any('you should' in e['text'] for e in reviewed)
 
 
 def test_limit_never_writes_more_than_twelve_proposal_rows_but_keeps_overflow(copy):

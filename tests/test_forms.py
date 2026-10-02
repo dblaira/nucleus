@@ -60,7 +60,7 @@ def test_existing_advice_pattern_is_reused(sentence):
     assert forms.check(form(sentence=sentence), kinds=KINDS) == "advice"
 
 
-def test_existing_explanation_check_runs_on_filled_text(monkeypatch):
+def test_existing_advice_check_runs_only_on_author_literal_words(monkeypatch):
     calls = []
     original = forms.explain.check
 
@@ -70,7 +70,8 @@ def test_existing_explanation_check_runs_on_filled_text(monkeypatch):
 
     monkeypatch.setattr(forms.explain, "check", capture)
     assert fill().text
-    assert calls[-1] == ("Your rows say FLOW depends on 3 things you have written down.", ["FLOW", "LIFT"])
+    assert calls[-1] == ("Your rows say   depends on   things you have written down.", [])
+    assert all('FLOW' not in text and words == [] for text, words in calls)
 
 
 @pytest.mark.parametrize("status", ["proposed", "rejected"])
@@ -141,22 +142,19 @@ def test_kind_and_count_have_no_guessed_binding(present):
     assert forms.check(form(when=when), kinds=KINDS) == "kind and count need exactly one middle word to fire on"
 
 
-def test_more_than_four_sentences_refused_before_and_after_filling():
+def test_more_than_four_author_sentences_refused_but_source_punctuation_is_exact():
     assert fill(form(sentence="{word}. Two. Three! Four?"))
     with pytest.raises(forms.Refused, match="more than 4"):
         fill(form(sentence="{word}. Two. Three! Four? Five."))
     word = "One. Two. Three. Four. Five."
-    with pytest.raises(forms.Refused, match="more than 4"):
-        fill(form(when={"answer": "aligned"}, sentence="{word}"), forms.Screen("aligned", (word,), ()))
+    assert fill(form(when={"answer": "aligned"}, sentence="{word}"), forms.Screen("aligned", (word,), ())).text == word
 
 
-def test_advice_and_oversize_text_from_screen_are_also_refused():
-    for word, reason in (("you should", "advice"), ("x" * 901, "longer")):
-        with pytest.raises(forms.Refused, match=reason):
-            fill(form(when={"answer": "aligned"}, sentence="{word}"), forms.Screen("aligned", (word,), ()))
-    with pytest.raises(forms.Refused, match="advice"):
-        fill(form(when={"kinds_present": ["should not"]}, sentence="{word} {kind}."),
-             forms.Screen("aligned", ("FLOW",), (forms.Row("FLOW", "r1", "should not"),)))
+def test_source_words_and_middle_words_are_never_judged_for_style():
+    for word in ("you should", "x" * 901):
+        assert fill(form(when={"answer": "aligned"}, sentence="{word}"), forms.Screen("aligned", (word,), ())).text == word
+    assert fill(form(when={"kinds_present": ["should not"]}, sentence="{word} {kind}."),
+                forms.Screen("aligned", ("FLOW",), (forms.Row("FLOW", "r1", "should not"),))).text == 'FLOW should not.'
 
 
 @pytest.mark.parametrize("sentence", ["prefix{word}.", "{word}suffix.", "{word}{other_word}.", "{word}-suffix."])
@@ -206,10 +204,6 @@ def test_provenance_for_varied_screen_words_and_counts():
         count = rng.randint(1, 30)
         rows = tuple(forms.Row(words[0], f"r{i}", "depends on") for i in range(count))
         screen = forms.Screen("aligned", words, rows)
-        if "don't" in words:
-            with pytest.raises(forms.Refused, match="negative or caveat"):
-                fill(value, screen)
-            continue
         result = fill(value, screen)
         allowed = literals | set(tokens.findall(" ".join(words) + " depends on")) | {str(count), "2"}
         assert set(tokens.findall(result.text)) <= allowed

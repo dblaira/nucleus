@@ -1,0 +1,157 @@
+{
+  "run_id": "cabffe5e-af43-4e20-883f-b0bb61cb832b",
+  "status": "completed",
+  "inputs": 176,
+  "usable_inputs": 168,
+  "candidates": 12,
+  "proposed": 10,
+  "refused": 2,
+  "practice": {
+    "generated": 20,
+    "asked": 20,
+    "answered": 20,
+    "refused": 0,
+    "two_part_questions": 20,
+    "labels": {
+      "aligned": 3,
+      "middle": 17,
+      "dont_know": 0
+    }
+  },
+  "night_model_calls": 3,
+  "per_practice_model_calls": 0,
+  "graph_query_times": {
+    "min_ms": 3.447,
+    "median_ms": 8.3345,
+    "max_ms": 47.901,
+    "budget_misses": 0
+  },
+  "dictionary_part_reading_ms": {
+    "min_ms": 565.311,
+    "median_ms": 598.903,
+    "max_ms": 811.772
+  },
+  "results": [
+    {
+      "number": "F-47",
+      "rechecked_from": "F-43",
+      "status": "proposed",
+      "reason": null,
+      "questions": 6,
+      "bound_words": 3,
+      "real_questions": 5,
+      "practice_questions": 1
+    },
+    {
+      "number": "F-48",
+      "rechecked_from": "F-44",
+      "status": "proposed",
+      "reason": null,
+      "questions": 7,
+      "bound_words": 4,
+      "real_questions": 5,
+      "practice_questions": 2
+    },
+    {
+      "number": "F-49",
+      "rechecked_from": "F-45",
+      "status": "rejected",
+      "reason": "reading level above fifth grade: 7: The frame joins exact correlates-with and supports rows for the same word; correlates is harder author-written vocabulary.",
+      "questions": 3,
+      "bound_words": 2,
+      "real_questions": 1,
+      "practice_questions": 2
+    },
+    {
+      "number": "F-50",
+      "rechecked_from": "F-46",
+      "status": "proposed",
+      "reason": null,
+      "questions": 5,
+      "bound_words": 2,
+      "real_questions": 5,
+      "practice_questions": 0
+    },
+    {
+      "number": "F-51",
+      "rechecked_from": null,
+      "status": "proposed",
+      "reason": null,
+      "questions": 6,
+      "bound_words": 3,
+      "real_questions": 6,
+      "practice_questions": 0
+    },
+    {
+      "number": "F-52",
+      "rechecked_from": null,
+      "status": "proposed",
+      "reason": null,
+      "questions": 7,
+      "bound_words": 4,
+      "real_questions": 5,
+      "practice_questions": 2
+    },
+    {
+      "number": "F-53",
+      "rechecked_from": null,
+      "status": "proposed",
+      "reason": null,
+      "questions": 10,
+      "bound_words": 6,
+      "real_questions": 8,
+      "practice_questions": 2
+    },
+    {
+      "number": "F-54",
+      "rechecked_from": null,
+      "status": "proposed",
+      "reason": null,
+      "questions": 8,
+      "bound_words": 5,
+      "real_questions": 5,
+      "practice_questions": 3
+    },
+    {
+      "number": "F-55",
+      "rechecked_from": null,
+      "status": "rejected",
+      "reason": "fits too few answers",
+      "questions": 2,
+      "bound_words": 2,
+      "real_questions": 2,
+      "practice_questions": 0
+    },
+    {
+      "number": "F-56",
+      "rechecked_from": null,
+      "status": "proposed",
+      "reason": null,
+      "questions": 8,
+      "bound_words": 5,
+      "real_questions": 6,
+      "practice_questions": 2
+    },
+    {
+      "number": "F-57",
+      "rechecked_from": null,
+      "status": "proposed",
+      "reason": null,
+      "questions": 7,
+      "bound_words": 4,
+      "real_questions": 5,
+      "practice_questions": 2
+    },
+    {
+      "number": "F-58",
+      "rechecked_from": null,
+      "status": "proposed",
+      "reason": null,
+      "questions": 5,
+      "bound_words": 2,
+      "real_questions": 5,
+      "practice_questions": 0
+    }
+  ],
+  "second_night_run": false
+}

@@ -32,12 +32,16 @@ def test_quotes_cannot_come_from_another_word_or_a_missing_snapshot_field():
         assert forms.preview(checked_form(), source, kinds=KINDS) is None
 
 
-def test_shortest_safe_quote_is_whole_and_ties_keep_screen_order():
+def test_shortest_quote_is_whole_regardless_of_vocabulary_and_ties_keep_screen_order():
     source = replace(screen(), rows=(
         forms.Row('FLOW', 'a', 'depends on', 'not'),
         forms.Row('FLOW', 'b', 'depends on', 'A longer safe source quote'),
         forms.Row('FLOW', 'c', 'depends on', 'My words'),
         forms.Row('FLOW', 'd', 'depends on', 'My voice'), screen().rows[1]))
+    filled = forms.preview(checked_form(), source, kinds=KINDS)
+    quote = next(p for p in filled.parts if p.source.endswith('.quote'))
+    assert (quote.text, quote.source) == ('not', 'screen.rows[0].quote')
+    source = replace(source, rows=(replace(source.rows[0], quote='Another longer quote'), *source.rows[1:]))
     filled = forms.preview(checked_form(), source, kinds=KINDS)
     quote = next(p for p in filled.parts if p.source.endswith('.quote'))
     assert (quote.text, quote.source) == ('My words', 'screen.rows[2].quote')
@@ -49,14 +53,17 @@ def test_shortest_safe_quote_is_whole_and_ties_keep_screen_order():
     'establish', 'establishes', 'established', 'claim', 'claims', 'prerequisite',
     'prerequisites', 'containment', 'necessity', 'coexistence',
 ])
-def test_banned_words_are_refused_in_template_and_unavailable_in_exact_quote(word):
+def test_banned_author_words_are_refused_but_exact_source_quotes_are_preserved(word):
     proposal = checked_form(sentence=candidate()['sentence'][:-1] + ' ' + word + '.')
     assert forms.check(proposal, kinds=KINDS) is not None
-    assert forms.preview(checked_form(), screen(first=word), kinds=KINDS) is None
+    filled = forms.preview(checked_form(), screen(first=word), kinds=KINDS)
+    quote = next(p for p in filled.parts if p.source.endswith('.quote'))
+    assert (quote.text, quote.source) == (word, 'screen.rows[0].quote')
 
 
-def test_advice_inside_a_quote_is_never_shown():
-    assert forms.preview(checked_form(), screen(first='You should act'), kinds=KINDS) is None
+def test_advice_inside_a_source_quote_is_copied_without_author_advice():
+    filled = forms.preview(checked_form(), screen(first='You should act'), kinds=KINDS)
+    assert filled.text == 'FLOW depends on “You should act” and rejects “Room to grow”.'
 
 
 @pytest.mark.parametrize('blank,reason', [

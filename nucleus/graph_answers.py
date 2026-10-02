@@ -1,12 +1,14 @@
 """Day answers from asserted graph paths; exact screen data still binds forms."""
 from __future__ import annotations
 
-from dataclasses import asdict
+from dataclasses import asdict, dataclass
 import json
 import time
 import uuid
 
 from . import dictionary, forms, forms_middle, gate, links
+from .phrases import PhraseIndex
+from .question_parts import split_question
 
 BUILD_STEP = '4 graph built at start'
 QUERY_STEP = '4 graph questions'
@@ -15,6 +17,80 @@ BUDGET_MS = 300.0
 
 class GraphBudgetExceeded(RuntimeError):
     pass
+
+
+@dataclass(frozen=True)
+class PartLabel:
+    text: str
+    words: tuple[str, ...]
+    connected: tuple[str, ...]
+    missing: tuple[str, ...]
+    records: dict[str, tuple[str, ...]]
+    dictionary_ms: float
+    ms: float
+    query_is_shared: bool = True
+
+
+@dataclass(frozen=True)
+class QuestionLabel:
+    answer: str | None
+    connected: tuple[str, ...]
+    missing: tuple[str, ...]
+    records: dict[str, tuple[str, ...]]
+    ms: float
+    budget_miss: bool
+    touched: tuple[str, ...]
+    parts: tuple[PartLabel, ...]
+    rule: str
+    dictionary_ms: float
+
+    def to_dict(self) -> dict:
+        return asdict(self)
+
+
+def label_question(question, engine, reading=None, hits=None):
+    """Ask one graph query, then check which exact question parts it connects.
+
+    A single part keeps the existing dictionary-word verdict. Multiple parts
+    are read separately by the dictionary's own deterministic reader. One
+    reached word connects that part; only all connected parts yield aligned.
+    No question part becomes a new word, edge, or governing meaning.
+    """
+    texts = split_question(question) or (question.strip(),)
+    known = {meaning.word for meaning in engine.meanings}
+    readings = []
+    dictionary_ms = 0.0
+    # A whole-question phrase can cross a separator, so multipart questions
+    # use only phrase hits looked up inside each part.
+    index = PhraseIndex(engine.meanings, engine.legacy_graph) if len(texts) > 1 or hits is None else None
+    for text in texts:
+        started = time.perf_counter()
+        part_reading = reading if len(texts) == 1 and reading is not None else dictionary.brief(text)
+        if len(texts) > 1:
+            if not isinstance(part_reading, dict):
+                raise ValueError('dictionary returned invalid question part')
+            if part_reading.get('outcome') in ('stopped', 'ask'):
+                raise ValueError('dictionary stopped question part')
+        part_hits = hits if len(texts) == 1 and hits is not None else index.lookup(text)
+        words = tuple(links.touched_words(part_reading, part_hits, known))
+        elapsed = (time.perf_counter() - started) * 1000
+        dictionary_ms += elapsed
+        readings.append((text, words, elapsed))
+    touched = tuple(dict.fromkeys(word for _text, words, _elapsed in readings for word in words))
+    label = engine.label(touched)
+    reached = set(label.connected)
+    parts = tuple(PartLabel(text, words, tuple(word for word in words if word in reached),
+                            tuple(word for word in words if word not in reached),
+                            {word: label.records.get(word, ()) for word in words}, elapsed,
+                            label.ms)
+                  for text, words, elapsed in readings)
+    answer = label.answer
+    if len(parts) > 1 and not label.budget_miss:
+        count = sum(bool(part.connected) for part in parts)
+        answer = 'aligned' if count == len(parts) else 'not_sure' if count else 'dont_know'
+    return QuestionLabel(answer, label.connected, label.missing, label.records,
+                         label.ms, label.budget_miss, touched, parts,
+                         'question parts' if len(parts) > 1 else 'word paths', dictionary_ms)
 
 
 def record_build(store, engine):
@@ -35,8 +111,13 @@ def paint(touched, engine, label):
                              touched=list(touched), missing=list(label.missing))
     graph, meanings = engine.legacy_graph, engine.meanings
     words, records, seen = [], [], set()
+    gaps = tuple(part.text for part in getattr(label, 'parts', ()) if not part.connected)
+    show_part_gaps = label.answer == 'not_sure' and getattr(label, 'rule', '') == 'question parts'
     for word in touched:
-        words.append({'word': word, 'why': word + ' has no links.' if word in label.missing else 'you said ' + word,
+        why = word + ' has no links.' if word in label.missing else 'you said ' + word
+        if show_part_gaps and word in label.connected:
+            why += '. ' + ' '.join('Your records do not show “' + part + '”.' for part in gaps)
+        words.append({'word': word, 'why': why,
                       'meanings': [m.text for m in dictionary.meanings_for(meanings, word)]})
         direct = {link['record']: link for link in engine.links_for(word)}
         for uri in label.records.get(word, ()):
@@ -66,7 +147,8 @@ def answer(question_id, question, reading, hits, store, engine, explain_call):
     form_times = []
     label_started = time.perf_counter()
     try:
-        label = engine.label(touched)
+        label = label_question(question, engine, reading=reading, hits=hits)
+        touched = list(label.touched)
         if label.budget_miss:
             raise ValueError('graph budget miss')
         picture = paint(touched, engine, label)

@@ -1,15 +1,12 @@
 """Plain-code middle-option fills from exact displayed words, records and gaps.
 
-No model, dictionary, graph or database is consulted here. The narrow negative
-exception is for copied screen evidence; older row forms keep their style veto.
+No model, dictionary, graph or database is consulted here. Source text stays
+exact; vocabulary and style rules apply only to the author's joining frame.
 """
 from __future__ import annotations
 
 import json
 import re
-import unicodedata
-
-from . import explain, forms_style
 from .gate import unescape_label
 
 SLOTS = frozenset({'meaning', 'record_quote', 'missing_why', 'missing_word', 'absent_kind'})
@@ -44,16 +41,36 @@ def is_filled(filled) -> bool:
 
 
 def source_reason(text: str) -> str | None:
-    reason = explain.check(text, [])
-    if reason:
-        return reason
-    normalized = unicodedata.normalize('NFKC', text).replace('’', "'")
-    found = forms_style._ABSTRACT.search(normalized)
-    if found:
-        return 'blocked word: ' + found.group().lower()
-    if '\n' in text or '\r' in text:
-        return 'not one paragraph'
+    """A usable exact source, never a vocabulary or style judgment."""
+    if not isinstance(text, str) or not text.strip():
+        return 'empty source'
     return None
+
+
+def _quoted_question_gaps(text: str) -> bool:
+    """Whole program clauses, with nested source quotes and no added assertion."""
+    position = 0
+    while position < len(text):
+        opening = re.match(r'(?:Your|your) records do not show “', text[position:])
+        if opening is None:
+            return False
+        position += opening.end()
+        start, depth = position, 1
+        while position < len(text) and depth:
+            if text[position] == '“':
+                depth += 1
+            elif text[position] == '”':
+                depth -= 1
+            position += 1
+        if depth or position <= start + 1 or text[position:position + 1] != '.':
+            return False
+        position += 1
+        if position == len(text):
+            return True
+        if text[position:position + 1] != ' ':
+            return False
+        position += 1
+    return False
 
 
 def gap_span(why: str) -> tuple[int, int] | None:
@@ -61,8 +78,20 @@ def gap_span(why: str) -> tuple[int, int] | None:
     if not isinstance(why, str):
         return None
     starts = [0] + [m.end() for m in re.finditer(r', but |; ', why)]
+    # Graph-authored multipart why: split only its exact leading scaffold,
+    # never arbitrary sentence punctuation inside Adam's quoted question.
+    multipart = re.match(r'you said [^\r\n]+?\. (?=(?:Your|your) records do not show “)', why)
+    if multipart:
+        starts.append(multipart.end())
     for start in starts:
         clause = why[start:]
+        # The program's missing-question clause quotes the exact question part.
+        # Words or punctuation inside that complete quote are source content,
+        # never a hedge or a second assertion written into the joining frame.
+        if _quoted_question_gaps(clause):
+            return start, len(why)
+        if re.match(r'(?:Your|your) records do not show “', clause):
+            continue  # Never absorb another assertion after the complete quote.
         # Do not turn a whole mixed positive/negative line into the missing half.
         if (_ABSENCE.match(clause) and ', but ' not in clause and '; ' not in clause
                 and not re.search(r'\b(?:probably|perhaps|possibly|might|maybe)\b', clause, re.I)

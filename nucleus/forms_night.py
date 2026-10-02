@@ -29,7 +29,14 @@ def replay_graph_labels(inputs, engine):
     for item in inputs:
         if item['screen'] is None:
             continue
-        label = engine.label(item['screen']['words'])
+        from .graph_answers import label_question
+        reading = {'heSaidTheWordItself': [{'word': w} for w in item['screen']['words']]}
+        try:
+            label = label_question(item.get('question') or '', engine, reading=reading, hits=[])
+        except Exception as error:
+            item['screen'] = None
+            item['reason'] = 'graph replay refused: ' + str(error)
+            continue
         item['graph_label'] = label.to_dict()
         if label.budget_miss:
             item['screen'] = None
@@ -315,23 +322,25 @@ New blank: {quote:middle word}, for example {quote:depends on} or {quote:rejects
 It copies the ENTIRE exact displayed quote of a row with that named middle word, for {word}.
 Each quoted kind must be in kinds_present. Use at least TWO distinct named quote blanks.
 {word} is the first displayed word when several kinds are required. Quote slots only use its
-rows, never another word's rows. The filler chooses the shortest SAFE complete quote for that
+rows, never another word's rows. The filler chooses the shortest complete displayed quote for that
 word/kind: fewest words, then shortest length, then screen order. No outside record lookup.
-A safe quote passes the paragraph, no-advice, no-negative/caveat, and blocked-word checks.
-If a word/kind has no safe quote, that form cannot fill on that screen. Quote text is NEVER edited.
+Every quote must be exact and bound to its displayed word, kind and record. Quote text is NEVER edited.
+Adam's dictionary and record words inside blanks are his; NEVER judge or refuse them for style,
+negative words, advice words, sentence length, vocabulary, or reading level.
 Use exact named middle words as the verbs, keep direction word -> kind -> record, and join with and.
 Example template: {word} depends on “{quote:depends on}” and rejects “{quote:rejects}”.
 That concrete join IS the requested explanation. Do not add abstract analysis or a second sentence.
-Refuse negatives and caveats anywhere in the finished text, INCLUDING copied quotes: not, does
+Judge ONLY the form's own words, the text OUTSIDE blanks. Refuse literal negatives and caveats: not, does
 not, cannot, no evidence, can't, won't, never, without, unless, although, however, but, maybe,
 might, may, could, and similar wording. Refuse establish, claim, prerequisite, containment,
 necessity, coexistence, including their inflections. Never soften, trim, or rewrite a source quote.
 The relationship verbs rejects, contradicts, prevents, inhibits, constrains, limits remain allowed.
 No advice: no should, try to, consider, next step, recommend, make sure, you need to, you must,
-you could, or it would help. Full text still has to pass the existing 900-character paragraph check.
-Use common words, short clauses, and a clear subject. Select patterns with simple source quotes.
-The whole filled sentence, including its quotes, must be readable by a fifth-grade reader.
-A separate review checks the full examples for grade level, one sentence, and faithful direction.
+you could, or it would help. The literal joining frame keeps the 900-character paragraph check.
+Use common words, short clauses, and a clear subject for that frame. Any exact source quote is allowed.
+ONLY the literal words outside blanks must be readable by a fifth-grade reader and form one sentence.
+A separate review checks the literal frame for grade level and one sentence, and the examples
+for exact sources and faithful direction. Never assign a reading grade to Adam's quoted words.
 Conditions are the existing six: answer, kinds_present, kinds_absent, record_count, word_count,
 missing_links. Use null for unused ones. Non-null conditions must all hold. Counts are ONLY
 nonnegative minimums {min:N} or inclusive ranges {min:N,max:M} with M > N. Never exact integers,
@@ -369,14 +378,17 @@ Preferred literal frame:
 For that frame use answer=not_sure and missing_why=true. All other unused conditions are null.
 {word} is the word of the selected meaning; it need not be the first word on the screen.
 {meaning} and {record_quote} copy COMPLETE exact displayed quotes, including their punctuation.
-The filler chooses the shortest whole safe source. It never clips or rewrites Adam's words.
+The filler chooses the shortest whole displayed source. It never clips or rewrites Adam's words.
+Style, negatives, advice words and reading level are judged ONLY outside blanks. The sources
+filled into blanks are Adam's and are never judged or refused for their wording.
 {missing_why} copies an exact displayed why suffix that explicitly names missing records or
 evidence. It never says that the missing thing happened. {missing_word} requires missing_links=true
 and an explicitly displayed word with no links. {absent_kind} requires exactly one kinds_absent
 and names only that middle word. Do not invent links for older model answers: their saved screen
 can provide exact meanings, record quotes, and why lines, but cannot prove which middle words
 or links were absent. A screenshot-free absence is not a source.
-Negatives are allowed ONLY inside these exact sources or a grounded missing-half statement.
+Negative checks apply ONLY to the literal frame, retaining the grounded missing-half exception.
+Words in exact blank sources are never judged for negatives, advice, vocabulary or reading level.
 The two copied positive sources line up with the question, not with each other as a new link.
 For model screens, their displayed why lines must explicitly name a positive half, and the two
 whole quotes must share at least two exact content words. Otherwise that pair cannot fill.
@@ -505,12 +517,14 @@ def report(store: Store, run_id: str) -> dict:
 
 def night(path: Path = REVIEW_PATH, *, bootstrap: bool = False, forms_path: Path | None = None,
           model_call=None, widen: tuple[str, ...] = (), middle_only: bool = False,
-          practice: bool = True, practice_ask=None, graph_mode: bool = False) -> dict:
+          practice: bool = True, practice_ask=None, graph_mode: bool = False, recheck: tuple[str, ...] = ()) -> dict:
     path = check_copy(path)
     if forms.forms_only():
         raise ValueError("slice 3 requires NUCLEUS_FORMS_ONLY off")
     if middle_only and widen:
         raise ValueError('middle-only pass cannot widen earlier row forms')
+    if recheck and widen:
+        raise ValueError('choose rechecking or widening, not both')
     with path.with_suffix(path.suffix + ".forms.lock").open("a") as lock:
         try:
             fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
@@ -530,7 +544,7 @@ def night(path: Path = REVIEW_PATH, *, bootstrap: bool = False, forms_path: Path
                 graph_answers.record_build(store, store.meaning_graph)
                 if practice_ask is None:
                     practice_ask = partial(ask, meaning_graph=store.meaning_graph)
-            return _night(store, bootstrap, forms_path, model_call, widen, middle_only, practice, practice_ask)
+            return _night(store, bootstrap, forms_path, model_call, widen, middle_only, practice, practice_ask, recheck)
         finally:
             store.connection.close()
 
@@ -553,8 +567,22 @@ def widened_candidates(proposals: list[dict], numbers: tuple[str, ...]) -> list[
     return candidates
 
 
+def rechecked_candidates(proposals: list[dict], numbers: tuple[str, ...]) -> list[dict]:
+    """Explicitly requested rechecks keep the old rejection and exact template intact."""
+    if len(numbers) != len(set(numbers)) or len(numbers) > LIMIT:
+        raise ValueError('choose at most 12 distinct forms to recheck')
+    candidates = []
+    for number in numbers:
+        old = [p for p in proposals if p['number'] == number]
+        if len(old) != 1 or old[0]['status'] != 'rejected':
+            raise ValueError(f'{number}: rechecking requires one rejected proposal')
+        form = old[0]['form']
+        candidates.append({'when': form['when'], 'sentence': form['sentence']})
+    return candidates
+
+
 def _night(store: Store, bootstrap: bool, forms_path: Path | None, model_call, widen=(), middle_only=False,
-           practice=True, practice_ask=None) -> dict:
+           practice=True, practice_ask=None, recheck=()) -> dict:
     run_id, started = str(uuid.uuid4()), time.time()
     store.connection.execute(
         "INSERT INTO form_night_runs (id,started,status,inputs_json,prompt) VALUES (?,?,'running','[]','')",
@@ -565,7 +593,7 @@ def _night(store: Store, bootstrap: bool, forms_path: Path | None, model_call, w
             result = forms_practice.run(store, run_id, model_call=model_call, ask_call=practice_ask)
             if result['status'] != 'completed':
                 raise ValueError('practice generation failed: ' + str(result.get('error')))
-        return _propose(store, run_id, started, bootstrap, forms_path, model_call, widen, middle_only)
+        return _propose(store, run_id, started, bootstrap, forms_path, model_call, widen, middle_only, recheck)
     except Exception as error:
         store.connection.rollback()
         store.connection.execute("UPDATE form_night_runs SET status='failed',finished=?,error=? WHERE id=?",
@@ -574,11 +602,13 @@ def _night(store: Store, bootstrap: bool, forms_path: Path | None, model_call, w
         return report(store, run_id)
 
 
-def _propose(store, run_id, started, bootstrap, forms_path, model_call, widen, middle_only):
+def _propose(store, run_id, started, bootstrap, forms_path, model_call, widen, middle_only, recheck=()):
     kinds = load_kinds()
     previous = forms.load(forms.FORMS_PATH if forms_path is None else forms_path, kinds=kinds)
+    catalog_signatures = {signature(p) for p in previous}
     proposals = store.form_proposals()
-    replacements = widened_candidates(proposals, widen) if widen else []
+    replacements = (widened_candidates(proposals, widen) if widen else
+                    rechecked_candidates(proposals, recheck) if recheck else [])
     history = past_answers(store, kinds)
     engine = getattr(store, 'meaning_graph', None)
     if engine is not None:
@@ -625,11 +655,15 @@ def _propose(store, run_id, started, bootstrap, forms_path, model_call, widen, m
                    'to a SPARQL ASK; never write or invent SPARQL or graph edges.\n')
     if widen:
         prompt = 'Explicit count widening requested for ' + ', '.join(widen) + '.\n' + prompt
+    if recheck:
+        prompt = ('Code separately rechecks ' + ', '.join(recheck) + ' under the own-words rule. '
+                  f'Write at most {LIMIT - len(replacements)} NEW forms; never repeat their conditions.\n' + prompt)
     store.connection.execute(
         "UPDATE form_night_runs SET inputs_json=?,prompt=? WHERE id=?",
         (encoded(inputs), prompt, run_id))
     store.connection.commit()
     reply = None
+    writer_attempted = False
     try:
         candidates = replacements
         author = 'program/widen-counts'
@@ -639,6 +673,7 @@ def _propose(store, run_id, started, bootstrap, forms_path, model_call, widen, m
                                      (encoded({'forms': candidates}), 'program', 'widen-counts', run_id))
             store.connection.commit()
         elif any(i["screen"] is not None for i in inputs):
+            writer_attempted = True
             reply = (model_call or model.call)(prompt, schema=SCHEMA)
             # Save the complete provider response before parsing it.
             store.save_model_call("forms-night:" + run_id, reply.provider, reply.model, prompt, started, reply.text, True, None)
@@ -648,8 +683,12 @@ def _propose(store, run_id, started, bootstrap, forms_path, model_call, widen, m
             payload = json.loads(reply.text)
             if not isinstance(payload, dict) or set(payload) != {"forms"} or not isinstance(payload["forms"], list):
                 raise ValueError("reply must contain only a forms array")
-            candidates = payload["forms"]
+            candidates = [*replacements, *payload["forms"]]
             author = f'{reply.provider}/{reply.model}'
+        elif recheck:
+            store.connection.execute("UPDATE form_night_runs SET reply=?,provider=?,model=? WHERE id=?",
+                                     (encoded({'forms': candidates}), 'program', 'recheck-own-words', run_id))
+            store.connection.commit()
         used = [int(p["number"][2:]) for p in previous if isinstance(p.get("number"), str)
                 and re.fullmatch(r"F-[1-9][0-9]*", p["number"])]
         next_number = max(used, default=0) + 1
@@ -659,8 +698,16 @@ def _propose(store, run_id, started, bootstrap, forms_path, model_call, widen, m
             if position > LIMIT:
                 prepared.append((None, "night limit: more than 12 forms", []))
             else:
+                # Only this explicit old refusal may be re-proposed unchanged. Other
+                # prior forms and all later wording variants retain conditions-only identity.
+                if recheck and position <= len(replacements):
+                    fingerprint = signature(raw)
+                    other = [p for p in previous if signature(p) == fingerprint and p.get('number') != recheck[position - 1]]
+                    if not other and fingerprint not in catalog_signatures:
+                        seen.discard(fingerprint)
                 prepared.append(checked(raw, f"F-{next_number + position - 1}",
-                                        author, history, kinds, seen, middle_only=middle_only, graph=engine.graph if engine else None))
+                                        'program/recheck-own-words' if recheck and position <= len(replacements) else author,
+                                        history, kinds, seen, middle_only=middle_only, graph=engine.graph if engine else None))
         reviewable = [{"form": f, "examples": distinct_fills(e)} for f, r, e in prepared if r is None]
         decisions = forms_patterns.review(store, run_id, reviewable, model_call) if reviewable else {}
         with store.connection:
@@ -697,7 +744,7 @@ def _propose(store, run_id, started, bootstrap, forms_path, model_call, widen, m
             store.connection.execute("UPDATE form_night_runs SET status='completed',finished=? WHERE id=?", (time.time(), run_id))
     except Exception as error:
         store.connection.rollback()
-        if reply is None and not widen:
+        if reply is None and writer_attempted:
             store.save_model_call("forms-night:" + run_id, "?", "?", prompt, started, None, False, str(error))
         elif reply is not None:
             store.connection.execute("UPDATE model_calls SET ok=0,error=? WHERE question_id=?",
@@ -717,9 +764,12 @@ def main() -> None:
                         help='re-propose named exact-count forms with minimums, under new numbers')
     parser.add_argument('--middle-only', action='store_true',
                         help='propose only not_sure forms with exact aligned and missing halves')
+    parser.add_argument('--recheck', nargs='+', default=[], metavar='F-N',
+                        help='recheck explicitly named rejected forms, keeping old rows and assigning new numbers')
     args = parser.parse_args()
     try:
-        result = night(args.store, bootstrap=args.bootstrap, widen=tuple(args.widen), middle_only=args.middle_only, graph_mode=True)
+        result = night(args.store, bootstrap=args.bootstrap, widen=tuple(args.widen), middle_only=args.middle_only,
+                       graph_mode=True, recheck=tuple(args.recheck))
     except (ValueError, OSError, forms.Refused) as error:
         parser.exit(1, f"forms night: {error}\n")
     print(json.dumps(result, ensure_ascii=False, indent=2))

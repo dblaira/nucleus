@@ -33,7 +33,7 @@ def writer(values):
     return lambda prompt, **kwargs: ModelReply('test', 'practice-writer', json.dumps({'questions': values}))
 
 
-def scenario(question='Why does FLOW feel clear here?', word='FLOW'):
+def scenario(question='Why does FLOW feel clear here, but what happened with the app?', word='FLOW'):
     return {'question': question, 'target_word': word}
 
 
@@ -85,7 +85,7 @@ def test_generator_style_uses_only_exact_real_surface_questions(copy):
 
 def test_practice_budget_caps_asks_and_retains_overflow(copy, monkeypatch):
     monkeypatch.setattr(dictionary, 'brief', lambda q: reading())
-    values = [scenario(f'What does FLOW mean in practice {i}?') for i in range(23)]
+    values = [scenario(f'What does FLOW mean in practice {i}, yet what happened with the app?') for i in range(23)]
     result = practice.run(copy, 'night', model_call=writer(values), ask_call=fake_ask)
     assert (result['generated'], result['asked'], result['refused']) == (23, 20, 3)
     assert result['refusal_reasons'] == {'practice limit: more than 20 questions': 3}
@@ -94,10 +94,53 @@ def test_practice_budget_caps_asks_and_retains_overflow(copy, monkeypatch):
     assert json.loads(practice.SCHEMA.read_text())['properties']['questions']['maxItems'] == 20
 
 
+def test_at_least_half_practice_questions_have_two_parts(copy, monkeypatch):
+    monkeypatch.setattr(dictionary, 'brief', lambda q: reading())
+    values = [scenario('FLOW feels clear, but the app did what?'), scenario('What does FLOW mean here?')]
+    result = practice.run(copy, 'night', model_call=writer(values), ask_call=fake_ask)
+    assert result['status'] == 'completed' and result['asked'] == 2
+    assert result['two_part_questions'] == 1
+    assert result['labels'] == {'aligned': 0, 'middle': 2, 'dont_know': 0}
+
+
+def test_practice_quota_is_checked_after_target_validation_before_any_ask(copy, monkeypatch):
+    monkeypatch.setattr(dictionary, 'brief', lambda q: reading())
+    values = [scenario('FLOW is clear, but the app did what?', 'IMAGINED'),
+              scenario('What does FLOW mean here?'), scenario('Why does FLOW matter?')]
+    result = practice.run(copy, 'night', model_call=writer(values),
+                          ask_call=lambda *a, **k: pytest.fail('quota must stop before asking'))
+    assert result['status'] == 'failed' and result['asked'] == 0
+    assert result['error'] == 'practice needs at least half two-part questions'
+    assert result['results'][0]['reason'] == 'unknown dictionary target'
+    assert all(r['raw'] == v for r, v in zip(result['results'], values))
+    assert copy.connection.execute('SELECT count(*) FROM questions').fetchone()[0] == 0
+
+
+def test_odd_practice_batch_rounds_two_part_minimum_up(copy, monkeypatch):
+    monkeypatch.setattr(dictionary, 'brief', lambda q: reading())
+    values = [scenario('FLOW is clear, yet the app did what?'),
+              scenario('What does FLOW mean here?'), scenario('Why does FLOW matter?')]
+    result = practice.run(copy, 'night', model_call=writer(values),
+                          ask_call=lambda *a, **k: pytest.fail('one of three is too few'))
+    assert result['status'] == 'failed' and result['asked'] == 0
+
+
+def test_practice_label_counts_report_all_three_labels(copy, monkeypatch):
+    monkeypatch.setattr(dictionary, 'brief', lambda q: reading())
+    labels = iter(['aligned', 'not_sure', 'dont_know'])
+    def ask_labels(question, *, store, question_id, **kwargs):
+        answer = next(labels)
+        store.save_answer(question_id, 'answered', answer, answer, '{}', True, None)
+        return ask.Result(question_id, question, 'answered', answer=answer, text=answer)
+    values = [scenario(f'FLOW is clear here {i}, but what happened?') for i in range(3)]
+    result = practice.run(copy, 'night', model_call=writer(values), ask_call=ask_labels)
+    assert result['labels'] == {'aligned': 1, 'middle': 1, 'dont_know': 1}
+
+
 def test_practice_rejects_old_duplicate_unknown_and_unreadable_targets(copy, monkeypatch):
     copy.new_question("Why don't I trust this app?", 'web')
     monkeypatch.setattr(dictionary, 'brief', lambda q: reading('LIFT' if q == 'A new question?' else 'FLOW'))
-    values = [scenario(' WHY DON’T I TRUST THIS APP? '), scenario(), scenario('  why does FLOW feel clear here?  '),
+    values = [scenario(' WHY DON’T I TRUST THIS APP? '), scenario(), scenario('  why does FLOW feel clear here, but what happened with the app?  '),
               scenario('New made-up word?', 'IMAGINED'), scenario('A new question?')]
     result = practice.run(copy, 'night', model_call=writer(values), ask_call=fake_ask)
     assert (result['asked'], result['refused']) == (1, 4)
@@ -109,7 +152,7 @@ def test_exact_meaning_phrase_can_target_without_word_itself(copy, monkeypatch):
     meaning = dictionary.Meaning('FLOW', '6,12,15,23', 1, 'curious pulling sensation')
     monkeypatch.setattr(dictionary, 'load_meanings', lambda path: [meaning])
     monkeypatch.setattr(dictionary, 'brief', lambda q: {**reading(), 'heSaidTheWordItself': []})
-    result = practice.run(copy, 'night', model_call=writer([scenario('What is this curious pulling sensation?')]), ask_call=fake_ask)
+    result = practice.run(copy, 'night', model_call=writer([scenario('What is this curious pulling sensation, but what happened with the app?')]), ask_call=fake_ask)
     assert result['asked'] == result['answered'] == 1
 
 
