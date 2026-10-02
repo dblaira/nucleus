@@ -278,3 +278,53 @@ performed. The original dirty checkout is preserved. The exact instruction is
 appended on companion Cowboyai branch `codex/forms-slice-3c-ledger`.
 
 **Stopped before slice 4. No approval page or approval action was built.**
+
+## Forms slice 4 — October 2, 2026 Pacific
+
+Adam's next request in the same Codex chat:
+
+> Build slice 4 only, on a new branch codex/forms-slice-4 from 04fe394, in a new worktree. Add a /forms page to nucleus/serve.py. Let the port and database path be set when the server starts; the defaults stay 8766 and the live nucleus.sqlite3, so the live service is unchanged. Run the review copy from the slice 4 worktree on port 8767 against forms-review/nucleus.sqlite3. Never touch the live file or the service already running on 8766. The page shows each proposed form: its number, its fires-when in plain words, and its filled examples, biggest first, in the same page style as today. Two buttons only, no editing. Yes writes the form into forms.txt on this branch as approved; no marks it rejected and keeps it. Keep NUCLEUS_FORMS_ONLY off. All tests pass, plus new tests for yes, no, and "a proposed form is never chosen". Push, do not merge to main, update HANDOFF.md, and report the phone link to port 8767.
+
+Slice 4 is built on `codex/forms-slice-4`, from exactly
+`04fe394fffbb9354212cf6cdb6f123d22735a2c8`, in the new worktree
+`/Users/adamblair/.codex/worktrees/nucleus-forms-slice-4`.
+`/forms` reuses the existing page's colors, hat, photo, and type. Each proposed
+form shows its number, large filled examples, plain fires-when conditions, and
+only Yes / No. Yes atomically appends an approved block to this worktree's
+`forms.txt`; No retains the proposal and examples and marks it rejected.
+Nothing becomes approved just by loading the page.
+
+The server now accepts `--port` and `--store`; defaults remain port 8766 and
+`~/Library/Application Support/nucleus/nucleus.sqlite3`. The review server is
+running from this worktree on **8767**, against the existing review copy at
+`~/Library/Application Support/nucleus/forms-review/nucleus.sqlite3`.
+**Phone link: http://100.111.154.126:8767/forms**. The existing service on
+8766 was never restarted or queried, and the live database was never opened.
+The review server's PID and command are saved locally in `slice-4-server.json`;
+logs are in `slice-4-server.log` beside the review copy. It is a manual process,
+not a new launchd job.
+
+**307 tests pass**, including Yes, No, proposed-never-chosen, repeat/stale
+choices, concurrent choices, failed file writes, interrupted approval receipts,
+server isolation, and the unchanged default startup / original home page.
+The browser exercised both buttons on separate synthetic test forms and read
+back the resulting file and database. The real review page was then inspected
+at a phone-sized browser width, through the same phone URL. All three current
+proposals (F-25, F-26, F-31) remain proposed. `forms.txt` is still empty.
+
+The copy was backed up to `slice-4-before.sqlite3` before startup. Every row in
+all 15 earlier tables is unchanged; the only schema addition is an empty
+`form_approvals` receipt table. Both integrity checks pass, and the backup hash
+is unchanged. No night pass or model call ran on the copy. Raw proposal payloads
+retain their original status; Store's effective status combines the proposal
+with its approval receipt. **The day picker still reads only `forms.txt`.**
+See [docs/forms-slice-4.md](docs/forms-slice-4.md) and
+[the preservation proof](docs/forms-slice-4-proof.json). Screenshots and exact
+screen records remain local because this repository is public.
+
+`NUCLEUS_FORMS_ONLY` remains off. No launchd job was installed or loaded, no
+phone app was changed, and nothing was merged to main. The original dirty
+checkout is preserved. The exact request is appended on companion Cowboyai
+branch `codex/forms-slice-4-ledger`.
+
+**Slice 4 complete. Stopped here; real forms wait for Adam's Yes or No.**

@@ -1,15 +1,20 @@
-"""Port 8766. POST /ask, GET /ask/<id>, and one page that shows the steps as they run."""
+"""Questions and form review. Defaults: port 8766 and the live store; --port/--store select a copy."""
 
 from __future__ import annotations
 
+import argparse
+from html import escape
 import json
+import secrets
+import sqlite3
 from pathlib import Path
 import sys
 import threading
 import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from urllib.parse import urlparse
+from urllib.parse import parse_qs, urlparse
 
+from . import STORE_PATH, forms, forms_review
 from . import ask as ask_module
 from . import explain as explain_module
 from .store import Store
@@ -185,8 +190,54 @@ document.getElementById('f').onsubmit = async (e) => {
 """
 
 
+# Reuse the existing page's palette, type, hat, and chosen photo.
+FORMS_STYLE = """
+.review-card{background:var(--paper);border-radius:16px;padding:20px;margin:0 0 20px;box-shadow:0 10px 26px rgba(40,30,10,.12)}
+.review-card h2{font-size:18px;letter-spacing:.04em;color:var(--lapis);margin:0 0 12px}
+.example{font-family:Georgia,serif;font-size:25px;line-height:1.4;margin:0 0 20px;white-space:pre-wrap;overflow-wrap:anywhere}
+.fires{font-size:15px;line-height:1.5;color:var(--soft);margin:0 0 18px}
+.choices{display:flex;gap:12px}
+.choices button{flex:1;min-height:50px;border-radius:12px;font:700 19px -apple-system,Helvetica,Arial,sans-serif}
+.choices button:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+.choices button:disabled{opacity:.5}
+.yes{background:var(--lapis);color:var(--paper);border:2px solid var(--lapis)}
+.no{background:transparent;color:var(--brick);border:2px solid var(--brick)}
+"""
+
+
+def forms_page(proposals: list[dict], token: str, error: str | None = None) -> str:
+    style = PAGE.split('<style>', 1)[1].split('</style>', 1)[0] + FORMS_STYLE
+    mast = '<div class="mast">' + PAGE.split('<div class="mast">', 1)[1].split('<div class="body">', 1)[0]
+    mast = mast.replace('<h1>nucleus</h1>', '<h1>Forms</h1>').replace(
+        'your words first, then your three answers', 'Nothing is used without your yes.')
+    cards = []
+    for p in proposals:
+        number = escape(p['number'] or 'Form')
+        examples = ''.join('<p class="example">' + escape(e['text']) + '</p>' for e in p['examples']
+                           if isinstance(e, dict) and isinstance(e.get('text'), str))
+        condition = forms_review.fires_when(p['form']['when']) if not p['error'] else 'Saved examples need checking.'
+        disabled = ' disabled' if p['error'] else ''
+        cards.append(f'<article class="review-card" aria-labelledby="form-{number}">'
+                     f'<h2 id="form-{number}">{number}</h2>{examples}'
+                     f'<p class="fires"><b>Fires when</b><br>{escape(condition)}</p>'
+                     '<form class="choices" action="/forms/decision" method="post">'
+                     f'<input type="hidden" name="proposal_id" value="{escape(p["id"])}">'
+                     f'<input type="hidden" name="version" value="{escape(p["version"])}">'
+                     f'<input type="hidden" name="token" value="{escape(token)}">'
+                     f'<button class="yes" name="choice" value="yes"{disabled}>Yes</button>'
+                     '<button class="no" name="choice" value="no">No</button></form></article>')
+    notice = f'<p class="stop" role="alert">{escape(error)}</p>' if error else ''
+    body = ''.join(cards) if cards else '<p class="answer">No forms waiting for your yes.</p>'
+    return ('<!doctype html><html lang="en"><head><meta charset="utf-8">'
+            '<meta name="viewport" content="width=device-width,initial-scale=1">'
+            '<title>Forms · Cowboy AI</title><style>' + style + '</style></head><body>'
+            '<div class="page">' + mast + '<main class="body">' + notice + body + '</main></div></body></html>')
+
+
 class Handler(BaseHTTPRequestHandler):
     store: Store
+    forms_path: Path
+    forms_token: str
 
     def _json(self, status: int, payload: dict) -> None:
         body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
@@ -196,8 +247,62 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
+    def _forms_page(self, status: int = 200, error: str | None = None) -> None:
+        store = Store(self.store.path)
+        try:
+            proposals = forms_review.pending(store, self.forms_path)
+        except (OSError, ValueError) as failure:
+            self.log_message("forms page: %s", failure)
+            proposals, status, error = [], 503, 'Forms could not be read. Reload the page.'
+        finally:
+            store.connection.close()
+        body = forms_page(proposals, self.forms_token, error).encode('utf-8')
+        self.send_response(status)
+        self.send_header('content-type', 'text/html; charset=utf-8')
+        self.send_header('content-length', str(len(body)))
+        self.send_header('cache-control', 'no-store')
+        self.send_header('content-security-policy', "default-src 'none'; img-src 'self' data:; style-src 'unsafe-inline'; form-action 'self'; frame-ancestors 'none'; base-uri 'none'")
+        self.end_headers()
+        self.wfile.write(body)
+
+    def _forms_decision(self) -> None:
+        try:
+            length = int(self.headers.get('content-length', '0'))
+            if not 0 < length <= 4096:
+                raise ValueError('Choose Yes or No on the forms page.')
+            if self.headers.get_content_type() != 'application/x-www-form-urlencoded':
+                raise ValueError('Choose Yes or No on the forms page.')
+            payload = parse_qs(self.rfile.read(length).decode('utf-8'), keep_blank_values=True, strict_parsing=True)
+            if set(payload) != {'proposal_id', 'choice', 'version', 'token'} or any(len(v) != 1 for v in payload.values()):
+                raise ValueError('Choose Yes or No on the forms page.')
+            payload = {k: v[0] for k, v in payload.items()}
+            origin = self.headers.get('origin')
+            if (not secrets.compare_digest(payload['token'], self.forms_token)
+                    or (origin is not None and origin != 'http://' + self.headers.get('host', ''))):
+                self._forms_page(403, 'Reload the forms page before choosing.')
+                return
+            forms_review.decide(self.store.path, self.forms_path, payload['proposal_id'], payload['choice'], payload['version'])
+        except forms_review.Conflict as error:
+            self._forms_page(409, str(error))
+            return
+        except (ValueError, UnicodeError) as error:
+            self._forms_page(400, str(error))
+            return
+        except (OSError, sqlite3.Error) as error:
+            self.log_message('forms decision: %s', error)
+            self._forms_page(503, 'Your choice could not be saved. Reload the page.')
+            return
+        self.send_response(303)
+        self.send_header('location', '/forms')
+        self.send_header('cache-control', 'no-store')
+        self.send_header('content-length', '0')
+        self.end_headers()
+
     def do_GET(self) -> None:  # noqa: N802
         path = urlparse(self.path).path
+        if path == "/forms":
+            self._forms_page()
+            return
         if path == "/":
             body = PAGE.replace("__NAMES__", json.dumps(STEP_NAMES)).replace("__TITLE__", explain_module.TITLE).encode("utf-8")
             self.send_response(200)
@@ -235,6 +340,9 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_POST(self) -> None:  # noqa: N802
         path = urlparse(self.path).path
+        if path == "/forms/decision":
+            self._forms_decision()
+            return
         if path not in ("/ask", "/thumb", "/thumb-explanation", "/hello"):
             self._json(404, {"error": "not found"})
             return
@@ -286,12 +394,44 @@ class Handler(BaseHTTPRequestHandler):
         sys.stderr.write("%s %s\n" % (time.strftime("%H:%M:%S"), format % args))
 
 
+def make_server(port: int = PORT, store_path: Path = STORE_PATH, *, host: str = '0.0.0.0',
+                forms_path: Path | None = None) -> ThreadingHTTPServer:
+    # Per-server handler state: two servers never share a store or approval file.
+    handler = type('ConfiguredHandler', (Handler,), {
+        'forms_path': (forms.FORMS_PATH if forms_path is None else forms_path).expanduser().resolve(),
+        'forms_token': secrets.token_urlsafe(32),
+    })
+    server = ThreadingHTTPServer((host, port), handler)
+    try:
+        handler.store = Store(store_path.expanduser().resolve())
+    except Exception:
+        server.server_close()
+        raise
+    return server
+
+
+def parse_args(argv=None):
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--port', type=int, default=PORT)
+    parser.add_argument('--store', type=Path, default=STORE_PATH, help='SQLite database for this server')
+    args = parser.parse_args(argv)
+    if not 1 <= args.port <= 65535:
+        parser.error('--port must be between 1 and 65535')
+    return args
+
+
 def main() -> None:
-    Handler.store = Store()
-    server = ThreadingHTTPServer(("0.0.0.0", PORT), Handler)
-    print(f"nucleus on http://0.0.0.0:{PORT}/  (this Mac: http://127.0.0.1:{PORT}/, from the phone over Tailscale: http://100.111.154.126:{PORT}/)")
-    server.serve_forever()
+    args = parse_args()
+    server = make_server(args.port, args.store)
+    print(f'nucleus on http://0.0.0.0:{args.port}/  (forms: /forms, store: {server.RequestHandlerClass.store.path})', flush=True)
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        server.server_close()
+        server.RequestHandlerClass.store.connection.close()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

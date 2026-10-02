@@ -72,6 +72,9 @@ CREATE TABLE IF NOT EXISTS form_night_rechecks (
   run_id TEXT NOT NULL, proposal_id TEXT NOT NULL, reason TEXT NOT NULL,
   PRIMARY KEY (run_id, proposal_id)
 );
+CREATE TABLE IF NOT EXISTS form_approvals (
+  proposal_id TEXT PRIMARY KEY, approved_at REAL NOT NULL, forms_path TEXT NOT NULL
+);
 """
 
 
@@ -373,13 +376,16 @@ class Store:
         return miss_id
 
     def form_proposals(self) -> list[dict]:
-        """payload is the original evidence; form carries the database's nonapproved status.
+        """payload is original evidence; form carries the recorded decision status.
 
         A model claiming status=approved in its payload cannot approve the returned form.
-        Only the approved file is an input to the eventual day-path loader.
+        Only the approved file is an input to the day-path loader.
         """
         rows = self.connection.execute(
-            "SELECT id, form_number, payload, status, reason, created, decided FROM form_proposals ORDER BY created, id"
+            "SELECT p.id, p.form_number, p.payload, "
+            "CASE WHEN a.proposal_id IS NOT NULL THEN 'approved' ELSE p.status END, "
+            "p.reason, p.created, COALESCE(a.approved_at,p.decided) FROM form_proposals p "
+            "LEFT JOIN form_approvals a ON a.proposal_id=p.id ORDER BY p.created,p.id"
         ).fetchall()
         return [{"id": i, "number": n, "payload": json.loads(p), "form": {**json.loads(p), "status": s},
                  "status": s, "reason": r,
@@ -390,7 +396,8 @@ class Store:
         if not isinstance(reason, str) or not reason.strip():
             raise ValueError("a rejection needs a reason")
         cursor = self.connection.execute(
-            "UPDATE form_proposals SET status = 'rejected', reason = ?, decided = ? WHERE id = ? AND status = 'proposed'",
+            "UPDATE form_proposals SET status = 'rejected', reason = ?, decided = ? WHERE id = ? AND status = 'proposed' "
+            "AND NOT EXISTS (SELECT 1 FROM form_approvals WHERE proposal_id=form_proposals.id)",
             (reason, time.time(), proposal_id),
         )
         if commit:

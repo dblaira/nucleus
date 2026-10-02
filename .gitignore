@@ -5,3 +5,5 @@ __pycache__/
 ios/build/
 ios/build-device/
 ios/*.xcodeproj/xcuserdata/
+forms.txt.lock
+.forms-*.tmp

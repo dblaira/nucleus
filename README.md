@@ -40,6 +40,23 @@ Under "Not sure" there is a second box, in his word: **possibility**. "So it's t
 .venv/bin/python -m pytest
 ```
 
+The server accepts `--port` and `--store`. With no options it still uses port
+8766 and `~/Library/Application Support/nucleus/nucleus.sqlite3`.
+
+The slice 4 review runs from its separate worktree against the existing copy:
+
+```sh
+cd /Users/adamblair/.codex/worktrees/nucleus-forms-slice-4
+/Users/adamblair/Documents/nucleus/.venv/bin/python -m nucleus.serve \
+  --port 8767 \
+  --store "$HOME/Library/Application Support/nucleus/forms-review/nucleus.sqlite3"
+```
+
+`/forms` shows pending forms with Yes / No. Yes writes an approved block to
+`forms.txt` in the running code's worktree; No keeps the rejected proposal in
+the selected database. See [slice 4](docs/forms-slice-4.md) for the running copy
+and verification. `NUCLEUS_FORMS_ONLY` remains off.
+
 ## The model
 
 One call. The Anthropic Messages API when a key is in the keychain (`security add-generic-password -s nucleus -a anthropic -w <key>`), with the nucleus block cached. Otherwise the signed-in Codex CLI, run as a plain model call: user config and rules ignored, reasoning low, read-only, in an empty folder, answer shaped by `contract.schema.json`.

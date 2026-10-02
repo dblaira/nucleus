@@ -1,0 +1,49 @@
+{
+  "base_commit": "04fe394fffbb9354212cf6cdb6f123d22735a2c8",
+  "unchanged_existing_tables": {
+    "answers": 270,
+    "candidates": 33,
+    "explanations": 108,
+    "form_misses": 0,
+    "form_night_rechecks": 23,
+    "form_night_results": 35,
+    "form_night_runs": 3,
+    "form_proposals": 35,
+    "grades": 126,
+    "links": 1400,
+    "model_calls": 383,
+    "phrase_hits": 147,
+    "questions": 270,
+    "searched_words": 143,
+    "steps": 1485
+  },
+  "new_empty_tables": [
+    "form_approvals"
+  ],
+  "backup_sha256": "c8aef826ab3734d404c731789c659471aed4fcfea3dbf15a70d1f2e130a8afc8",
+  "backup_and_copy_integrity": "ok",
+  "proposal_status": {
+    "proposed": 3,
+    "rejected": 32
+  },
+  "model_calls_added": 0,
+  "live_database_opened": false,
+  "NUCLEUS_FORMS_ONLY": "unset",
+  "tests_passed": 307,
+  "review_url": "http://100.111.154.126:8767/forms",
+  "approved_forms": 0,
+  "pending_form_numbers": [
+    "F-25",
+    "F-26",
+    "F-31"
+  ],
+  "review_process_pid": 51372,
+  "existing_8766_process_pid": 1941,
+  "browser_yes_no_fixture_verified": true,
+  "real_proposals_decided": 0,
+  "phone_sized_browser_verified": true,
+  "physical_phone_inspected": false,
+  "launchd_installed": false,
+  "launchd_loaded": false,
+  "local_proof": "/Users/adamblair/Library/Application Support/nucleus/forms-review/slice-4-proof.json"
+}

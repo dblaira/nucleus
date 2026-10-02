@@ -1,7 +1,7 @@
 """Checked sentences filled only from their literal text and a snapshot of the screen.
 
-The day path selects approved forms without a model. There is no approval API.
-See docs/forms-slice-1.md for the file format and blank binding rules.
+The day path selects approved forms without a model. Human decisions live in forms_review.
+See docs/forms-slice-1.md for the file format and docs/forms-slice-3c.md for quotes.
 """
 
 from __future__ import annotations

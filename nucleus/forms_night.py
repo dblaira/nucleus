@@ -243,7 +243,9 @@ def report(store: Store, run_id: str) -> dict:
     for position, pid, raw, reason, examples in store.connection.execute(
         "SELECT position,proposal_id,raw_json,reason,examples_json FROM form_night_results WHERE run_id=? ORDER BY position", (run_id,)
     ):
-        saved = store.connection.execute("SELECT payload,status FROM form_proposals WHERE id=?", (pid,)).fetchone()
+        saved = store.connection.execute(
+            "SELECT p.payload, CASE WHEN a.proposal_id IS NOT NULL THEN 'approved' ELSE p.status END "
+            "FROM form_proposals p LEFT JOIN form_approvals a ON a.proposal_id=p.id WHERE p.id=?", (pid,)).fetchone()
         payload = json.loads(saved[0]) if saved else None
         results.append({"position": position, "proposal_id": pid, "payload": payload,
                         "form": {**payload, "status": saved[1]} if saved else None,
