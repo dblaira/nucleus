@@ -15,16 +15,16 @@ KINDS = ['depends on', 'supports', 'requires', 'should not', *sorted(patterns.PU
 
 
 def candidate(**changes):
-    value = {'when': {'answer': 'aligned', 'kinds_present': ['rejects']},
-             'sentence': 'For {word}, an exclusion marks a boundary on what these records can support.'}
+    value = {'when': {'answer': 'aligned', 'kinds_present': ['depends on', 'rejects']},
+             'sentence': '{word} depends on “{quote:depends on}” and rejects “{quote:rejects}”.'}
     value.update(changes)
     return value
 
 
-def picture(word='FLOW', kind='rejects'):
+def picture(word='FLOW', kind='depends on'):
     return {'answer': 'aligned', 'words': [{'word': word}], 'records': [
         {'link_word': word, 'leaf': 'r1', 'kind': kind, 'quote': 'First quote'},
-        {'link_word': word, 'leaf': 'r2', 'kind': kind, 'quote': 'Second quote'}], 'missing': []}
+        {'link_word': word, 'leaf': 'r2', 'kind': 'rejects', 'quote': 'Second quote'}], 'missing': []}
 
 
 def model_reply(candidates):
@@ -33,7 +33,7 @@ def model_reply(candidates):
             batch = json.loads(prompt.split('\nCandidates:\n', 1)[1])
             return ModelReply('test', 'review-fixture', json.dumps({'reviews': [
                 {'number': c['form']['number'], 'verdict': 'explains_pattern',
-                 'reason': 'Test reviewer: the exclusion limits the scope of the picture.'} for c in batch]}))
+                 'reading_grade': 3, 'one_sentence': True, 'reason': 'Test reviewer: two exact rows joined in simple words.'} for c in batch]}))
         assert schema == night.SCHEMA
         return ModelReply('test', 'fixture', json.dumps({'forms': candidates}))
     return call
@@ -52,18 +52,18 @@ def copy(tmp_path, monkeypatch):
     store.connection.close()
 
 
-def miss(store, word='FLOW', kind='rejects'):
+def miss(store, word='FLOW', kind='depends on'):
     qid = store.new_question(f'What is {word}?', 'test')
     store.save_form_miss(qid, picture(word, kind), 'no approved forms')
     return qid
 
 
-def painted(store, word='FLOW', kind='rejects', printed_kind=None):
+def painted(store, word='FLOW', kind='depends on', printed_kind=None):
     qid = store.new_question(f'What is {word}?', 'test')
     payload = {'answer': 'aligned', 'words': [{'word': word}],
-               'records': [{'id': 'r1', 'quote': 'Quote'}]}
+               'records': [{'id': 'r1', 'quote': 'First quote'}, {'id': 'r2', 'quote': 'Second quote'}]}
     store.save_answer(qid, 'answered', 'aligned',
-                      f'aligned and why\n\n0.90 · 2026-10-01 — {word} {printed_kind or kind} “Quote”',
+                      f'aligned and why\n\n0.90 · 2026-10-01 — {word} {printed_kind or kind} “First quote”\n\n0.80 — {word} rejects “Second quote”',
                       json.dumps(payload), True, None)
     store.start_step(qid, '5 model')
     store.finish_step(qid, '5 model', 'painted from your links, no model')
@@ -78,7 +78,7 @@ def test_preview_does_not_approve_or_change_day_selection(copy):
     proposal = {'number': 'F-1', 'status': 'proposed', 'author': 'test', 'date': '2026-10-01', **candidate()}
     original = deepcopy(proposal)
     screen = night.screen_from_picture(picture(), KINDS)
-    assert forms.preview(proposal, screen).text == 'For FLOW, an exclusion marks a boundary on what these records can support.'
+    assert forms.preview(proposal, screen).text == 'FLOW depends on “First quote” and rejects “Second quote”.'
     assert forms.fill(proposal, screen) is None
     assert forms.pick(screen)[0] is None
     assert proposal == original
@@ -114,8 +114,8 @@ def test_one_pass_retains_exact_trace_and_three_real_distinct_examples(copy):
     (candidate(when={'answer': 'aligned', 'secret': None}), 'unknown or missing conditions'),
     (candidate(sentence='You should follow {word}.'), 'advice'),
     (candidate(sentence='{word}. Two. Three. Four. Five.'), 'more than 4 sentences'),
-    (candidate(sentence='pre{word}.'), 'kill switch'),
-    (candidate(when={'answer': 'dont_know', 'kinds_present': ['rejects']}), 'no safe filled example'),
+    (candidate(sentence='pre{word} depends on “{quote:depends on}” and rejects “{quote:rejects}”.'), 'kill switch'),
+    (candidate(when={'answer': 'dont_know', 'kinds_present': ['depends on', 'rejects']}), 'no safe filled example'),
     ({**candidate(), 'status': 'approved'}, 'unknown or missing proposal fields'),
     ('malformed', 'unknown or missing proposal fields'),
 ])
@@ -131,7 +131,7 @@ def test_every_refused_form_and_original_payload_are_retained(copy, value, reaso
 
 def test_null_conditions_are_wire_format_only(copy):
     miss(copy)
-    result = run(copy, [candidate(when={'answer': 'aligned', 'kinds_present': ['rejects'],
+    result = run(copy, [candidate(when={'answer': 'aligned', 'kinds_present': ['depends on', 'rejects'],
         'kinds_absent': None, 'record_count': None, 'word_count': None, 'missing_links': None})])
     assert result['proposed'] == 1
     assert result['results'][0]['form']['when'] == candidate()['when']
@@ -148,7 +148,7 @@ def test_fill_checks_all_matching_answers_not_just_first_three(copy):
 
 def test_limit_never_writes_more_than_twelve_proposal_rows_but_keeps_overflow(copy):
     miss(copy)
-    values = [candidate(sentence=f'For {{word}}, exclusion sets a boundary: this picture does not cover every situation. Frame {i}.') for i in range(14)]
+    values = [candidate(sentence=f'In case {i}, {{word}} depends on “{{quote:depends on}}” and rejects “{{quote:rejects}}”.') for i in range(14)]
     result = run(copy, values)
     assert len(copy.form_proposals()) == 12
     assert (result['proposed'], result['refused']) == (12, 2)
@@ -161,11 +161,11 @@ def test_duplicate_previous_rejected_proposed_approved_and_same_batch(copy):
     first = run(copy)
     copy.reject_form_proposal(first['results'][0]['proposal_id'], 'Adam said no')
     miss(copy, 'LIFT')
-    result = run(copy, [candidate(), candidate(sentence='For {word}, an exclusion draws a limit around this picture.'), candidate(sentence='For {word}, an exclusion draws a limit around this picture.')])
+    result = run(copy, [candidate(), candidate(sentence='{word} rejects “{quote:rejects}” and depends on “{quote:depends on}”.'), candidate(sentence='{word} rejects “{quote:rejects}” and depends on “{quote:depends on}”.')])
     assert (result['proposed'], result['refused']) == (1, 2)
     assert result['results'][0]['reason'] == result['results'][2]['reason'] == 'duplicate of a previous form'
     miss(copy, 'MOMENTUM')
-    result = run(copy, [candidate(sentence='For {word}, an exclusion draws a limit around this picture.')])
+    result = run(copy, [candidate(sentence='{word} rejects “{quote:rejects}” and depends on “{quote:depends on}”.')])
     assert result['refused'] == 1
     forms.FORMS_PATH.write_text('''[[forms]]
 number = "F-80"
@@ -219,7 +219,7 @@ def test_atomic_write_failure_keeps_no_half_proposals_and_does_not_consume(copy,
             raise OSError('test disk failure')
         return original(self, payload, reason, **kwargs)
     monkeypatch.setattr(Store, 'save_form_proposal', fail)
-    result = run(copy, [candidate(), candidate(sentence='For {word}, an exclusion draws a limit around this picture.')])
+    result = run(copy, [candidate(), candidate(sentence='{word} rejects “{quote:rejects}” and depends on “{quote:depends on}”.')])
     assert result['status'] == 'failed'
     assert copy.form_proposals() == []
     assert copy.connection.execute('SELECT count(*) FROM form_night_results').fetchone()[0] == 0
@@ -236,8 +236,8 @@ def test_bootstrap_uses_historical_printed_kind_never_current_links(copy):
     assert first['proposed'] == 1
     example = first['results'][0]['examples'][0]
     assert example['question_id'] == qid
-    assert example['screen']['rows'][0]['kind'] == 'rejects'
-    assert example['text'] == 'For FLOW, an exclusion marks a boundary on what these records can support.'
+    assert example['screen']['rows'][0]['kind'] == 'depends on'
+    assert example['text'] == 'FLOW depends on “First quote” and rejects “Second quote”.'
     assert run(copy, bootstrap=True)['inputs'] == 0
 
 
@@ -269,7 +269,7 @@ def test_downvote_uses_miss_snapshot_when_historical_text_has_no_middle(copy):
     run(copy)
     copy.save_explanation(qid, 'FLOW old paragraph', None, 'test', 'fixture', 1)
     copy.thumb_explanation(qid, False)
-    result = run(copy, [candidate(sentence='For {word}, an exclusion draws a limit around this picture.')])
+    result = run(copy, [candidate(sentence='{word} rejects “{quote:rejects}” and depends on “{quote:depends on}”.')])
     assert result['usable_inputs'] == result['proposed'] == 1
 
 

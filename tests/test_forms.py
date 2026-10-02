@@ -206,6 +206,10 @@ def test_provenance_for_varied_screen_words_and_counts():
         count = rng.randint(1, 30)
         rows = tuple(forms.Row(words[0], f"r{i}", "depends on") for i in range(count))
         screen = forms.Screen("aligned", words, rows)
+        if "don't" in words:
+            with pytest.raises(forms.Refused, match="negative or caveat"):
+                fill(value, screen)
+            continue
         result = fill(value, screen)
         allowed = literals | set(tokens.findall(" ".join(words) + " depends on")) | {str(count), "2"}
         assert set(tokens.findall(result.text)) <= allowed

@@ -227,3 +227,54 @@ merge to main was performed. The exact request is appended on companion
 branch `codex/forms-slice-3b-ledger` in Cowboyai.
 
 **Stopped before slice 4. No approval page or approval action was built.**
+
+## Forms slice 3c — October 2, 2026 Pacific
+
+Adam's next request in the same Codex chat:
+
+> Build slice 3c on a new branch codex/forms-slice-3c from 25782d8. Add one blank: the exact quote of the record a row points to, for a named middle word, word for word from the screen. A form joins two or more rows into one plain sentence, for example: "{word} depends on {quote:depends on} and rejects {quote:rejects}." Refuse any form that contains a negative or a caveat (not, does not, cannot, no evidence), or the words establish, claim, prerequisite, containment, necessity, or coexistence. Write at a fifth-grade reading level. Keep every existing rule. Mark all 3b forms rejected. Rerun on the copy, never the live file, and paste five filled examples. Push, do not merge, update HANDOFF.md, and stop before slice 4.
+
+Slice 3c is built on `codex/forms-slice-3c`, based exactly on
+`25782d8017a6d9c5ee80a9b75c0d6d4c1b033c4e`, in
+`/Users/adamblair/.codex/worktrees/nucleus-forms-slice-3c`.
+The new `{quote:middle word}` blank copies a complete displayed quote from a
+row for that same word and named middle word, preserving its exact text and
+source-row identity. New proposals join two or more distinct row quotes in
+one plain sentence. Negative/caveat and blocked-word vetoes apply to templates,
+source quotes, and filled text. The night reviewer now checks fifth-grade
+reading level and one sentence across every distinct fill, retaining at most
+three examples per proposal. Pattern, advice, provenance, and approval rules
+remain in force.
+
+**Copy rerun: 11 candidates, 3 new proposals, 8 refusals.** Seven were rated
+above fifth grade (five grade 6, two grade 7); one had no matching saved screen
+for its required 40 rows and 4 words. **All twelve 3b forms are now rejected:**
+eleven pending forms were refused for “not” or “neither,” and already-rejected
+F-19 remains unchanged. Old payloads, examples, and traces are preserved.
+No form is approved. The five reported examples consist of the three proposed
+examples and two explicitly rejected examples; exact source text is retained.
+
+The existing review copy was backed up to `slice-3c-before.sqlite3` before the
+pass. The live database was never opened. Run
+`1c9f17af-361a-4c18-a945-4fd6ad64c9f0` used two existing-door Codex
+`gpt-5.6-sol` calls, revisiting 120 historical inputs under `quotes-v1`:
+106 usable and 14 retained as skipped for unrecoverable printed middle words.
+
+**273 tests pass.** All ten saved examples refill exactly, and twenty quote
+parts match their saved screen rows word for word. The painted-answer test
+proves provider `form`, zero model-call rows, and exact quotes present on its
+returned screen. Existing zero-approved fallback tests pass. Copy and backup
+integrity checks pass; the backup hash and earlier records are preserved.
+Read [docs/forms-slice-3c.md](docs/forms-slice-3c.md),
+[the night summary](docs/forms-slice-3c-night.json), and
+[the proof summary](docs/forms-slice-3c-proof.json). This repository is public;
+full screen records and five filled examples remain in the local review folder's
+`slice-3c-night.json` and `slice-3c-proof.json`, with the examples also pasted in
+the Codex reply. The committed summaries contain result metadata and text hashes.
+
+`forms.txt` remains empty. `NUCLEUS_FORMS_ONLY` stays off. The launchd plist
+remains uninstalled and unloaded. No merge, deployment, or live migration was
+performed. The original dirty checkout is preserved. The exact instruction is
+appended on companion Cowboyai branch `codex/forms-slice-3c-ledger`.
+
+**Stopped before slice 4. No approval page or approval action was built.**

@@ -284,3 +284,29 @@ def test_misses_are_append_only_and_survive_reopening(setup):
         assert reopened.connection.execute("PRAGMA integrity_check").fetchone() == ("ok",)
     finally:
         reopened.connection.close()
+
+
+def test_approved_quote_join_is_exact_on_painted_answer_with_zero_model_calls(setup, monkeypatch):
+    store, path = setup
+    graph = load_graph(NUCLEUS_FILES['graph'], NUCLEUS_FILES['ledger'])
+    record = graph.find('conn-obs-010')
+    assert graph.is_accepted(record)
+    store.add_link('FLOW', record.leaf, record.label, '', 'links:FLOW', 'fixture', 'fixture', kind='rejects')
+    write_forms(path, fixture_form(when={'kinds_present': ['depends on', 'rejects']},
+        sentence='{word} depends on “{quote:depends on}” and rejects “{quote:rejects}”.'))
+    monkeypatch.setattr(explain, 'start', forbidden)
+    monkeypatch.setattr(threading, 'Thread', forbidden)
+    result = run(store, explain_call=forbidden)
+    paragraph = store.explanation(result.question_id)
+    assert paragraph['provider'] == 'form' and paragraph['model'] == 'F-7'
+    assert model_rows(store, result.question_id) == []
+    parts = json.loads(next(s['note'] for s in result.steps if s['name'] == '5 form F-7 chosen'))['parts']
+    quotes = [p for p in parts if p['source'].endswith('.quote')]
+    assert len(quotes) == 2
+    for part in quotes:
+        index = int(part['source'].split('[')[1].split(']')[0])
+        row = result.records[index]
+        assert part['text'] == ask.gate_module.unescape_label(row['quote'])
+        assert row['link_word'] == 'FLOW'
+        assert f'FLOW {row["kind"]} “{part["text"]}”' in result.text
+    assert paragraph['text'] == 'F-7 · ' + ''.join(p['text'] for p in parts)

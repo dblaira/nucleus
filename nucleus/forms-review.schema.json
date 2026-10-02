@@ -14,7 +14,9 @@
         "required": [
           "number",
           "verdict",
-          "reason"
+          "reason",
+          "reading_grade",
+          "one_sentence"
         ],
         "properties": {
           "number": {
@@ -30,6 +32,14 @@
           },
           "reason": {
             "type": "string"
+          },
+          "reading_grade": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 12
+          },
+          "one_sentence": {
+            "type": "boolean"
           }
         }
       }

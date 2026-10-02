@@ -14,7 +14,7 @@ from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
 
-from . import explain
+from . import explain, forms_style
 from .kinds import load_kinds
 
 FORMS_PATH = Path(__file__).resolve().parent.parent / "forms.txt"
@@ -35,6 +35,7 @@ class Row:
     word: str
     record: str
     kind: str | None
+    quote: str | None = None
 
 
 @dataclass(frozen=True)
@@ -64,7 +65,7 @@ def _parts(sentence: str) -> list[tuple[str, str | None]]:
     position = 0
     for match in _BLANK.finditer(sentence):
         literal, name = sentence[position:match.start()], match[1]
-        if "{" in literal or "}" in literal or name not in BLANKS:
+        if "{" in literal or "}" in literal or (name not in BLANKS and not name.startswith("quote:")):
             raise Refused("unknown or malformed blank")
         parts.append((literal, name))
         position = match.end()
@@ -77,6 +78,9 @@ def _parts(sentence: str) -> list[tuple[str, str | None]]:
 
 def _paragraph_reason(text: str, words: list[str]) -> str | None:
     reason = explain.check(text, words)
+    if reason:
+        return reason
+    reason = forms_style.check(text)
     if reason:
         return reason
     if "\n" in text or "\r" in text:
@@ -139,6 +143,13 @@ def check(form: object, *, kinds: list[str] | None = None) -> str | None:
     except Refused as error:
         return str(error)
     blanks = {blank for _, blank in parts if blank is not None}
+    for blank in blanks:
+        if blank.startswith("quote:"):
+            kind = blank[len("quote:"):]
+            if kind not in kinds:
+                return "unknown middle word in quote blank"
+            if kind not in when.get("kinds_present", []):
+                return "quote blank needs its named middle word in kinds_present"
     if blanks & {"kind", "count"} and len(when.get("kinds_present", [])) != 1:
         return "kind and count need exactly one middle word to fire on"
     return _paragraph_reason(sentence, [])
@@ -212,6 +223,8 @@ def _check_screen(screen: Screen, kinds: list[str]) -> None:
             raise Refused("invalid screen row")
         if row.kind is not None and (not isinstance(row.kind, str) or row.kind not in kinds):
             raise Refused("unknown middle word on screen")
+        if row.quote is not None and (not isinstance(row.quote, str) or not row.quote.strip()):
+            raise Refused("invalid screen quote")
         if row.record in records:
             raise Refused("duplicate screen record")
         records.add(row.record)
@@ -278,6 +291,16 @@ def _fill(form: dict, screen: Screen, *, kinds: list[str] | None, statuses: set[
             if word != focus:
                 values["other_word"] = Part(word, f"screen.words[{i}]")
                 break
+    # Exact, complete displayed quotes only. Choose the shortest safe whole quote
+    # for this word/kind (word count, then length, then screen order). Never edit it.
+    for blank in sorted(b for b in blanks if b.startswith("quote:")):
+        kind = blank[len("quote:"):]
+        eligible = [i for i, row in enumerate(screen.rows)
+                    if row.word == focus and row.kind == kind and row.quote is not None
+                    and _paragraph_reason(row.quote, []) is None]
+        if eligible:
+            i = min(eligible, key=lambda i: (len(_TOKEN.findall(screen.rows[i].quote)), len(screen.rows[i].quote), i))
+            values[blank] = Part(screen.rows[i].quote, f"screen.rows[{i}].quote")
     if bound_rows:
         index = bound_rows[0]
         values["kind"] = Part(screen.rows[index].kind, f"screen.rows[{index}].kind")

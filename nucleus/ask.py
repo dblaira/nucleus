@@ -112,7 +112,8 @@ def ask(question: str, store: Store | None = None, surface: str = "cli",
             # Only the rows actually painted, never a new lookup of all links for these words.
             screen = forms_module.Screen(
                 picture.answer, tuple(w["word"] for w in picture.words),
-                tuple(forms_module.Row(r["link_word"], r["leaf"], r.get("kind")) for r in picture.records),
+                tuple(forms_module.Row(r["link_word"], r["leaf"], r.get("kind"),
+                                       gate_module.unescape_label(r["quote"])) for r in picture.records),
                 bool(picture.missing),
             )
             filled, miss_reason = forms_module.pick(screen)

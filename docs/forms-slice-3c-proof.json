@@ -1,0 +1,159 @@
+{
+  "base_commit": "25782d8017a6d9c5ee80a9b75c0d6d4c1b033c4e",
+  "policy": "quotes-v1",
+  "run_id": "1c9f17af-361a-4c18-a945-4fd6ad64c9f0",
+  "copy_manifest": {
+    "created_utc": "2026-10-02T14:28:01.102745+00:00",
+    "source_copy": "/Users/adamblair/Library/Application Support/nucleus/forms-review/nucleus.sqlite3",
+    "backup": "/Users/adamblair/Library/Application Support/nucleus/forms-review/slice-3c-before.sqlite3",
+    "backup_sha256": "22e2deea9e4709b3f4c26afb9f5e4c49d5fc9bfffa8e1bebc4ca889d0fb5332f",
+    "integrity_check": "ok",
+    "live_opened": false
+  },
+  "backup_hash_unchanged": true,
+  "copy_integrity_check": "ok",
+  "preserved_tables": {
+    "questions": {
+      "original_rows": 270,
+      "added_rows": 0,
+      "changed_rows": 0
+    },
+    "steps": {
+      "original_rows": 1485,
+      "added_rows": 0,
+      "changed_rows": 0
+    },
+    "model_calls": {
+      "original_rows": 381,
+      "added_rows": 2,
+      "changed_rows": 0
+    },
+    "answers": {
+      "original_rows": 270,
+      "added_rows": 0,
+      "changed_rows": 0
+    },
+    "candidates": {
+      "original_rows": 33,
+      "added_rows": 0,
+      "changed_rows": 0
+    },
+    "grades": {
+      "original_rows": 126,
+      "added_rows": 0,
+      "changed_rows": 0
+    },
+    "phrase_hits": {
+      "original_rows": 147,
+      "added_rows": 0,
+      "changed_rows": 0
+    },
+    "links": {
+      "original_rows": 1400,
+      "added_rows": 0,
+      "changed_rows": 0
+    },
+    "searched_words": {
+      "original_rows": 143,
+      "added_rows": 0,
+      "changed_rows": 0
+    },
+    "explanations": {
+      "original_rows": 108,
+      "added_rows": 0,
+      "changed_rows": 0
+    },
+    "form_proposals": {
+      "original_rows": 24,
+      "added_rows": 11,
+      "changed_rows": 11
+    },
+    "form_misses": {
+      "original_rows": 0,
+      "added_rows": 0,
+      "changed_rows": 0
+    },
+    "form_night_runs": {
+      "original_rows": 2,
+      "added_rows": 1,
+      "changed_rows": 0
+    },
+    "form_night_results": {
+      "original_rows": 24,
+      "added_rows": 11,
+      "changed_rows": 0
+    },
+    "form_night_rechecks": {
+      "original_rows": 12,
+      "added_rows": 11,
+      "changed_rows": 0
+    }
+  },
+  "all_3b_rejected": 12,
+  "newly_rejected_3b": 11,
+  "already_rejected_3b_preserved": 1,
+  "new_proposed": 3,
+  "new_refused": 8,
+  "new_refusal_reasons": {
+    "reading level above fifth grade: 7: “Is part of” makes a containment statement, which the review rules refuse.": 1,
+    "reading level above fifth grade: 6: It faithfully joins the explains row and the correlates-with row for LIFT using both exact quotes.": 1,
+    "reading level above fifth grade: 6: It faithfully joins the correlates-with row and the supports row for MOMENTUM using both exact quotes.": 1,
+    "reading level above fifth grade: 6: It faithfully joins the supports row and the opposing inhibits row for MOMENTUM using both exact quotes.": 1,
+    "reading level above fifth grade: 7: It faithfully joins the enables row and the explains row for SOFTWARE using both exact quotes.": 1,
+    "reading level above fifth grade: 6: It faithfully joins the supports row and the overlaps row for CONFIDENCE using both exact quotes.": 1,
+    "no safe filled example from the saved answers": 1,
+    "reading level above fifth grade: 6: It faithfully joins the opposing is-different-from row and the correlates-with row for WORK using both exact quotes.": 1
+  },
+  "prior_refusal_reasons": {
+    "negative or caveat: not": 10,
+    "negative or caveat: neither": 1
+  },
+  "all_examples_refilled_exactly": 10,
+  "quote_parts_checked_against_saved_screen": 20,
+  "all_distinct_review_examples": 10,
+  "model_calls": 2,
+  "tests_passed": 273,
+  "approved_forms": 0,
+  "NUCLEUS_FORMS_ONLY": false,
+  "launchd_installed": false,
+  "launchd_loaded": false,
+  "live_database_opened": false,
+  "five_examples": [
+    {
+      "number": "F-25",
+      "status": "proposed",
+      "reading_grade": 5,
+      "reason": null,
+      "text_sha256": "67cb3e0fd39f5682bbcd415d601759e72df82db2015a8bc128da9b423fd8fcfd"
+    },
+    {
+      "number": "F-26",
+      "status": "proposed",
+      "reading_grade": 5,
+      "reason": null,
+      "text_sha256": "56f28b09cb7fe23f47d31a4b9a71b5924d4ad8820d55bdff87a3cc097e263c91"
+    },
+    {
+      "number": "F-31",
+      "status": "proposed",
+      "reading_grade": 5,
+      "reason": null,
+      "text_sha256": "ce8fe429f48041c93518f7e14a29e1f3ca1ff9a9e6342f55beafeddb8427b410"
+    },
+    {
+      "number": "F-28",
+      "status": "rejected",
+      "reading_grade": 6,
+      "reason": "reading level above fifth grade: 6: It faithfully joins the explains row and the correlates-with row for LIFT using both exact quotes.",
+      "text_sha256": "04179095c4957ff2fede05fab1c58e71cc76141d031a1b122fd078f3a974736d"
+    },
+    {
+      "number": "F-35",
+      "status": "rejected",
+      "reading_grade": 6,
+      "reason": "reading level above fifth grade: 6: It faithfully joins the opposing is-different-from row and the correlates-with row for WORK using both exact quotes.",
+      "text_sha256": "efec2460d4506291557a43b5ce34fd77d7122c9b4ec3c279fc064e8519599abb"
+    }
+  ],
+  "full_proof_local": "/Users/adamblair/Library/Application Support/nucleus/forms-review/slice-3c-proof.json"
+}

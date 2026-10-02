@@ -1,0 +1,540 @@
+{
+  "run_id": "1c9f17af-361a-4c18-a945-4fd6ad64c9f0",
+  "database": "/Users/adamblair/Library/Application Support/nucleus/forms-review/nucleus.sqlite3",
+  "status": "completed",
+  "provider": "codex",
+  "model": "gpt-5.6-sol",
+  "error": null,
+  "inputs": 120,
+  "usable_inputs": 106,
+  "proposed": 3,
+  "refused": 8,
+  "refusal_reasons": {
+    "reading level above fifth grade: 7: “Is part of” makes a containment statement, which the review rules refuse.": 1,
+    "reading level above fifth grade: 6: It faithfully joins the explains row and the correlates-with row for LIFT using both exact quotes.": 1,
+    "reading level above fifth grade: 6: It faithfully joins the correlates-with row and the supports row for MOMENTUM using both exact quotes.": 1,
+    "reading level above fifth grade: 6: It faithfully joins the supports row and the opposing inhibits row for MOMENTUM using both exact quotes.": 1,
+    "reading level above fifth grade: 7: It faithfully joins the enables row and the explains row for SOFTWARE using both exact quotes.": 1,
+    "reading level above fifth grade: 6: It faithfully joins the supports row and the overlaps row for CONFIDENCE using both exact quotes.": 1,
+    "no safe filled example from the saved answers": 1,
+    "reading level above fifth grade: 6: It faithfully joins the opposing is-different-from row and the correlates-with row for WORK using both exact quotes.": 1
+  },
+  "full_report_local": "/Users/adamblair/Library/Application Support/nucleus/forms-review/slice-3c-night.json",
+  "skipped_inputs": {
+    "count": 14,
+    "reason": "saved rows lack an unambiguous printed middle word"
+  },
+  "prior_proposals_refused": [
+    {
+      "number": "F-13",
+      "reason": "negative or caveat: not"
+    },
+    {
+      "number": "F-14",
+      "reason": "negative or caveat: not"
+    },
+    {
+      "number": "F-15",
+      "reason": "negative or caveat: not"
+    },
+    {
+      "number": "F-16",
+      "reason": "negative or caveat: not"
+    },
+    {
+      "number": "F-17",
+      "reason": "negative or caveat: not"
+    },
+    {
+      "number": "F-18",
+      "reason": "negative or caveat: not"
+    },
+    {
+      "number": "F-20",
+      "reason": "negative or caveat: not"
+    },
+    {
+      "number": "F-21",
+      "reason": "negative or caveat: not"
+    },
+    {
+      "number": "F-22",
+      "reason": "negative or caveat: not"
+    },
+    {
+      "number": "F-23",
+      "reason": "negative or caveat: neither"
+    },
+    {
+      "number": "F-24",
+      "reason": "negative or caveat: not"
+    }
+  ],
+  "meaning_reviews": [
+    {
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "ok": true,
+      "error": null,
+      "decisions": [
+        {
+          "number": "F-25",
+          "verdict": "explains_pattern",
+          "reason": "It faithfully joins the values row and the enables row for FLOW using both exact quotes.",
+          "reading_grade": 5,
+          "one_sentence": true
+        },
+        {
+          "number": "F-26",
+          "verdict": "explains_pattern",
+          "reason": "It faithfully joins the values row and the explains row for FLOW using both exact quotes.",
+          "reading_grade": 5,
+          "one_sentence": true
+        },
+        {
+          "number": "F-27",
+          "verdict": "unsupported_meaning",
+          "reason": "“Is part of” makes a containment statement, which the review rules refuse.",
+          "reading_grade": 7,
+          "one_sentence": true
+        },
+        {
+          "number": "F-28",
+          "verdict": "explains_pattern",
+          "reason": "It faithfully joins the explains row and the correlates-with row for LIFT using both exact quotes.",
+          "reading_grade": 6,
+          "one_sentence": true
+        },
+        {
+          "number": "F-29",
+          "verdict": "explains_pattern",
+          "reason": "It faithfully joins the correlates-with row and the supports row for MOMENTUM using both exact quotes.",
+          "reading_grade": 6,
+          "one_sentence": true
+        },
+        {
+          "number": "F-30",
+          "verdict": "explains_pattern",
+          "reason": "It faithfully joins the supports row and the opposing inhibits row for MOMENTUM using both exact quotes.",
+          "reading_grade": 6,
+          "one_sentence": true
+        },
+        {
+          "number": "F-31",
+          "verdict": "explains_pattern",
+          "reason": "It uses the first displayed word and faithfully joins two distinct PULLED rows using their exact quotes.",
+          "reading_grade": 5,
+          "one_sentence": true
+        },
+        {
+          "number": "F-32",
+          "verdict": "explains_pattern",
+          "reason": "It faithfully joins the enables row and the explains row for SOFTWARE using both exact quotes.",
+          "reading_grade": 7,
+          "one_sentence": true
+        },
+        {
+          "number": "F-33",
+          "verdict": "explains_pattern",
+          "reason": "It faithfully joins the supports row and the overlaps row for CONFIDENCE using both exact quotes.",
+          "reading_grade": 6,
+          "one_sentence": true
+        },
+        {
+          "number": "F-35",
+          "verdict": "explains_pattern",
+          "reason": "It faithfully joins the opposing is-different-from row and the correlates-with row for WORK using both exact quotes.",
+          "reading_grade": 6,
+          "one_sentence": true
+        }
+      ]
+    }
+  ],
+  "results": [
+    {
+      "position": 1,
+      "form": {
+        "number": "F-25",
+        "when": {
+          "answer": "aligned",
+          "kinds_present": [
+            "values",
+            "enables"
+          ],
+          "record_count": 15,
+          "word_count": 1,
+          "missing_links": false
+        },
+        "sentence": "{word} values “{quote:values}” and enables “{quote:enables}”.",
+        "status": "proposed",
+        "author": "codex/gpt-5.6-sol",
+        "date": "2026-10-02"
+      },
+      "reason": null,
+      "examples": [
+        {
+          "text_sha256": "67cb3e0fd39f5682bbcd415d601759e72df82db2015a8bc128da9b423fd8fcfd",
+          "quote_parts": [
+            {
+              "source": "screen.rows[4].quote",
+              "quote_sha256": "66f4db68b620f39eba63c117835818ffd4a4f037020753e6b4d2a7881d9a21b9"
+            },
+            {
+              "source": "screen.rows[5].quote",
+              "quote_sha256": "4a43898a1feedf6bf1f447bdeb406def8c791ec8d343dfecc91f5a7c411c354f"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "position": 2,
+      "form": {
+        "number": "F-26",
+        "when": {
+          "answer": "aligned",
+          "kinds_present": [
+            "values",
+            "explains"
+          ],
+          "record_count": 15,
+          "word_count": 1,
+          "missing_links": false
+        },
+        "sentence": "{word} values “{quote:values}” and explains “{quote:explains}”.",
+        "status": "proposed",
+        "author": "codex/gpt-5.6-sol",
+        "date": "2026-10-02"
+      },
+      "reason": null,
+      "examples": [
+        {
+          "text_sha256": "56f28b09cb7fe23f47d31a4b9a71b5924d4ad8820d55bdff87a3cc097e263c91",
+          "quote_parts": [
+            {
+              "source": "screen.rows[4].quote",
+              "quote_sha256": "66f4db68b620f39eba63c117835818ffd4a4f037020753e6b4d2a7881d9a21b9"
+            },
+            {
+              "source": "screen.rows[9].quote",
+              "quote_sha256": "b7124adbfed1bc0d17423670eb0c1f816382fa1d572015d8aaa7db7f08ff07e7"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "position": 3,
+      "form": {
+        "number": "F-27",
+        "when": {
+          "answer": "aligned",
+          "kinds_present": [
+            "is part of",
+            "explains"
+          ],
+          "record_count": 20,
+          "word_count": 1,
+          "missing_links": false
+        },
+        "sentence": "{word} is part of “{quote:is part of}” and explains “{quote:explains}”.",
+        "status": "rejected",
+        "author": "codex/gpt-5.6-sol",
+        "date": "2026-10-02"
+      },
+      "reason": "reading level above fifth grade: 7: “Is part of” makes a containment statement, which the review rules refuse.",
+      "examples": [
+        {
+          "text_sha256": "f0bf7ef1c839a6072508fe81113168f41726b8965af4025b839b5c2fefa28f27",
+          "quote_parts": [
+            {
+              "source": "screen.rows[2].quote",
+              "quote_sha256": "a1b7153d4c0e9cd7001ecb878cf63f809de2407c0d9701f640513e7dc8bc3144"
+            },
+            {
+              "source": "screen.rows[10].quote",
+              "quote_sha256": "4fdd3574f4e5eca4199507d5af5a096f3b2d2dad4bd61a4764ed5edd50508324"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "position": 4,
+      "form": {
+        "number": "F-28",
+        "when": {
+          "answer": "aligned",
+          "kinds_present": [
+            "explains",
+            "correlates with"
+          ],
+          "record_count": 20,
+          "word_count": 1,
+          "missing_links": false
+        },
+        "sentence": "{word} explains “{quote:explains}” and correlates with “{quote:correlates with}”.",
+        "status": "rejected",
+        "author": "codex/gpt-5.6-sol",
+        "date": "2026-10-02"
+      },
+      "reason": "reading level above fifth grade: 6: It faithfully joins the explains row and the correlates-with row for LIFT using both exact quotes.",
+      "examples": [
+        {
+          "text_sha256": "04179095c4957ff2fede05fab1c58e71cc76141d031a1b122fd078f3a974736d",
+          "quote_parts": [
+            {
+              "source": "screen.rows[10].quote",
+              "quote_sha256": "4fdd3574f4e5eca4199507d5af5a096f3b2d2dad4bd61a4764ed5edd50508324"
+            },
+            {
+              "source": "screen.rows[15].quote",
+              "quote_sha256": "6e5f61c2e04c531b71391029f65cf477d2b1af8cdea8e5ee8011abf57b367df5"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "position": 5,
+      "form": {
+        "number": "F-29",
+        "when": {
+          "answer": "aligned",
+          "kinds_present": [
+            "correlates with",
+            "supports"
+          ],
+          "record_count": 11,
+          "word_count": 1,
+          "missing_links": false
+        },
+        "sentence": "{word} correlates with “{quote:correlates with}” and supports “{quote:supports}”.",
+        "status": "rejected",
+        "author": "codex/gpt-5.6-sol",
+        "date": "2026-10-02"
+      },
+      "reason": "reading level above fifth grade: 6: It faithfully joins the correlates-with row and the supports row for MOMENTUM using both exact quotes.",
+      "examples": [
+        {
+          "text_sha256": "ac353b6c0c0ed731bc80dd2cfc9aeb2de45c5160c7bd4b5c696a8f28adc59748",
+          "quote_parts": [
+            {
+              "source": "screen.rows[2].quote",
+              "quote_sha256": "66f4db68b620f39eba63c117835818ffd4a4f037020753e6b4d2a7881d9a21b9"
+            },
+            {
+              "source": "screen.rows[3].quote",
+              "quote_sha256": "4a43898a1feedf6bf1f447bdeb406def8c791ec8d343dfecc91f5a7c411c354f"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "position": 6,
+      "form": {
+        "number": "F-30",
+        "when": {
+          "answer": "aligned",
+          "kinds_present": [
+            "supports",
+            "inhibits"
+          ],
+          "record_count": 11,
+          "word_count": 1,
+          "missing_links": false
+        },
+        "sentence": "{word} supports “{quote:supports}” and inhibits “{quote:inhibits}”.",
+        "status": "rejected",
+        "author": "codex/gpt-5.6-sol",
+        "date": "2026-10-02"
+      },
+      "reason": "reading level above fifth grade: 6: It faithfully joins the supports row and the opposing inhibits row for MOMENTUM using both exact quotes.",
+      "examples": [
+        {
+          "text_sha256": "92c353e68d26031d182b0df2a3a00808ce46034dde44882c08966bc047c92539",
+          "quote_parts": [
+            {
+              "source": "screen.rows[3].quote",
+              "quote_sha256": "4a43898a1feedf6bf1f447bdeb406def8c791ec8d343dfecc91f5a7c411c354f"
+            },
+            {
+              "source": "screen.rows[7].quote",
+              "quote_sha256": "b7124adbfed1bc0d17423670eb0c1f816382fa1d572015d8aaa7db7f08ff07e7"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "position": 7,
+      "form": {
+        "number": "F-31",
+        "when": {
+          "answer": "aligned",
+          "kinds_present": [
+            "is similar to",
+            "happens before"
+          ],
+          "record_count": 12,
+          "word_count": 3,
+          "missing_links": false
+        },
+        "sentence": "{word} is similar to “{quote:is similar to}” and happens before “{quote:happens before}”.",
+        "status": "proposed",
+        "author": "codex/gpt-5.6-sol",
+        "date": "2026-10-02"
+      },
+      "reason": null,
+      "examples": [
+        {
+          "text_sha256": "ce8fe429f48041c93518f7e14a29e1f3ca1ff9a9e6342f55beafeddb8427b410",
+          "quote_parts": [
+            {
+              "source": "screen.rows[2].quote",
+              "quote_sha256": "66f4db68b620f39eba63c117835818ffd4a4f037020753e6b4d2a7881d9a21b9"
+            },
+            {
+              "source": "screen.rows[3].quote",
+              "quote_sha256": "4a43898a1feedf6bf1f447bdeb406def8c791ec8d343dfecc91f5a7c411c354f"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "position": 8,
+      "form": {
+        "number": "F-32",
+        "when": {
+          "answer": "aligned",
+          "kinds_present": [
+            "enables",
+            "explains"
+          ],
+          "record_count": 14,
+          "word_count": 1,
+          "missing_links": false
+        },
+        "sentence": "{word} enables “{quote:enables}” and explains “{quote:explains}”.",
+        "status": "rejected",
+        "author": "codex/gpt-5.6-sol",
+        "date": "2026-10-02"
+      },
+      "reason": "reading level above fifth grade: 7: It faithfully joins the enables row and the explains row for SOFTWARE using both exact quotes.",
+      "examples": [
+        {
+          "text_sha256": "9f79cc05fc5aac7090bee03921a292ff12fdcb90f9a42abe5276913b6941efb8",
+          "quote_parts": [
+            {
+              "source": "screen.rows[5].quote",
+              "quote_sha256": "ea0862e210e99804fd38c111a40b4665cb17079c7f64b6ede23489879ef58362"
+            },
+            {
+              "source": "screen.rows[6].quote",
+              "quote_sha256": "eb4b557e4c01ecc16d4cb3dfc06ea319da6b864e634f5d947cf92393636223af"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "position": 9,
+      "form": {
+        "number": "F-33",
+        "when": {
+          "answer": "aligned",
+          "kinds_present": [
+            "supports",
+            "overlaps"
+          ],
+          "record_count": 11,
+          "word_count": 1,
+          "missing_links": false
+        },
+        "sentence": "{word} supports “{quote:supports}” and overlaps “{quote:overlaps}”.",
+        "status": "rejected",
+        "author": "codex/gpt-5.6-sol",
+        "date": "2026-10-02"
+      },
+      "reason": "reading level above fifth grade: 6: It faithfully joins the supports row and the overlaps row for CONFIDENCE using both exact quotes.",
+      "examples": [
+        {
+          "text_sha256": "d4de94803111677c0466591163d2ed585b95e041166415d2cdd5da2c89a4aa33",
+          "quote_parts": [
+            {
+              "source": "screen.rows[1].quote",
+              "quote_sha256": "46e9eeb8e9e1a980b0f7f95ef10ca7039fd93fab7b3d96faad23fa62264e19cd"
+            },
+            {
+              "source": "screen.rows[5].quote",
+              "quote_sha256": "a34f37d409f50b330e56661f2f31470344658f1f6f51febfd0169702fbfe40e9"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "position": 10,
+      "form": {
+        "number": "F-34",
+        "when": {
+          "answer": "aligned",
+          "kinds_present": [
+            "depends on",
+            "serves the purpose of"
+          ],
+          "record_count": 40,
+          "word_count": 4,
+          "missing_links": false
+        },
+        "sentence": "{word} depends on “{quote:depends on}” and serves the purpose of “{quote:serves the purpose of}”.",
+        "status": "rejected",
+        "author": "codex/gpt-5.6-sol",
+        "date": "2026-10-02"
+      },
+      "reason": "no safe filled example from the saved answers",
+      "examples": []
+    },
+    {
+      "position": 11,
+      "form": {
+        "number": "F-35",
+        "when": {
+          "answer": "aligned",
+          "kinds_present": [
+            "is different from",
+            "correlates with"
+          ],
+          "record_count": {
+            "min": 30,
+            "max": 31
+          },
+          "word_count": 1,
+          "missing_links": false
+        },
+        "sentence": "{word} is different from “{quote:is different from}” and correlates with “{quote:correlates with}”.",
+        "status": "rejected",
+        "author": "codex/gpt-5.6-sol",
+        "date": "2026-10-02"
+      },
+      "reason": "reading level above fifth grade: 6: It faithfully joins the opposing is-different-from row and the correlates-with row for WORK using both exact quotes.",
+      "examples": [
+        {
+          "text_sha256": "efec2460d4506291557a43b5ce34fd77d7122c9b4ec3c279fc064e8519599abb",
+          "quote_parts": [
+            {
+              "source": "screen.rows[4].quote",
+              "quote_sha256": "46e9eeb8e9e1a980b0f7f95ef10ca7039fd93fab7b3d96faad23fa62264e19cd"
+            },
+            {
+              "source": "screen.rows[29].quote",
+              "quote_sha256": "db86cb3d38b1759d7acb78aab0274e76520812425d71386b944e90772aa95ef5"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
