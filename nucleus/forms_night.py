@@ -14,7 +14,7 @@ import time
 import unicodedata
 import uuid
 
-from . import STORE_PATH, forms, forms_middle, forms_patterns, model
+from . import STORE_PATH, forms, forms_middle, forms_patterns, forms_practice, model
 from .kinds import load_kinds
 from .gate import unescape_label
 from .store import Store, normalize_question
@@ -92,15 +92,15 @@ def past_answers(store: Store, kinds: list[str]) -> list[dict]:
     """Complete saved screens, including rendered not_sure evidence, once per answer."""
     inputs = []
     rows = store.connection.execute(
-        "SELECT q.id,q.question,a.text,a.reply_json,"
+        "SELECT q.id,q.question,q.surface,a.text,a.reply_json,"
         "EXISTS(SELECT 1 FROM steps s WHERE s.question_id=q.id AND "
         "(s.note='painted from your links, no model' OR s.name LIKE '5 form F-% chosen')) "
         "FROM questions q "
-        "JOIN answers a ON a.question_id=q.id WHERE a.status='answered' AND "
+        "JOIN answers a ON a.question_id=q.id WHERE q.surface IN ('web','cowboyai-iphone','practice') AND a.status='answered' AND "
         "(a.answer='not_sure' OR EXISTS(SELECT 1 FROM steps s WHERE s.question_id=q.id AND "
         "(s.note='painted from your links, no model' OR s.name LIKE '5 form F-% chosen'))) "
         "ORDER BY a.finished,q.id")
-    for qid, question, text, reply, painted in rows:
+    for qid, question, surface, text, reply, painted in rows:
         raw = {"text": text, "reply_json": reply, "painted": bool(painted)}
         snapshot = store.connection.execute(
             "SELECT picture_json FROM form_misses WHERE question_id=? ORDER BY created DESC,id DESC LIMIT 1",
@@ -108,7 +108,7 @@ def past_answers(store: Store, kinds: list[str]) -> list[dict]:
         if snapshot:
             raw['picture_json'] = snapshot[0]
         item = {'key': 'past_answer:' + qid + ':' + hashlib.sha256(encoded(raw).encode()).hexdigest(),
-                'source': 'past_answer', 'source_id': qid, 'question_id': qid, 'question': question,
+                'source': 'past_answer', 'surface': surface, 'source_id': qid, 'question_id': qid, 'question': question,
                 'raw': raw, 'screen': None, 'reason': None}
         try:
             screen = screen_from_picture(json.loads(snapshot[0]), kinds) if snapshot else saved_screen(raw, kinds)
@@ -131,6 +131,7 @@ def matching_answers(form: dict, inputs: list[dict], kinds: list[str]) -> list[d
             raise forms.Refused(f"filled example refused for {item['question_id']}: {error}") from error
         if filled is not None:
             matches.append({'question_id': item['question_id'], 'question': item['question'],
+                            'surface': item.get('surface'),
                             'input_key': item['key'], 'screen': item['screen'],
                             'text': filled.text, 'parts': [asdict(p) for p in filled.parts]})
     return matches
@@ -157,25 +158,41 @@ def question_key(example: dict) -> str:
     return example['question_id']
 
 
-def fit_counts(matches: list[dict]) -> tuple[int, int]:
+def representatives(matches: list[dict]) -> list[dict]:
     # A repeated question cannot supply extra bound words through later answers.
     # Keep every fill in coverage for review, but count its first fitting screen once.
-    representatives = {}
-    for example in matches:
-        representatives.setdefault(question_key(example), example)
-    words = {bound_word(e) for e in representatives.values() if bound_word(e) is not None}
-    return len(representatives), len(words)
+    unique = {}
+    # Prefer the real screen if a question occurs in both groups. A repeated
+    # question cannot add a practice count or another bound word.
+    for example in sorted(matches, key=lambda e: e.get('surface') == 'practice'):
+        if example.get('surface') in (*Store.HIS_SURFACES, 'practice'):
+            unique.setdefault(question_key(example), example)
+    return list(unique.values())
+
+
+def fit_counts(matches: list[dict]) -> tuple[int, int]:
+    counted = representatives(matches)
+    words = {bound_word(e) for e in counted if bound_word(e) is not None}
+    return len(counted), len(words)
+
+
+def source_counts(matches: list[dict]) -> tuple[int, int]:
+    counted = representatives(matches)
+    practice = sum(e.get('surface') == 'practice' for e in counted)
+    return len(counted) - practice, practice
 
 
 def coverage_reason(matches: list[dict]) -> str | None:
     answers, words = fit_counts(matches)
-    return forms_patterns.TOO_FEW if answers < 3 or words < 2 else None
+    if answers < 3 or words < 2:
+        return forms_patterns.TOO_FEW
+    return 'needs one real question' if source_counts(matches)[0] < 1 else None
 
 
 def diverse_examples(matches: list[dict]) -> list[dict]:
     """Up to three examples, each for a different bound word and different question."""
     words, questions, result = set(), set(), []
-    for example in matches:
+    for example in sorted(matches, key=lambda e: e.get('surface') == 'practice'):
         word, question = bound_word(example), question_key(example)
         if word is not None and word not in words and question not in questions:
             words.add(word)
@@ -191,11 +208,28 @@ def distinct_fills(matches: list[dict]) -> list[dict]:
     return list({e['text']: e for e in matches}.values())
 
 
-def coverage_for(store: Store, proposal_id: str) -> list[dict]:
+def coverage_evidence(store: Store, proposal_id: str) -> tuple[list[dict], list[dict]]:
+    """Counts and examples always come from the same latest successful measurement."""
     row = store.connection.execute(
-        "SELECT c.matches_json FROM form_night_coverage c JOIN form_night_runs n ON n.id=c.run_id "
-        "WHERE c.proposal_id=? AND n.status='completed'", (proposal_id,)).fetchone()
-    return json.loads(row[0]) if row else []
+        "SELECT matches_json,examples_json FROM ("
+        "SELECT c.matches_json,r.examples_json,n.finished,n.id FROM form_night_coverage c "
+        "JOIN form_night_runs n ON n.id=c.run_id JOIN form_night_results r "
+        "ON r.proposal_id=c.proposal_id AND r.run_id=c.run_id "
+        "WHERE c.proposal_id=? AND n.status='completed' UNION ALL "
+        "SELECT c.matches_json,c.examples_json,n.finished,n.id FROM form_coverage_checks c "
+        "JOIN form_night_runs n ON n.id=c.run_id WHERE c.proposal_id=? AND n.status='completed'"
+        ") ORDER BY finished DESC,id DESC LIMIT 1", (proposal_id, proposal_id)).fetchone()
+    matches, examples = (json.loads(row[0]), json.loads(row[1])) if row else ([], [])
+    for example in [*matches, *examples]:
+        # Origin comes from the stored question, including retained older
+        # coverage, rather than from a model or a serialized origin label.
+        question = store.question(example['question_id'])
+        example['surface'] = question['surface'] if question is not None else None
+    return matches, examples
+
+
+def coverage_for(store: Store, proposal_id: str) -> list[dict]:
+    return coverage_evidence(store, proposal_id)[0]
 
 
 def collect(store: Store, kinds: list[str], bootstrap: bool) -> list[dict]:
@@ -205,12 +239,14 @@ def collect(store: Store, kinds: list[str], bootstrap: bool) -> list[dict]:
         consumed.update(item["key"] for item in json.loads(raw))
     inputs = []
 
-    def add(source, source_id, qid, question, raw, picture=None):
+    def add(source, source_id, qid, question, surface, raw, picture=None):
+        if surface not in (*Store.HIS_SURFACES, 'practice'):
+            return
         key = f"{forms_patterns.POLICY}:{source}:{source_id}:" + hashlib.sha256(encoded(raw).encode()).hexdigest()
         if key in consumed:
             return
         item = {"key": key, "source": source, "source_id": source_id, "question_id": qid,
-                "question": question, "raw": raw, "screen": None, "reason": None}
+                "question": question, "surface": surface, "raw": raw, "screen": None, "reason": None}
         try:
             screen = screen_from_picture(json.loads(picture), kinds) if picture is not None else saved_screen(raw, kinds)
             item["screen"] = asdict(screen)
@@ -218,20 +254,20 @@ def collect(store: Store, kinds: list[str], bootstrap: bool) -> list[dict]:
             item["reason"] = str(error)
         inputs.append(item)
 
-    for mid, qid, picture, reason, question in store.connection.execute(
-        "SELECT m.id,m.question_id,m.picture_json,m.reason,q.question FROM form_misses m "
+    for mid, qid, picture, reason, question, surface in store.connection.execute(
+        "SELECT m.id,m.question_id,m.picture_json,m.reason,q.question,q.surface FROM form_misses m "
         "LEFT JOIN questions q ON q.id=m.question_id ORDER BY m.created,m.id"
     ):
-        add("miss", mid, qid, question, {"picture_json": picture, "reason": reason}, picture)
+        add("miss", mid, qid, question, surface, {"picture_json": picture, "reason": reason}, picture)
     answers = store.connection.execute(
-        "SELECT q.id,q.question,a.text,a.reply_json,"
+        "SELECT q.id,q.question,q.surface,a.text,a.reply_json,"
         "EXISTS(SELECT 1 FROM steps s WHERE s.question_id=q.id AND "
         "(s.note='painted from your links, no model' OR s.name LIKE '5 form F-% chosen')),"
         "e.thumb,e.text,e.reason,e.provider,e.model,e.finished,a.answer "
         "FROM questions q JOIN answers a ON a.question_id=q.id "
         "LEFT JOIN explanations e ON e.question_id=q.id WHERE a.status='answered' ORDER BY a.finished,q.id"
     )
-    for qid, question, text, reply, painted, thumb, explanation, reason, provider, engine, finished, answer in answers:
+    for qid, question, surface, text, reply, painted, thumb, explanation, reason, provider, engine, finished, answer in answers:
         raw = {"text": text, "reply_json": reply, "painted": bool(painted)}
         if thumb == 0:
             down = {**raw, "explanation": {"text": explanation, "reason": reason,
@@ -240,9 +276,9 @@ def collect(store: Store, kinds: list[str], bootstrap: bool) -> list[dict]:
             miss = store.connection.execute(
                 "SELECT picture_json FROM form_misses WHERE question_id=? ORDER BY created DESC LIMIT 1", (qid,)
             ).fetchone()
-            add("thumb_down", qid, qid, question, down, miss[0] if miss else None)
+            add("thumb_down", qid, qid, question, surface, down, miss[0] if miss else None)
         if bootstrap and (painted or answer == 'not_sure'):
-            add("bootstrap", qid, qid, question, raw)
+            add("bootstrap", qid, qid, question, surface, raw)
     return inputs
 
 
@@ -286,8 +322,12 @@ least TWO different words, or code refuses it with "fits too few answers". Repea
 count once after spaces and capitals are normalized, even when their answer IDs differ.
 Two words merely mentioned on one screen do not count as two bound words.
 The full painted history is supplied, including answers already consumed by older night passes.
-Use conditions that fit EVERY matching screen. Fewer than twelve is fine. Never repeat the same
-sentence AND conditions from an earlier form. Widened conditions are distinct from a narrow original.
+Use conditions that fit EVERY matching screen. Real questions come only from Adam's web and
+cowboyai-iphone surfaces; practice questions are AI-written tests, not Adam's history. Every form
+needs at least ONE real question among its three different questions across two bound words.
+Fewer than twelve is fine. One idea, one form: conditions alone identify a form, regardless of
+wording. Keep the first; later proposals with the same conditions are refused as "same form".
+Widened conditions are distinct from a narrow original.
 """
 
 
@@ -331,7 +371,10 @@ and curly/straight apostrophes are normalized. Only one fitting answer per quest
 both totals; repeats cannot contribute another bound word. The complete saved history includes
 repeats for auditing every different fill.
 Propose a general frame when the supplied screens prove both halves. Fewer than twelve is fine.
-Never repeat the same sentence AND conditions from an earlier form. All forms still await Adam's yes.
+At least ONE of those different questions must be real: from Adam's web or cowboyai-iphone
+surface. Practice questions are AI-written tests and may supply the remaining coverage.
+One idea, one form: never repeat the same conditions even with different wording. Keep the first;
+code refuses later variants as "same form". All forms still await Adam's yes.
 """
 
 
@@ -341,7 +384,7 @@ def make_prompt(inputs: list[dict], previous: list[dict], kinds: list[str], *, m
     for item in inputs:
         if item["screen"] is None or (middle_only and item['screen']['answer'] != 'not_sure'):
             continue
-        sample = {"question": item["question"], "screen": item["screen"]}
+        sample = {"question": item["question"], "surface": item.get('surface'), "screen": item["screen"]}
         if item["source"] == "thumb_down":
             sample["thumbed_down_explanation"] = item["raw"]["explanation"]
         key = encoded(sample)
@@ -361,8 +404,7 @@ def signature(form: dict) -> str:
     if isinstance(when, dict):
         when = {k: sorted(v) if k in ("kinds_present", "kinds_absent") and isinstance(v, list)
                 and all(isinstance(x, str) for x in v) else v for k, v in when.items() if v is not None}
-    sentence = form.get("sentence")
-    return encoded([when, " ".join(sentence.lower().split()) if isinstance(sentence, str) else sentence])
+    return encoded(when)
 
 
 def checked(raw: object, number: str, author: str, inputs: list[dict], kinds: list[str], seen: set[str], *, middle_only: bool = False):
@@ -378,7 +420,7 @@ def checked(raw: object, number: str, author: str, inputs: list[dict], kinds: li
     reason = forms.check(form, kinds=kinds)
     fingerprint = signature(form)
     if fingerprint in seen:
-        reason = reason or "duplicate of a previous form"
+        reason = reason or "same form"
     seen.add(fingerprint)
     if reason:
         return form, reason, []
@@ -418,12 +460,15 @@ def report(store: Store, run_id: str) -> dict:
         payload = json.loads(saved[0]) if saved else None
         matches = coverage_for(store, pid)
         fit_count, fit_word_count = fit_counts(matches)
+        real_count, practice_count = source_counts(matches)
         results.append({"position": position, "proposal_id": pid, "payload": payload,
                         "form": {**payload, "status": saved[1]} if saved else None,
                         "raw": json.loads(raw), "reason": reason, "examples": json.loads(examples),
-                        "fit_count": fit_count, "fit_word_count": fit_word_count})
+                        "fit_count": fit_count, "fit_word_count": fit_word_count,
+                        "real_fit_count": real_count, "practice_fit_count": practice_count})
     return {"run_id": run_id, "database": str(store.path), "status": status, "provider": provider, "model": engine,
-            "error": error, "meaning_reviews": reviews, "prior_proposals_refused": rechecks,
+            "error": error, "practice": forms_practice.report(store, run_id),
+            "meaning_reviews": reviews, "prior_proposals_refused": rechecks,
             "inputs": len(inputs), "usable_inputs": sum(i["screen"] is not None for i in inputs),
             "skipped_inputs": [{"source": i["source"], "question_id": i["question_id"], "reason": i["reason"]}
                                for i in inputs if i["reason"]],
@@ -433,7 +478,8 @@ def report(store: Store, run_id: str) -> dict:
 
 
 def night(path: Path = REVIEW_PATH, *, bootstrap: bool = False, forms_path: Path | None = None,
-          model_call=None, widen: tuple[str, ...] = (), middle_only: bool = False) -> dict:
+          model_call=None, widen: tuple[str, ...] = (), middle_only: bool = False,
+          practice: bool = True, practice_ask=None) -> dict:
     path = check_copy(path)
     if forms.forms_only():
         raise ValueError("slice 3 requires NUCLEUS_FORMS_ONLY off")
@@ -446,7 +492,7 @@ def night(path: Path = REVIEW_PATH, *, bootstrap: bool = False, forms_path: Path
             raise ValueError("a forms night pass is already running on this copy") from error
         store = Store(path)
         try:
-            return _night(store, bootstrap, forms_path, model_call, widen, middle_only)
+            return _night(store, bootstrap, forms_path, model_call, widen, middle_only, practice, practice_ask)
         finally:
             store.connection.close()
 
@@ -469,25 +515,54 @@ def widened_candidates(proposals: list[dict], numbers: tuple[str, ...]) -> list[
     return candidates
 
 
-def _night(store: Store, bootstrap: bool, forms_path: Path | None, model_call, widen=(), middle_only=False) -> dict:
+def _night(store: Store, bootstrap: bool, forms_path: Path | None, model_call, widen=(), middle_only=False,
+           practice=True, practice_ask=None) -> dict:
+    run_id, started = str(uuid.uuid4()), time.time()
+    store.connection.execute(
+        "INSERT INTO form_night_runs (id,started,status,inputs_json,prompt) VALUES (?,?,'running','[]','')",
+        (run_id, started))
+    store.connection.commit()
+    try:
+        if practice:
+            result = forms_practice.run(store, run_id, model_call=model_call, ask_call=practice_ask)
+            if result['status'] != 'completed':
+                raise ValueError('practice generation failed: ' + str(result.get('error')))
+        return _propose(store, run_id, started, bootstrap, forms_path, model_call, widen, middle_only)
+    except Exception as error:
+        store.connection.rollback()
+        store.connection.execute("UPDATE form_night_runs SET status='failed',finished=?,error=? WHERE id=?",
+                                 (time.time(), str(error), run_id))
+        store.connection.commit()
+        return report(store, run_id)
+
+
+def _propose(store, run_id, started, bootstrap, forms_path, model_call, widen, middle_only):
     kinds = load_kinds()
     previous = forms.load(forms.FORMS_PATH if forms_path is None else forms_path, kinds=kinds)
     proposals = store.form_proposals()
     replacements = widened_candidates(proposals, widen) if widen else []
     history = past_answers(store, kinds)
     pending_refusals = []
+    pending_checks = []
+    seen_existing = {signature(p) for p in previous}
     for p in proposals:
         reason = None
         if p['status'] == 'proposed':
+            matches = []
             reason = ('fit one screen only' if p['number'] in widen else
                       forms.check(p['form'], kinds=kinds) or forms_patterns.check(p['form'], kinds))
+            if reason is None and signature(p['form']) in seen_existing:
+                reason = 'same form'
             if reason is None:
                 try:
-                    reason = coverage_reason(matching_answers(p['form'], history, kinds))
+                    matches = matching_answers(p['form'], history, kinds)
+                    reason = coverage_reason(matches)
                 except forms.Refused as error:
                     reason = str(error)
+            pending_checks.append((p['id'], matches, reason))
             if reason:
                 pending_refusals.append((p['id'], reason))
+        seen_existing.add(signature(p['form']))
         previous.append({**p['form'], 'refusal_reason': p['reason'], 'current_check_refusal': reason})
     # Overflow stays rejected and is supplied to later calls, though it is outside
     # the twelve-row proposal budget. A refusal without a number is still retained.
@@ -500,13 +575,12 @@ def _night(store: Store, bootstrap: bool, forms_path: Path | None, model_call, w
     inputs = collect(store, kinds, bootstrap)
     if middle_only:
         inputs = [i for i in inputs if i['screen'] is None or i['screen']['answer'] == 'not_sure']
-    run_id, started = str(uuid.uuid4()), time.time()
     prompt = make_prompt([*inputs, *history], previous, kinds, middle_only=middle_only)
     if widen:
         prompt = 'Explicit count widening requested for ' + ', '.join(widen) + '.\n' + prompt
     store.connection.execute(
-        "INSERT INTO form_night_runs (id,started,status,inputs_json,prompt) VALUES (?,?,'running',?,?)",
-        (run_id, started, encoded(inputs), prompt))
+        "UPDATE form_night_runs SET inputs_json=?,prompt=? WHERE id=?",
+        (encoded(inputs), prompt, run_id))
     store.connection.commit()
     reply = None
     try:
@@ -543,6 +617,10 @@ def _night(store: Store, bootstrap: bool, forms_path: Path | None, model_call, w
         reviewable = [{"form": f, "examples": distinct_fills(e)} for f, r, e in prepared if r is None]
         decisions = forms_patterns.review(store, run_id, reviewable, model_call) if reviewable else {}
         with store.connection:
+            for proposal_id, matches, reason in pending_checks:
+                store.connection.execute(
+                    'INSERT INTO form_coverage_checks(proposal_id,run_id,matches_json,examples_json,reason) VALUES (?,?,?,?,?)',
+                    (proposal_id, run_id, encoded(matches), encoded(diverse_examples(matches)), reason))
             for proposal_id, reason in pending_refusals:
                 store.reject_form_proposal(proposal_id, reason, commit=False)
                 store.connection.execute("INSERT INTO form_night_rechecks (run_id,proposal_id,reason) VALUES (?,?,?)",

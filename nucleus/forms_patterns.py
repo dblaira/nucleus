@@ -8,8 +8,8 @@ import time
 
 from . import forms, forms_middle, model
 
-# Revisit consumed inputs after the unrelated-quote guard changed eligibility.
-POLICY = 'middle-question-v2'
+# Revisit source screens under separate real/practice coverage and conditions-only identity.
+POLICY = 'real-practice-question-v1'
 REVIEW_SCHEMA = Path(__file__).with_name('forms-review.schema.json')
 PUSHING_KINDS = frozenset({'rejects', 'contradicts', 'prevents', 'inhibits', 'constrains', 'limits'})
 NO_PATTERN = 'conditions do not require a row pattern'

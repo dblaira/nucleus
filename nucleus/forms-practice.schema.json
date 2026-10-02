@@ -1,0 +1,20 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["questions"],
+  "properties": {
+    "questions": {
+      "type": "array",
+      "maxItems": 20,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["question", "target_word"],
+        "properties": {
+          "question": {"type": "string"},
+          "target_word": {"type": "string"}
+        }
+      }
+    }
+  }
+}

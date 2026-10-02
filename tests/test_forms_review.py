@@ -20,7 +20,7 @@ from nucleus.forms_night import screen_from_picture
 def ready(copy):
     history(copy)
     miss(copy)
-    result = run(copy, [candidate(), candidate(sentence='{word} rejects “{quote:rejects}” and depends on “{quote:depends on}”.')])
+    result = run(copy, [candidate(), candidate(when={**candidate()['when'], 'record_count': {'min': 2}})])
     assert result['proposed'] == 2
     return copy, forms.FORMS_PATH, review.pending(copy, forms.FORMS_PATH)
 

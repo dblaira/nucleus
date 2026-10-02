@@ -59,7 +59,7 @@ def miss(store, word='FLOW', kind='depends on'):
 
 
 def painted(store, word='FLOW', kind='depends on', printed_kind=None):
-    qid = store.new_question(f'What is {word}?', 'test')
+    qid = store.new_question(f'What is {word}?', 'web')
     payload = {'answer': 'aligned', 'words': [{'word': word}],
                'records': [{'id': 'r1', 'quote': 'First quote'}, {'id': 'r2', 'quote': 'Second quote'}]}
     store.save_answer(qid, 'answered', 'aligned',
@@ -79,7 +79,7 @@ def history(store):
 
 
 def run(store, candidates=None, **kwargs):
-    return night.night(store.path, model_call=model_reply([candidate()] if candidates is None else candidates), **kwargs)
+    return night.night(store.path, practice=False, model_call=model_reply([candidate()] if candidates is None else candidates), **kwargs)
 
 
 def test_preview_does_not_approve_or_change_day_selection(copy):
@@ -158,7 +158,7 @@ def test_fill_checks_all_matching_answers_not_just_first_three(copy):
 def test_limit_never_writes_more_than_twelve_proposal_rows_but_keeps_overflow(copy):
     history(copy)
     miss(copy)
-    values = [candidate(sentence=f'In case {i}, {{word}} depends on “{{quote:depends on}}” and rejects “{{quote:rejects}}”.') for i in range(14)]
+    values = [candidate(when={**candidate()['when'], 'record_count': {'min': 0, 'max': i+3}}) for i in range(14)]
     result = run(copy, values)
     assert len(copy.form_proposals()) == 12
     assert (result['proposed'], result['refused']) == (12, 2)
@@ -173,8 +173,8 @@ def test_duplicate_previous_rejected_proposed_approved_and_same_batch(copy):
     copy.reject_form_proposal(first['results'][0]['proposal_id'], 'Adam said no')
     miss(copy, 'LIFT')
     result = run(copy, [candidate(), candidate(sentence='{word} rejects “{quote:rejects}” and depends on “{quote:depends on}”.'), candidate(sentence='{word} rejects “{quote:rejects}” and depends on “{quote:depends on}”.')])
-    assert (result['proposed'], result['refused']) == (1, 2)
-    assert result['results'][0]['reason'] == result['results'][2]['reason'] == 'duplicate of a previous form'
+    assert (result['proposed'], result['refused']) == (0, 3)
+    assert all(r['reason'] == 'same form' for r in result['results'])
     miss(copy, 'MOMENTUM')
     result = run(copy, [candidate(sentence='{word} rejects “{quote:rejects}” and depends on “{quote:depends on}”.')])
     assert result['refused'] == 1
@@ -190,7 +190,7 @@ answer = "aligned"
     miss(copy, 'VALUE')
     result = run(copy, [candidate(when={'answer': 'aligned'}, sentence='{word} has printed links.')])
     assert result['results'][0]['form']['number'] == 'F-81'
-    assert result['results'][0]['reason'] == 'duplicate of a previous form'
+    assert result['results'][0]['reason'] == 'same form'
 
 
 def test_success_consumes_only_inputs_present_before_the_call(copy):
@@ -199,11 +199,11 @@ def test_success_consumes_only_inputs_present_before_the_call(copy):
     def call(prompt, *, schema):
         miss(copy, 'LIFT')
         return ModelReply('test', 'fixture', '{"forms":[]}')
-    first = night.night(copy.path, model_call=call)
+    first = night.night(copy.path, practice=False, model_call=call)
     assert first['inputs'] == 1
     second = run(copy)
     assert second['inputs'] == second['proposed'] == 1
-    third = night.night(copy.path, model_call=lambda *a, **k: pytest.fail('no new input must not call model'))
+    third = night.night(copy.path, practice=False, model_call=lambda *a, **k: pytest.fail('no new input must not call model'))
     assert third['inputs'] == third['proposed'] == 0
 
 
@@ -215,7 +215,7 @@ def test_failed_model_or_shape_retains_trace_and_retries_inputs(copy, response):
         if response == 'timeout':
             raise TimeoutError('test timeout')
         return ModelReply('test', 'fixture', response)
-    result = night.night(copy.path, model_call=call)
+    result = night.night(copy.path, practice=False, model_call=call)
     assert result['status'] == 'failed'
     assert len(copy.form_proposals()) == 0
     assert copy.connection.execute('SELECT count(*) FROM model_calls').fetchone()[0] == 1
@@ -233,7 +233,7 @@ def test_atomic_write_failure_keeps_no_half_proposals_and_does_not_consume(copy,
             raise OSError('test disk failure')
         return original(self, payload, reason, **kwargs)
     monkeypatch.setattr(Store, 'save_form_proposal', fail)
-    result = run(copy, [candidate(), candidate(sentence='{word} rejects “{quote:rejects}” and depends on “{quote:depends on}”.')])
+    result = run(copy, [candidate(), candidate(when={**candidate()['when'], 'record_count': {'min': 2}})])
     assert result['status'] == 'failed'
     assert copy.form_proposals() == []
     assert copy.connection.execute('SELECT count(*) FROM form_night_results').fetchone()[0] == 0
@@ -276,7 +276,7 @@ def test_downvote_after_old_answer_is_consumed_once_and_sent_with_explanation(co
         assert 'FLOW old paragraph' in prompt
         assert 'thumbed_down_explanation' in prompt
         return ModelReply('test', 'fixture', '{"forms":[]}')
-    result = night.night(copy.path, model_call=call)
+    result = night.night(copy.path, practice=False, model_call=call)
     assert result['inputs'] == 1
     assert run(copy)['inputs'] == 0
 
@@ -288,7 +288,7 @@ def test_downvote_uses_miss_snapshot_when_historical_text_has_no_middle(copy):
     run(copy)
     copy.save_explanation(qid, 'FLOW old paragraph', None, 'test', 'fixture', 1)
     copy.thumb_explanation(qid, False)
-    result = run(copy, [candidate(sentence='{word} rejects “{quote:rejects}” and depends on “{quote:depends on}”.')])
+    result = run(copy, [candidate(when={**candidate()['when'], 'record_count': {'min': 2}})])
     assert result['usable_inputs'] == result['proposed'] == 1
 
 

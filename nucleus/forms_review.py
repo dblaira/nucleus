@@ -21,11 +21,7 @@ class Conflict(ValueError):
 
 
 def examples_for(store: Store, proposal_id: str) -> list[dict]:
-    row = store.connection.execute(
-        "SELECT r.examples_json FROM form_night_results r JOIN form_night_runs n ON n.id=r.run_id "
-        "WHERE r.proposal_id=? AND r.reason IS NULL AND n.status='completed' "
-        "ORDER BY n.finished DESC LIMIT 1", (proposal_id,)).fetchone()
-    return json.loads(row[0]) if row else []
+    return forms_night.coverage_evidence(store, proposal_id)[1]
 
 
 def version(proposal: dict, examples: list[dict], matches: list[dict]) -> str:
@@ -72,13 +68,15 @@ def pending(store: Store, forms_path: Path) -> list[dict]:
         examples = examples_for(store, proposal['id'])
         matches = forms_night.coverage_for(store, proposal['id'])
         fit_count, fit_word_count = forms_night.fit_counts(matches)
+        real_count, practice_count = forms_night.source_counts(matches)
         reason = None
         try:
             check_examples(proposal, examples, matches)
         except forms.Refused as error:
             reason = str(error)
         result.append({**proposal, 'examples': examples, 'version': version(proposal, examples, matches),
-                       'error': reason, 'fit_count': fit_count, 'fit_word_count': fit_word_count})
+                       'error': reason, 'fit_count': fit_count, 'fit_word_count': fit_word_count,
+                       'real_fit_count': real_count, 'practice_fit_count': practice_count})
     return sorted(result, key=lambda p: (-p['fit_count'], int(p['number'][2:])
                   if re.fullmatch(r'F-[1-9][0-9]*', p['number'] or '') else float('inf')))
 

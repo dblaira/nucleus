@@ -126,7 +126,9 @@ def seed_from_answers(store: Store, graph: Graph) -> int:
     added = 0
     rows = store.connection.execute(
         "SELECT a.question_id, a.reply_json, m.provider, m.model FROM answers a LEFT JOIN model_calls m ON m.question_id = a.question_id"
-        " WHERE a.status = 'answered' AND a.reply_json IS NOT NULL GROUP BY a.question_id"
+        " LEFT JOIN questions q ON q.id=a.question_id"
+        " WHERE a.status = 'answered' AND a.reply_json IS NOT NULL"
+        " AND COALESCE(q.surface,'') <> 'practice' GROUP BY a.question_id"
     ).fetchall()
     for question_id, reply_json, provider, model in rows:
         try:

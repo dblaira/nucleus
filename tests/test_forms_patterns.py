@@ -61,7 +61,7 @@ def test_obvious_restatement_never_reaches_meaning_reviewer(copy):
     def writer(prompt, *, schema):
         assert schema == night.SCHEMA
         return ModelReply('test', 'writer', json.dumps({'forms': [candidate(when={'kinds_present': ['rejects']}, sentence='For {word}, {count} rows use {kind}.')]}))
-    result = night.night(copy.path, model_call=writer)
+    result = night.night(copy.path, practice=False, model_call=writer)
     assert result['refused'] == 1
     assert result['results'][0]['reason'] == patterns.RESTATEMENT
     assert result['meaning_reviews'] == []
@@ -87,7 +87,7 @@ def reviewing(verdict, reason, *, value=None, reading_grade=3, one_sentence=True
 ])
 def test_reworded_counts_and_vague_filler_need_real_row_quotes(copy, sentence):
     miss(copy)
-    result = night.night(copy.path, model_call=reviewing('restates_rows', 'Only rephrases labels.',
+    result = night.night(copy.path, practice=False, model_call=reviewing('restates_rows', 'Only rephrases labels.',
         value=candidate(when={'kinds_present': ['rejects']}, sentence=sentence)))
     assert (result['proposed'], result['refused']) == (0, 1)
     assert result['results'][0]['reason'] == patterns.NEEDS_QUOTES
@@ -100,7 +100,7 @@ def test_reworded_counts_and_vague_filler_need_real_row_quotes(copy, sentence):
 def test_explanation_is_not_approved_by_a_favorable_review(copy):
     history(copy)
     miss(copy)
-    result = night.night(copy.path, model_call=reviewing('explains_pattern', 'Joins two real row contents in simple words.'))
+    result = night.night(copy.path, practice=False, model_call=reviewing('explains_pattern', 'Joins two real row contents in simple words.'))
     assert result['proposed'] == 1
     form = copy.form_proposals()[0]['form']
     assert form['status'] == 'proposed'
@@ -112,7 +112,7 @@ def test_direction_reversal_is_refused_and_explanation_retained(copy):
     history(copy)
     miss(copy)
     reason = 'The row means FLOW rejects a record, not that FLOW is rejected.'
-    result = night.night(copy.path, model_call=reviewing('unsupported_meaning', reason,
+    result = night.night(copy.path, practice=False, model_call=reviewing('unsupported_meaning', reason,
         value=candidate(sentence='“{quote:depends on}” depends on {word} and “{quote:rejects}” rejects it.')))
     assert result['refused'] == 1
     assert result['results'][0]['reason'] == 'unsupported pattern meaning: ' + reason
@@ -165,7 +165,7 @@ def test_incomplete_invalid_or_failed_review_fails_closed_and_retries(copy, revi
                  if isinstance(reviews, list) else reviews)
         text = 'not JSON' if reviews == 'malformed JSON' else json.dumps({'reviews': value})
         return ModelReply('test', 'reviewer', text)
-    result = night.night(copy.path, model_call=call)
+    result = night.night(copy.path, practice=False, model_call=call)
     assert result['status'] == 'failed'
     assert copy.form_proposals() == []
     assert not result['meaning_reviews'][0]['ok']
@@ -193,7 +193,7 @@ def test_failed_review_does_not_partially_reject_previous_proposals(copy):
         if schema == night.SCHEMA:
             return model_reply([candidate()])(prompt, schema=schema)
         raise TimeoutError('test failure')
-    result = night.night(copy.path, model_call=call)
+    result = night.night(copy.path, practice=False, model_call=call)
     assert result['status'] == 'failed'
     assert copy.form_proposals()[0]['status'] == 'proposed'
     assert copy.connection.execute('SELECT count(*) FROM form_night_rechecks').fetchone()[0] == 0
@@ -222,7 +222,7 @@ def test_old_successful_inputs_are_revisited_once_for_new_policy(copy):
 def test_reading_level_and_one_sentence_veto_favorable_meaning(copy, grade, one_sentence, reason):
     history(copy)
     miss(copy)
-    result = night.night(copy.path, model_call=reviewing('explains_pattern', 'Review result.',
+    result = night.night(copy.path, practice=False, model_call=reviewing('explains_pattern', 'Review result.',
         reading_grade=grade, one_sentence=one_sentence))
     assert (result['proposed'], result['refused']) == (0, 1)
     assert result['results'][0]['reason'].startswith(reason)
@@ -232,7 +232,7 @@ def test_reading_level_and_one_sentence_veto_favorable_meaning(copy, grade, one_
 def test_fifth_grade_is_allowed_but_never_approved(copy):
     history(copy)
     miss(copy)
-    result = night.night(copy.path, model_call=reviewing('explains_pattern', 'Plain words.', reading_grade=5))
+    result = night.night(copy.path, practice=False, model_call=reviewing('explains_pattern', 'Plain words.', reading_grade=5))
     assert result['proposed'] == 1
     assert result['results'][0]['form']['status'] == 'proposed'
 
@@ -241,7 +241,7 @@ def test_fifth_grade_is_allowed_but_never_approved(copy):
 def test_invalid_reading_grade_fails_closed(copy, grade):
     history(copy)
     miss(copy)
-    result = night.night(copy.path, model_call=reviewing('explains_pattern', 'Plain words.', reading_grade=grade))
+    result = night.night(copy.path, practice=False, model_call=reviewing('explains_pattern', 'Plain words.', reading_grade=grade))
     assert result['status'] == 'failed'
     assert copy.form_proposals() == []
 
@@ -255,7 +255,7 @@ def test_reviewer_sees_every_distinct_fill_while_saved_examples_stay_at_three(co
             assert len(batch[0]['examples']) == 4
             assert any(e['text'].startswith('VALUE ') for e in batch[0]['examples'])
         return model_reply([candidate()])(prompt, schema=schema)
-    result = night.night(copy.path, model_call=call)
+    result = night.night(copy.path, practice=False, model_call=call)
     assert result['proposed'] == 1
     assert len(result['results'][0]['examples']) == 3
 
@@ -264,6 +264,6 @@ def test_reviewer_sees_every_distinct_fill_while_saved_examples_stay_at_three(co
 def test_invalid_sentence_verdict_fails_closed(copy, one_sentence):
     history(copy)
     miss(copy)
-    result = night.night(copy.path, model_call=reviewing('explains_pattern', 'Plain words.', one_sentence=one_sentence))
+    result = night.night(copy.path, practice=False, model_call=reviewing('explains_pattern', 'Plain words.', one_sentence=one_sentence))
     assert result['status'] == 'failed'
     assert copy.form_proposals() == []

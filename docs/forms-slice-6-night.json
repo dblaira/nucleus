@@ -1,0 +1,27 @@
+{
+  "run_id": "a73a7619-ec4f-4176-a64e-4b3ab3affba4",
+  "status": "completed",
+  "provider": "codex",
+  "model": "gpt-5.6-sol",
+  "inputs": 96,
+  "usable_inputs": 88,
+  "proposed": 0,
+  "refused": 0,
+  "refusal_reasons": {},
+  "practice": {
+    "generated": 20,
+    "asked": 20,
+    "answered": 20,
+    "refused": 0,
+    "refusal_reasons": {},
+    "model_calls": 1,
+    "answers": {
+      "aligned": 20
+    }
+  },
+  "model_calls_added": 2,
+  "approved": 0,
+  "form_statuses": {
+    "rejected": 42
+  }
+}

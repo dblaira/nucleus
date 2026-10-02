@@ -52,7 +52,7 @@ def test_too_few_answers_refused(copy, words):
     for word in words:
         miss(copy, word)
     # An unfinished miss triggers the writer but is never counted as a past painted answer.
-    qid = copy.new_question('An unfinished question', 'test')
+    qid = copy.new_question('An unfinished question', 'web')
     copy.save_form_miss(qid, picture('VALUE'), 'pending')
     result = run(copy)
     row = result['results'][0]
@@ -97,13 +97,13 @@ def test_coverage_uses_consumed_history_and_review_checks_every_distinct_fill(co
     assert first['results'][0]['fit_count'] == 4
     assert len(first['results'][0]['examples']) == 3
     miss(copy, 'MOMENTUM')
-    reverse = candidate(sentence='{word} rejects “{quote:rejects}” and depends on “{quote:depends on}”.')
+    reverse = candidate(when={**candidate()['when'], 'record_count': {'min': 2}})
     def call(prompt, *, schema):
         if schema == patterns.REVIEW_SCHEMA:
             batch = json.loads(prompt.split('\nCandidates:\n')[1])
             assert len(batch[0]['examples']) == 5  # All five words, one fill each.
         return model_reply([reverse])(prompt, schema=schema)
-    result = night.night(copy.path, model_call=call)
+    result = night.night(copy.path, practice=False, model_call=call)
     assert result['inputs'] == 1
     assert result['results'][0]['fit_count'] == 5
     assert result['results'][0]['fit_word_count'] == 5
@@ -123,7 +123,7 @@ def test_widening_keeps_sentence_uses_new_number_and_is_not_a_repeat(copy):
         seen_schemas.append(schema)
         assert schema == patterns.REVIEW_SCHEMA  # No fabricated model writer call.
         return model_reply([])(prompt, schema=schema)
-    result = night.night(copy.path, widen=('F-25',), model_call=reviewer)
+    result = night.night(copy.path, practice=False, widen=('F-25',), model_call=reviewer)
     row = result['results'][0]
     assert (result['proposed'], result['refused']) == (1, 0)
     assert row['form']['number'] == 'F-26'
@@ -142,11 +142,11 @@ def test_widening_keeps_sentence_uses_new_number_and_is_not_a_repeat(copy):
 def test_widened_form_still_refused_when_only_one_word_fits(copy):
     for _ in range(5): painted(copy)
     _, original = narrow(copy)
-    result = night.night(copy.path, widen=('F-25',), model_call=lambda *a, **kw: pytest.fail('too few words never reaches reviewer'))
+    result = night.night(copy.path, practice=False, widen=('F-25',), model_call=lambda *a, **kw: pytest.fail('too few words never reaches reviewer'))
     row = result['results'][0]
     assert (row['fit_count'], row['fit_word_count']) == (1, 1)
     assert row['reason'] == 'fits too few answers'
-    assert row['reason'] != 'duplicate of a previous form'
+    assert row['reason'] != 'same form'
     assert result['prior_proposals_refused'][0]['reason'] == 'fit one screen only'
     assert copy.connection.execute('SELECT count(*) FROM model_calls').fetchone()[0] == 0
 
@@ -155,7 +155,7 @@ def test_failed_widen_review_preserves_original_until_success(copy):
     history(copy)
     pid, original = narrow(copy)
     def fail(*a, **kw): raise TimeoutError('test failure')
-    result = night.night(copy.path, widen=('F-25',), model_call=fail)
+    result = night.night(copy.path, practice=False, widen=('F-25',), model_call=fail)
     assert result['status'] == 'failed'
     assert len(copy.form_proposals()) == 1
     assert copy.form_proposals()[0]['payload'] == original
@@ -180,7 +180,7 @@ def test_review_lists_largest_fit_first_with_different_words_and_keeps_yes_no(co
     assert len(queue[1]['examples']) == 2
     page = serve.forms_page(queue, 'test')
     assert page.index('form-F-2') < page.index('form-F-1')
-    assert 'Fits 5 different questions · 4 words' in page and 'Fits 3 different questions · 2 words' in page
+    assert 'fits 5 of your questions · 0 practice questions' in page and 'fits 3 of your questions · 0 practice questions' in page
     assert page.count('>Yes</button>') == page.count('>No</button>') == 2
     assert forms.load(forms.FORMS_PATH) == []
 
@@ -232,7 +232,7 @@ def test_question_normalization_and_different_fills_keep_semantic_audit(copy):
             batch = json.loads(prompt.split('\nCandidates:\n', 1)[1])
             assert len(batch[0]['examples']) == 4  # Different fills survive question dedup.
         return model_reply([candidate()])(prompt, schema=schema)
-    result = night.night(copy.path, model_call=call)
+    result = night.night(copy.path, practice=False, model_call=call)
     row = result['results'][0]
     assert row['fit_count'] == 3 and row['fit_word_count'] == 3
     assert result['proposed'] == 1
@@ -251,7 +251,7 @@ def test_only_fitting_answers_participate_in_question_dedup(copy):
 
 def test_bound_word_coverage_comes_from_the_filled_source():
     examples = [
-        {'question_id': str(i), 'question': f'Different question {i}',
+        {'surface': 'web', 'question_id': str(i), 'question': f'Different question {i}',
          'screen': {'words': ['FIRST', word]},
          'parts': [{'source': 'screen.words[1]', 'text': word}]}
         for i, word in enumerate(['FLOW', 'LIFT', 'FLOW'])
@@ -262,7 +262,7 @@ def test_bound_word_coverage_comes_from_the_filled_source():
 
 def test_repeat_of_same_question_with_new_word_cannot_inflate_word_coverage():
     examples = [
-        {'question_id': str(i), 'question': question, 'screen': {'words': [word]},
+        {'surface': 'web', 'question_id': str(i), 'question': question, 'screen': {'words': [word]},
          'parts': [{'source': 'screen.words[0]', 'text': word}]}
         for i, (question, word) in enumerate([
             ('Why don’t I trust this app?', 'FLOW'),

@@ -8,7 +8,7 @@ import time
 from dataclasses import asdict, dataclass, field
 from typing import Callable
 
-from . import NUCLEUS_FILES
+from . import NUCLEUS_FILES, STORE_PATH
 from . import dictionary as dictionary_module
 from . import gate as gate_module
 from . import explain as explain_module
@@ -20,7 +20,7 @@ from . import phrases as phrases_module
 from . import prompt as prompt_module
 from .compact import compact_nucleus
 from .graph import load_graph
-from .store import Store
+from .store import Store, normalize_question, require_practice_copy
 
 STEP_QUESTION = "1 question in"
 STEP_DICTIONARY = "2 dictionary reads it"
@@ -80,7 +80,18 @@ def ask(question: str, store: Store | None = None, surface: str = "cli",
         brief: Callable[[str], dict] | None = None, question_id: str | None = None,
         explain_call=None) -> Result:
     """explain_call: the model door for the paragraph under the rows; None = the usual door, False = no paragraph."""
+    if surface == 'practice':
+        if store is None:
+            require_practice_copy(STORE_PATH)  # Refuse before the default Store can open the live file.
+        else:
+            store.require_practice_copy()
     store = store or Store()
+    if question_id is not None:
+        saved_question = store.question(question_id)
+        if surface == 'practice' or (saved_question and saved_question['surface'] == 'practice'):
+            if (saved_question is None or saved_question['surface'] != surface or
+                    normalize_question(saved_question['question']) != normalize_question(question)):
+                raise ValueError('practice question id and surface must match its saved question')
     model_call = model_call or model_module.call
     brief = brief or dictionary_module.brief
     started_all = time.time()
@@ -157,7 +168,8 @@ def ask(question: str, store: Store | None = None, surface: str = "cli",
                           nucleus_hash=model_module.nucleus_hash(prompt_module.nucleus_text()[0]))
         if explain_call is not False and filled is None:
             store.save_form_miss(question_id, asdict(picture), miss_reason or "no form fits")
-            if not forms_module.forms_only():
+            # Night practice needs the checked screen and miss, not a background paragraph.
+            if surface != 'practice' and not forms_module.forms_only():
                 explain_module.start(question_id, question, picture.text, picture.touched, store, explain_call)
         return finish(Result(question_id, question, "answered", answer=picture.answer, text=answer_text, words=picture.words,
                              records=picture.records, reading=reading, phrases=phrase_dicts, provider="links", model="painted"))
@@ -232,7 +244,8 @@ def ask(question: str, store: Store | None = None, surface: str = "cli",
     store.save_answer(question_id, "answered", verdict.answer, answer_text, reply.text, True, None, nucleus_hash=records_hash)
     if verdict.possibility and repeat is None:
         store.save_candidates(question_id, verdict.possibility)
-    if filled is None and verdict.answer != "dont_know" and explain_call is not False and not forms_module.forms_only():
+    if (filled is None and verdict.answer != "dont_know" and explain_call is not False
+            and surface != 'practice' and not forms_module.forms_only()):
         earlier = store.explanation(repeat["question_id"]) if repeat is not None else None
         if earlier and earlier.get("text"):
             store.save_explanation(question_id, earlier["text"], None, earlier.get("provider") or "saved", earlier.get("model") or "saved", time.time())

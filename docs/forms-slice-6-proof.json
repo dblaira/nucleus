@@ -1,0 +1,101 @@
+{
+  "run_id": "a73a7619-ec4f-4176-a64e-4b3ab3affba4",
+  "backup_sha256": "fa165911d74c2fa85a4a0bda836e8c8a969e48149a55f4e43d6c1a7658eeea05",
+  "backup_integrity": "ok",
+  "copy_integrity": "ok",
+  "source_files_unchanged": 6,
+  "tables": {
+    "questions": {
+      "before": 270,
+      "after": 290,
+      "original_rows_changed_or_missing": 0
+    },
+    "steps": {
+      "before": 1485,
+      "after": 1625,
+      "original_rows_changed_or_missing": 0
+    },
+    "model_calls": {
+      "before": 386,
+      "after": 388,
+      "original_rows_changed_or_missing": 0
+    },
+    "answers": {
+      "before": 270,
+      "after": 290,
+      "original_rows_changed_or_missing": 0
+    },
+    "candidates": {
+      "before": 33,
+      "after": 33,
+      "original_rows_changed_or_missing": 0
+    },
+    "grades": {
+      "before": 126,
+      "after": 126,
+      "original_rows_changed_or_missing": 0
+    },
+    "phrase_hits": {
+      "before": 147,
+      "after": 190,
+      "original_rows_changed_or_missing": 0
+    },
+    "links": {
+      "before": 1400,
+      "after": 1400,
+      "original_rows_changed_or_missing": 0
+    },
+    "searched_words": {
+      "before": 143,
+      "after": 143,
+      "original_rows_changed_or_missing": 0
+    },
+    "explanations": {
+      "before": 108,
+      "after": 108,
+      "original_rows_changed_or_missing": 0
+    },
+    "form_proposals": {
+      "before": 42,
+      "after": 42,
+      "original_rows_changed_or_missing": 0
+    },
+    "form_misses": {
+      "before": 0,
+      "after": 20,
+      "original_rows_changed_or_missing": 0
+    },
+    "form_night_runs": {
+      "before": 6,
+      "after": 7,
+      "original_rows_changed_or_missing": 0
+    },
+    "form_night_results": {
+      "before": 42,
+      "after": 42,
+      "original_rows_changed_or_missing": 0
+    },
+    "form_night_rechecks": {
+      "before": 26,
+      "after": 26,
+      "original_rows_changed_or_missing": 0
+    },
+    "form_approvals": {
+      "before": 0,
+      "after": 0,
+      "original_rows_changed_or_missing": 0
+    },
+    "form_night_coverage": {
+      "before": 7,
+      "after": 7,
+      "original_rows_changed_or_missing": 0
+    }
+  },
+  "practice_answers": {
+    "aligned": 20
+  },
+  "form_statuses": {
+    "rejected": 42
+  },
+  "approved_receipts": 0
+}

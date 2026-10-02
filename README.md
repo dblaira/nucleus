@@ -43,10 +43,10 @@ Under "Not sure" there is a second box, in his word: **possibility**. "So it's t
 The server accepts `--port` and `--store`. With no options it still uses port
 8766 and `~/Library/Application Support/nucleus/nucleus.sqlite3`.
 
-The slice 5 review runs from its separate worktree against the existing copy:
+The slice 6 review runs from its separate worktree against the existing copy:
 
 ```sh
-cd /Users/adamblair/.codex/worktrees/nucleus-forms-slice-5
+cd /Users/adamblair/.codex/worktrees/nucleus-forms-slice-6
 /Users/adamblair/Documents/nucleus/.venv/bin/python -m nucleus.serve \
   --port 8767 \
   --store "$HOME/Library/Application Support/nucleus/forms-review/nucleus.sqlite3"
@@ -54,14 +54,22 @@ cd /Users/adamblair/.codex/worktrees/nucleus-forms-slice-5
 
 `/forms` shows pending forms with Yes / No. Yes writes an approved block to
 `forms.txt` in the running code's worktree; No keeps the rejected proposal in
-the selected database. See [slice 5](docs/forms-slice-5.md) for the running copy
+the selected database. See [slice 6](docs/forms-slice-6.md) for the running copy
 and verification. `NUCLEUS_FORMS_ONLY` remains off.
 
 Approved middle-option forms replace the fixed `not_sure` opening with exact
 screen quotes and a displayed missing half. Selection uses plain code. With no
 approved form the current opening, records, possibility box and explanation
 path remain unchanged. The night pass counts different questions once and
-requires three questions across two bound words; proposals wait for Adam's Yes.
+requires three questions across two bound words, including one real question;
+proposals wait for Adam's Yes. Real questions are from the web and
+cowboyai-iphone surfaces. The page shows real and practice fits separately.
+
+The copy-only night pass first asks AI for up to 20 new dictionary-targeted
+practice questions, shaped by Adam's own real questions. Each uses normal ask
+and quote checking, saved with surface `practice`. Practice never appears in
+history, real repeats, link seeding or the morning grade. Conditions identify
+one form; wording variants are refused as `same form`.
 
 ## The model
 

@@ -78,12 +78,36 @@ CREATE TABLE IF NOT EXISTS form_approvals (
 CREATE TABLE IF NOT EXISTS form_night_coverage (
   proposal_id TEXT PRIMARY KEY, run_id TEXT NOT NULL, matches_json TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS form_practice_runs (
+  run_id TEXT PRIMARY KEY, started REAL NOT NULL, finished REAL, status TEXT NOT NULL,
+  prompt TEXT NOT NULL, reply TEXT, provider TEXT, model TEXT, error TEXT
+);
+CREATE TABLE IF NOT EXISTS form_coverage_checks (
+  proposal_id TEXT NOT NULL, run_id TEXT NOT NULL, matches_json TEXT NOT NULL,
+  examples_json TEXT NOT NULL, reason TEXT, PRIMARY KEY (proposal_id, run_id)
+);
+CREATE TABLE IF NOT EXISTS form_practice_results (
+  run_id TEXT NOT NULL, position INTEGER NOT NULL, raw_json TEXT NOT NULL,
+  target_word TEXT, question_id TEXT, reading_json TEXT, result_json TEXT, reason TEXT,
+  PRIMARY KEY (run_id, position)
+);
 """
 
 
 def normalize_question(question: str) -> str:
     """The same question, typed again: spaces and capitals do not make it a different question."""
     return re.sub(r"\s+", " ", question).strip().lower()
+
+
+def require_practice_copy(path: Path) -> Path:
+    """Practice is copy-only; reject the live file and aliases before opening it."""
+    path = Path(path).expanduser().resolve()
+    live = STORE_PATH.expanduser().resolve()
+    if path == live or (path.exists() and live.exists() and path.samefile(live)):
+        raise ValueError("practice requires a copy, never the live database")
+    if not path.is_file():
+        raise ValueError("practice database copy must already exist")
+    return path
 
 
 class Store:
@@ -104,6 +128,8 @@ class Store:
         self.connection.commit()
 
     def new_question(self, question: str, surface: str) -> str:
+        if surface == 'practice':
+            self.require_practice_copy()
         question_id = str(uuid.uuid4())
         self.connection.execute(
             "INSERT INTO questions (id, question, asked_at, surface) VALUES (?, ?, ?, ?)",
@@ -111,6 +137,12 @@ class Store:
         )
         self.connection.commit()
         return question_id
+
+    def require_practice_copy(self) -> None:
+        """Check the actual connection too, so changing Store.path cannot bypass isolation."""
+        require_practice_copy(self.path)
+        main = next((row[2] for row in self.connection.execute('PRAGMA database_list') if row[1] == 'main'), '')
+        require_practice_copy(Path(main))
 
     def start_step(self, question_id: str, name: str) -> float:
         started = time.time()
@@ -156,10 +188,13 @@ class Store:
     def find_repeat(self, question: str, nucleus_hash: str, before_id: str) -> dict | None:
         """The same question, answered before, against the same records: the saved reply, no model."""
         wanted = normalize_question(question)
+        current = self.question(before_id)
+        practice = current is not None and current['surface'] == 'practice'
         rows = self.connection.execute(
             "SELECT q.id, q.question, a.reply_json, a.finished FROM questions q JOIN answers a ON a.question_id = q.id"
-            " WHERE a.status = 'answered' AND a.nucleus_hash = ? AND q.id != ? ORDER BY a.finished DESC",
-            (nucleus_hash, before_id),
+            " WHERE a.status = 'answered' AND a.nucleus_hash = ? AND q.id != ?"
+            " AND (COALESCE(q.surface,'') = 'practice') = ? ORDER BY a.finished DESC",
+            (nucleus_hash, before_id, int(practice)),
         ).fetchall()
         for question_id, text, reply_json, finished in rows:
             if normalize_question(text) == wanted and reply_json:
@@ -169,9 +204,13 @@ class Store:
     def times_asked(self, question: str, before_id: str) -> int:
         """How many times he asked this same question before this one. Adam: circling."""
         wanted = normalize_question(question)
+        current = self.question(before_id)
+        if current is not None and current['surface'] == 'practice':
+            return 0
         asked_at = self.connection.execute("SELECT asked_at FROM questions WHERE id = ?", (before_id,)).fetchone()
         limit = asked_at[0] if asked_at else time.time()
-        rows = self.connection.execute("SELECT question FROM questions WHERE id != ? AND asked_at < ?", (before_id, limit)).fetchall()
+        rows = self.connection.execute("SELECT question FROM questions WHERE id != ? AND asked_at < ?"
+                                       " AND COALESCE(surface,'') <> 'practice'", (before_id, limit)).fetchall()
         return sum(1 for (text,) in rows if normalize_question(text) == wanted)
 
     def save_candidates(self, question_id: str, possibility: list[dict]) -> None:
@@ -240,6 +279,10 @@ class Store:
 
     def save_grade(self, run_id: str, question_id: str | None, question: str, expected: str | None, got: str | None,
                    status: str, gate_ok: bool | None, seconds: float) -> None:
+        if question_id is not None:
+            saved = self.question(question_id)
+            if saved is not None and saved['surface'] == 'practice':
+                raise ValueError('practice questions never count in the grade')
         self.connection.execute(
             "INSERT INTO grades (run_id, question_id, question, expected, got, status, gate_ok, seconds, at)"
             " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",

@@ -18,7 +18,7 @@ def middle_candidate(**changes):
 
 def saved_middle(store, word, question=None, *, answer='not_sure'):
     question = question or f'What does {word} show here?'
-    qid = store.new_question(question, 'test')
+    qid = store.new_question(question, 'web')
     word_why = f'{word} matches this question, but the records do not show what happened.'
     record_why = f'This record supports {word} here, but the records do not show what happened.'
     payload = {'answer': answer, 'words': [{'word': word, 'why': word_why}],
@@ -30,7 +30,7 @@ def saved_middle(store, word, question=None, *, answer='not_sure'):
 
 
 def run_middle(store, values=None):
-    return night.night(store.path, bootstrap=True, middle_only=True,
+    return night.night(store.path, practice=False, bootstrap=True, middle_only=True,
                        model_call=model_reply(values or [middle_candidate()]))
 
 
@@ -110,7 +110,7 @@ def test_middle_writer_and_reviewer_describe_scoped_exact_source_exception(copy)
     def call(prompt, *, schema):
         prompts.append((schema, prompt))
         return model_reply([middle_candidate()])(prompt, schema=schema)
-    result = night.night(copy.path, bootstrap=True, middle_only=True, model_call=call)
+    result = night.night(copy.path, practice=False, bootstrap=True, middle_only=True, model_call=call)
     assert result['proposed'] == 1
     writer = next(p for s, p in prompts if s == night.SCHEMA)
     reviewer = next(p for s, p in prompts if s == patterns.REVIEW_SCHEMA)
@@ -119,7 +119,7 @@ def test_middle_writer_and_reviewer_describe_scoped_exact_source_exception(copy)
     assert 'whole safe source' in writer and 'never clips' in writer
     assert 'narrowly scoped middle-option rule' in reviewer
     assert 'No invented cause' in reviewer and 'joining frame' in reviewer
-    assert patterns.POLICY == 'middle-question-v2'
+    assert patterns.POLICY == 'real-practice-question-v1'
 
 
 def test_middle_schema_requires_nullable_missing_why():
@@ -143,7 +143,7 @@ def test_cli_passes_middle_only_option(monkeypatch, capsys):
 
 def test_middle_only_cannot_widen_old_forms(copy):
     with pytest.raises(ValueError, match='cannot widen'):
-        night.night(copy.path, middle_only=True, widen=('F-25',))
+        night.night(copy.path, practice=False, middle_only=True, widen=('F-25',))
 
 
 def test_unrelated_quotes_are_refused_even_when_three_questions_exist(copy):

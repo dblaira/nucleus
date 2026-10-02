@@ -486,3 +486,68 @@ See [additional night summary](docs/forms-slice-5-additional-night.json) and
 [preservation proof](docs/forms-slice-5-additional-proof.json). Full questions,
 source quotes, traces and screenshots remain local because this repository is
 public. **Stopped after the one authorized additional pass.**
+
+## Forms slice 6 — October 2, 2026 Pacific
+
+Adam authorized practice scenarios at night, shaped by his own iPhone/web
+questions and aimed at his settled dictionary words. Built on
+`codex/forms-slice-6`, from exactly
+`e9345c64cb47482ea679923820814001ead42c8b`, in
+`/Users/adamblair/.codex/worktrees/nucleus-forms-slice-6`. The exact full request
+is appended on private companion branch `codex/forms-slice-6-ledger`.
+
+The copy-only night pass generates up to 20 new practice questions and runs
+them through normal ask, dictionary, painting/model and quote gate with
+`surface="practice"`. Exact generator replies, target readings and normal ask
+results stay in additive practice tables. There is no forced answer or new
+dictionary/graph meaning. Practice keeps form selection and miss snapshots;
+only its redundant background explanation is skipped.
+
+Practice cannot enter live storage, recent/direct answer history, real repeats,
+repeat counts, grade writes or link seeding. Guards refuse live paths, aliases,
+mismatched connected files and supplied question IDs before practice work.
+Daytime behavior with zero approved forms remains unchanged.
+
+Coverage counts distinct normalized questions across real `web`/
+`cowboyai-iphone` screens and practice screens, preferring a real screen when a
+question repeats across groups. A form needs three questions, two actually
+bound words and one real question. CLI and grade runs cannot count as Adam's
+questions. Counts remain minimums/ranges. Conditions alone identify one form;
+wording variants are refused as `same form`. Still-proposed forms refresh
+coverage and examples together in append-only `form_coverage_checks`; failed
+runs cannot publish evidence or revive a rejected form.
+
+The page shows `fits N of your questions · M practice questions`, biggest total
+first, with labeled examples and the same Yes/No controls. Browser verification
+with isolated synthetic fixtures confirmed real/practice labels, examples,
+ordering and both controls. Nothing was approved on the runtime copy.
+
+**423 tests pass. One manual pass completed**, run
+`a73a7619-ec4f-4176-a64e-4b3ab3affba4`, 96 inputs / 88 usable. It generated,
+target-checked and saved **20 new practice questions**, all answered **aligned**
+by the normal painted path with zero per-question model calls. The generator
+used 85 distinct questions from Adam's real surfaces. The forms writer returned
+`{"forms":[]}`: **0 proposed, 0 refused**, no semantic reviewer call. Two night
+model calls were added: practice generation and form writing. No second pass
+was run. **The review queue is empty**, and the 20 practice screens are retained
+for future nights. The existing aligned/not-sure answer rules were preserved.
+
+Backup `slice-6-before.sqlite3`, its hash and both integrity checks pass. All
+**4,491 original rows** remain exact. Real history, grades, links, searched words,
+earlier proposals, candidates, explanations and six source files are unchanged.
+An independent read-only audit checked every practice target, surface and saved
+gate result, and all 307 retained form source parts. There are **42 rejected,
+0 proposed, 0 approved** forms; `forms.txt` stays empty. Full questions and
+screen/AI traces remain local because this repository is public.
+
+**Phone link: http://100.111.154.126:8767/forms**. The review server runs from
+the slice-6 worktree against only the existing copy; manifest and log are
+`slice-6-server.json` and `slice-6-server.log` beside the copy. Only the previous
+review PID 74328 was stopped. Live PID 1941 on 8766 is untouched; no request or
+database open went to it. `NUCLEUS_FORMS_ONLY` is off, no launchd job installed,
+no approval and no merge to main.
+
+See [slice details](docs/forms-slice-6.md),
+[night summary](docs/forms-slice-6-night.json) and
+[preservation proof](docs/forms-slice-6-proof.json).
+**Stopped after slice 6 and its one authorized copy pass.**
