@@ -1,11 +1,12 @@
 """Checked sentences filled only from their literal text and a snapshot of the screen.
 
-Slice 1 only: no model, selection/ranking, day-path integration, or approval API.
+The day path selects approved forms without a model. There is no approval API.
 See docs/forms-slice-1.md for the file format and blank binding rules.
 """
 
 from __future__ import annotations
 
+import os
 import re
 import tomllib
 from collections import Counter
@@ -161,6 +162,38 @@ def load(path: Path = FORMS_PATH, *, kinds: list[str] | None = None) -> list[dic
             raise Refused(f"duplicate form number: {form['number']}")
         seen.add(form["number"])
     return document["forms"]
+
+
+def forms_only() -> bool:
+    """Off unless Adam explicitly enables it; reading this never changes the environment."""
+    return os.environ.get("NUCLEUS_FORMS_ONLY", "").strip().lower() in {"1", "true", "yes", "on"}
+
+
+def pick(screen: Screen, path: Path | None = None) -> tuple[Filled | None, str | None]:
+    """Most conditions first, then lowest numeric form number. Return a miss reason.
+
+    File/validation failures refuse forms and leave the existing live paragraph available.
+    Proposed/rejected forms and forms that cannot safely fill are never selected.
+    """
+    try:
+        kinds = load_kinds()
+        available = load(FORMS_PATH if path is None else path, kinds=kinds)
+    except (OSError, UnicodeError, Refused) as error:
+        return None, f"forms unavailable: {error}"
+    approved = [form for form in available if form["status"] == "approved"]
+    if not approved:
+        return None, "no approved forms"
+    approved.sort(key=lambda form: (-len(form["when"]), int(form["number"][2:])))
+    refused = []
+    for form in approved:
+        try:
+            filled = fill(form, screen, kinds=kinds)
+        except Refused as error:
+            refused.append(f"{form['number']}: {error}")
+            continue
+        if filled is not None:
+            return filled, None
+    return None, "; ".join(refused) if refused else "no form fits"
 
 
 def _check_screen(screen: Screen, kinds: list[str]) -> None:

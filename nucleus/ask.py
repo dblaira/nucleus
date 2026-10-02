@@ -12,6 +12,7 @@ from . import NUCLEUS_FILES
 from . import dictionary as dictionary_module
 from . import gate as gate_module
 from . import explain as explain_module
+from . import forms as forms_module
 from . import links as links_module
 from . import model as model_module
 from . import phrases as phrases_module
@@ -105,17 +106,37 @@ def ask(question: str, store: Store | None = None, surface: str = "cli",
     #     "we're not trying to answer questions. Trying to paint accurate pictures from the information given."
     picture = links_module.paint(question, reading, hits, store, graph, meanings)
     if picture is not None and not picture.missing:
-        for name in (STEP_NUCLEUS, STEP_MODEL, STEP_GATE, STEP_ANSWER):
+        filled, miss_reason = None, None
+        explanation_started = time.time()
+        if explain_call is not False:
+            # Only the rows actually painted, never a new lookup of all links for these words.
+            screen = forms_module.Screen(
+                picture.answer, tuple(w["word"] for w in picture.words),
+                tuple(forms_module.Row(r["link_word"], r["leaf"], r.get("kind")) for r in picture.records),
+                bool(picture.missing),
+            )
+            filled, miss_reason = forms_module.pick(screen)
+        form_step = f"5 form {filled.number} chosen" if filled is not None else STEP_MODEL
+        for name in (STEP_NUCLEUS, form_step, STEP_GATE, STEP_ANSWER):
             store.start_step(question_id, name)
-            store.finish_step(question_id, name, note="painted from your links, no model" if name == STEP_MODEL else "")
+            note = "painted from your links, no model" if name == STEP_MODEL else ""
+            if filled is not None and name == form_step:
+                note = json.dumps({"parts": [asdict(part) for part in filled.parts]}, ensure_ascii=False)
+            store.finish_step(question_id, name, note=note)
         reply_json = json.dumps({"answer": picture.answer, "words": [{"word": w["word"], "why": w["why"]} for w in picture.words],
                                  "records": [{"id": r["leaf"], "quote": r["quote"], "why": r["why"]} for r in picture.records],
                                  "possibility": []}, ensure_ascii=False)
+        if filled is not None:
+            # Save before publishing the answer: polling clients stop when an answer has no pending paragraph.
+            # Existing screens display explanation text, so the number travels with the paragraph.
+            store.save_explanation(question_id, f"{filled.number} · {filled.text}", None,
+                                   "form", filled.number, explanation_started)
         store.save_answer(question_id, "answered", picture.answer, picture.text, reply_json, True, None,
                           nucleus_hash=model_module.nucleus_hash(prompt_module.nucleus_text()[0]))
-        # the rows are on the screen; the explanation arrives under them when the model is done
-        if explain_call is not False:
-            explain_module.start(question_id, question, picture.text, picture.touched, store, explain_call)
+        if explain_call is not False and filled is None:
+            store.save_form_miss(question_id, asdict(picture), miss_reason or "no form fits")
+            if not forms_module.forms_only():
+                explain_module.start(question_id, question, picture.text, picture.touched, store, explain_call)
         return finish(Result(question_id, question, "answered", answer=picture.answer, text=picture.text, words=picture.words,
                              records=picture.records, reading=reading, phrases=phrase_dicts, provider="links", model="painted"))
 
@@ -166,7 +187,7 @@ def ask(question: str, store: Store | None = None, surface: str = "cli",
     store.save_answer(question_id, "answered", verdict.answer, verdict.text, reply.text, True, None, nucleus_hash=records_hash)
     if verdict.possibility and repeat is None:
         store.save_candidates(question_id, verdict.possibility)
-    if verdict.answer != "dont_know" and explain_call is not False:
+    if verdict.answer != "dont_know" and explain_call is not False and not forms_module.forms_only():
         earlier = store.explanation(repeat["question_id"]) if repeat is not None else None
         if earlier and earlier.get("text"):
             store.save_explanation(question_id, earlier["text"], None, earlier.get("provider") or "saved", earlier.get("model") or "saved", time.time())

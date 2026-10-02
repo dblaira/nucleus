@@ -54,6 +54,10 @@ CREATE TABLE IF NOT EXISTS form_proposals (
   status TEXT NOT NULL CHECK (status IN ('proposed', 'rejected')),
   reason TEXT, created REAL NOT NULL, decided REAL
 );
+CREATE TABLE IF NOT EXISTS form_misses (
+  id TEXT PRIMARY KEY, question_id TEXT NOT NULL, picture_json TEXT NOT NULL,
+  reason TEXT NOT NULL, created REAL NOT NULL
+);
 """
 
 
@@ -342,6 +346,16 @@ class Store:
         )
         self.connection.commit()
         return proposal_id
+
+    def save_form_miss(self, question_id: str, picture: dict, reason: str) -> str:
+        """Keep the exact painted snapshot for the later night pass, including its quotes."""
+        miss_id = str(uuid.uuid4())
+        self.connection.execute(
+            "INSERT INTO form_misses (id, question_id, picture_json, reason, created) VALUES (?, ?, ?, ?, ?)",
+            (miss_id, question_id, json.dumps(picture, ensure_ascii=False), reason, time.time()),
+        )
+        self.connection.commit()
+        return miss_id
 
     def form_proposals(self) -> list[dict]:
         """payload is the original evidence; form carries the database's nonapproved status.

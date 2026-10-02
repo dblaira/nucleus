@@ -114,3 +114,32 @@ approved. No live schema, service, answer path, or phone change was made.
 
 **Stopped after slice 1. The kill-switch source check passes. Do not infer
 authorization to proceed from this handoff. Slice 2 has not been started.**
+
+## Forms slice 2 — October 1, 2026 Pacific
+
+Adam's next request in the same Codex chat:
+
+> Read FORMS-PLAN.md in /Users/adamblair/Documents/nucleus. Build slice 2 only, starting from commit 9695d13 on codex/forms-slice-1, on a new branch codex/forms-slice-2. Keep NUCLEUS_FORMS_ONLY off. Acceptance: a painted question with an approved form has zero rows in model_calls and an explanation with provider "form"; with zero approved forms, everything behaves exactly as today. All tests pass. Push, do not merge to main, update HANDOFF.md, and stop before slice 3.
+
+Slice 2 is built on `codex/forms-slice-2`, based exactly on
+`9695d13a7731bf489576c76f2df365700f2a3abb`, in
+`/Users/adamblair/.codex/worktrees/nucleus-forms-slice-2`.
+It selects approved forms in the painted branch (most condition keys, then
+lowest numeric number), saves provider `form`/model `F-N` without an
+explanation thread, records exact painted snapshots in `form_misses`, and
+keeps the previous live paragraph path when none fit. Form paragraphs are
+saved before publishing their answers; the existing page shows the number
+and the chosen-form trace. `NUCLEUS_FORMS_ONLY` remains unset/off.
+
+**154 tests pass**, including the previous 132. A separate probe against
+isolated copies of real saved data produced zero `model_calls` rows with an
+approved fixture and provider `form`. With the empty product file, a direct
+comparison to slice 1 matched the answer, rows, trace, and controlled fallback
+paragraph. The rendered form number and trace were inspected. Read
+[docs/forms-slice-2.md](docs/forms-slice-2.md) and its linked proof for details.
+
+`forms.txt` remains empty. Nothing was merged into main, deployed, or migrated
+in the live database. Existing dirty/untracked files remain in the original
+checkout. The code and handoff are on the pushed slice 2 branch.
+
+**Stopped before slice 3. No night pass, schedule, or approval page was built.**

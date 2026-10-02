@@ -1,0 +1,46 @@
+{
+  "base_commit": "9695d13a7731bf489576c76f2df365700f2a3abb",
+  "verification": "Read-only SQLite backup, isolated copies, actual dictionary reader and saved links; no production write or model provider call",
+  "existing_data_preserved_during_schema_addition": true,
+  "forms_only_environment": null,
+  "product_approved_forms": 0,
+  "approved_fixture": {
+    "question": "What is FLOW?",
+    "question_id": "ef974093-0159-4a59-b775-8ec70427db75",
+    "row_count": 15,
+    "model_calls": 0,
+    "provider": "form",
+    "model": "F-7",
+    "text": "F-7 · Your rows say FLOW depends on 3 things you have written down.",
+    "steps": [
+      "1 question in",
+      "2 dictionary reads it",
+      "3 your phrases found",
+      "4 nucleus read whole",
+      "5 form F-7 chosen",
+      "6 the gate",
+      "7 answer out"
+    ],
+    "explanation_thread_started": false
+  },
+  "zero_approved_forms": {
+    "baseline": "9695d13",
+    "same_answer_records_phrases_steps_and_explanation": true,
+    "model_calls_each": 1,
+    "paragraph_provider": "verification fixture (no external model)",
+    "new_misses": 1,
+    "miss_snapshot_matches_painted_records": true
+  },
+  "stop": "Slice 2 only; no merge, deployment, or slice 3",
+  "rendered_verification": {
+    "surface": "isolated existing web page, read-only copy",
+    "visible_paragraph_number": "F-7",
+    "visible_trace": "5 form F-7 chosen",
+    "screenshot": "forms-slice-2-rendered.jpg"
+  },
+  "tests": {
+    "total_passed": 154,
+    "slice_1_passed": 132,
+    "new_cases": 22
+  }
+}

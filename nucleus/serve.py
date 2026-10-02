@@ -104,7 +104,8 @@ function render(data){
   const byName = {};
   (data.steps||[]).forEach(s => byName[s.name] = s);
   const now = Date.now()/1000;
-  for (const name of NAMES){
+  const formStep = (data.steps||[]).find(s => /^5 form F-[0-9]+ chosen$/.test(s.name));
+  for (const name of NAMES.map(n => n === '5 one model call' && formStep ? formStep.name : n)){
     const s = byName[name];
     const el = document.createElement('div');
     let cls = 'step', t = '';
