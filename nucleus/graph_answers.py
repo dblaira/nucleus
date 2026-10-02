@@ -19,6 +19,14 @@ class GraphBudgetExceeded(RuntimeError):
     pass
 
 
+class GraphLabelFailure(ValueError):
+    """Carry query time separately when no completed label can do so."""
+    def __init__(self, message, *, graph_ms=0.0, dictionary_ms=0.0):
+        super().__init__(message)
+        self.graph_ms = graph_ms
+        self.dictionary_ms = dictionary_ms
+
+
 @dataclass(frozen=True)
 class PartLabel:
     text: str
@@ -65,19 +73,28 @@ def label_question(question, engine, reading=None, hits=None):
     index = PhraseIndex(engine.meanings, engine.legacy_graph) if len(texts) > 1 or hits is None else None
     for text in texts:
         started = time.perf_counter()
-        part_reading = reading if len(texts) == 1 and reading is not None else dictionary.brief(text)
-        if len(texts) > 1:
-            if not isinstance(part_reading, dict):
-                raise ValueError('dictionary returned invalid question part')
-            if part_reading.get('outcome') in ('stopped', 'ask'):
-                raise ValueError('dictionary stopped question part')
-        part_hits = hits if len(texts) == 1 and hits is not None else index.lookup(text)
-        words = tuple(links.touched_words(part_reading, part_hits, known))
+        try:
+            part_reading = reading if len(texts) == 1 and reading is not None else dictionary.brief(text)
+            if len(texts) > 1:
+                if not isinstance(part_reading, dict):
+                    raise ValueError('dictionary returned invalid question part')
+                if part_reading.get('outcome') in ('stopped', 'ask'):
+                    raise ValueError('dictionary stopped question part')
+            part_hits = hits if len(texts) == 1 and hits is not None else index.lookup(text)
+            words = tuple(links.touched_words(part_reading, part_hits, known))
+        except Exception as error:
+            elapsed = (time.perf_counter() - started) * 1000
+            raise GraphLabelFailure(str(error), dictionary_ms=dictionary_ms + elapsed) from error
         elapsed = (time.perf_counter() - started) * 1000
         dictionary_ms += elapsed
         readings.append((text, words, elapsed))
     touched = tuple(dict.fromkeys(word for _text, words, _elapsed in readings for word in words))
-    label = engine.label(touched)
+    query_started = time.perf_counter()
+    try:
+        label = engine.label(touched)
+    except Exception as error:
+        raise GraphLabelFailure(str(error), graph_ms=(time.perf_counter() - query_started) * 1000,
+                                dictionary_ms=dictionary_ms) from error
     reached = set(label.connected)
     parts = tuple(PartLabel(text, words, tuple(word for word in words if word in reached),
                             tuple(word for word in words if word not in reached),
@@ -91,6 +108,35 @@ def label_question(question, engine, reading=None, hits=None):
     return QuestionLabel(answer, label.connected, label.missing, label.records,
                          label.ms, label.budget_miss, touched, parts,
                          'question parts' if len(parts) > 1 else 'word paths', dictionary_ms)
+
+
+def visible_parts(label):
+    """Exact successful multipart sources, without lookup or historical repaint."""
+    if (getattr(label, 'budget_miss', True) or getattr(label, 'rule', '') != 'question parts'
+            or label.answer == 'dont_know'):
+        return ()
+    return tuple(forms.GraphPart(part.text, part.words, part.connected, part.missing,
+                                 dict(part.records)) for part in label.parts)
+
+
+def question_part_whys(parts, words=None):
+    """Print the exact parts beside the dictionary word whose graph path fits.
+
+    A replay can append these new graph-part lines to its saved source text;
+    the helper never replaces a record, meaning, or original why.
+    """
+    return forms_middle.graph_part_whys(parts, words)
+
+
+def render_question_parts(parts, words=None):
+    """Visible graph-part proof only; old source lines stay untouched."""
+    return '\n\n'.join(question_part_whys(parts, words).values())
+
+
+def screen_from_picture(picture, kinds=None):
+    """Use only the current painted source and its explicit graph-part proof."""
+    return forms_middle.from_visible(picture.answer, picture.words, picture.records,
+                                     picture.text, kinds, parts=tuple(picture.parts))
 
 
 def record_build(store, engine):
@@ -111,12 +157,12 @@ def paint(touched, engine, label):
                              touched=list(touched), missing=list(label.missing))
     graph, meanings = engine.legacy_graph, engine.meanings
     words, records, seen = [], [], set()
-    gaps = tuple(part.text for part in getattr(label, 'parts', ()) if not part.connected)
-    show_part_gaps = label.answer == 'not_sure' and getattr(label, 'rule', '') == 'question parts'
+    parts = visible_parts(label)
+    part_whys = question_part_whys(parts, touched)
     for word in touched:
         why = word + ' has no links.' if word in label.missing else 'you said ' + word
-        if show_part_gaps and word in label.connected:
-            why += '. ' + ' '.join('Your records do not show “' + part + '”.' for part in gaps)
+        if word in part_whys:
+            why = part_whys[word]
         words.append({'word': word, 'why': why,
                       'meanings': [m.text for m in dictionary.meanings_for(meanings, word)]})
         direct = {link['record']: link for link in engine.links_for(word)}
@@ -136,7 +182,7 @@ def paint(touched, engine, label):
                 'kind': link['kind'] if link else None})
     records.sort(key=lambda r: -float(r['strength'] or 0))
     text = gate.compose(label.answer, words, records, [])
-    return links.Picture(label.answer, text, words, records, list(touched), list(label.missing))
+    return links.Picture(label.answer, text, words, records, list(touched), list(label.missing), list(parts))
 
 
 def answer(question_id, question, reading, hits, store, engine, explain_call):
@@ -145,7 +191,7 @@ def answer(question_id, question, reading, hits, store, engine, explain_call):
     store.start_step(question_id, QUERY_STEP)
     label, error, filled, reason = None, None, None, None
     form_times = []
-    label_started = time.perf_counter()
+    failed_graph_ms = failed_dictionary_ms = 0.0
     try:
         label = label_question(question, engine, reading=reading, hits=hits)
         touched = list(label.touched)
@@ -154,11 +200,13 @@ def answer(question_id, question, reading, hits, store, engine, explain_call):
         picture = paint(touched, engine, label)
     except Exception as failure:
         error = str(failure)
+        failed_graph_ms = getattr(failure, 'graph_ms', 0.0)
+        failed_dictionary_ms = getattr(failure, 'dictionary_ms', 0.0)
         # The old note count is a named fallback only. It never invokes AI.
         picture = links.paint(question, reading, hits, store, engine.legacy_graph, engine.meanings)
         if picture is None:
             picture = links.Picture('dont_know', gate.compose('dont_know', [], [], []), touched=touched)
-    label_ms = label.ms if label is not None else (time.perf_counter() - label_started) * 1000
+    label_ms = label.ms if label is not None else failed_graph_ms
 
     def trace_form(milliseconds):
         form_times.append(milliseconds)
@@ -167,7 +215,7 @@ def answer(question_id, question, reading, hits, store, engine, explain_call):
 
     if explain_call is not False:
         try:
-            screen = forms_middle.from_visible(picture.answer, picture.words, picture.records, picture.text)
+            screen = screen_from_picture(picture)
             filled, reason = forms.pick(screen, graph=engine.graph, query_trace=trace_form)
         except forms.Refused as failure:
             reason = str(failure)
@@ -184,6 +232,7 @@ def answer(question_id, question, reading, hits, store, engine, explain_call):
     diagnostic = {'rule': 'count rule' if error else 'graph paths', 'error': error,
                   'label': label.to_dict() if label is not None else None,
                   'label_ms': label_ms, 'form_ms': sum(form_times), 'total_ms': graph_ms,
+                  'dictionary_ms': label.dictionary_ms if label is not None else failed_dictionary_ms,
                   'budget_ms': BUDGET_MS, 'budget_miss': miss}
     store.finish_step(question_id, QUERY_STEP, note=json.dumps(diagnostic, ensure_ascii=False, sort_keys=True))
     form_step = '5 form ' + filled.number + ' chosen' if filled else '5 graph answer, no model'
@@ -199,7 +248,8 @@ def answer(question_id, question, reading, hits, store, engine, explain_call):
     if filled and picture.answer == 'not_sure' and forms_middle.is_filled(filled):
         _first, separator, body = text.partition('\n')
         text = filled.text + separator + body
-    reply = {'answer': picture.answer, 'words': picture.words, 'records': picture.records, 'possibility': []}
+    reply = {'answer': picture.answer, 'words': picture.words, 'records': picture.records, 'possibility': [],
+             'parts': [asdict(part) for part in picture.parts]}
     store.start_step(question_id, '7 answer out')
     store.save_answer(question_id, 'answered', picture.answer, text, json.dumps(reply, ensure_ascii=False), True, None)
     store.finish_step(question_id, '7 answer out')

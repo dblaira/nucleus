@@ -43,7 +43,7 @@ def _check_when(when, kinds):
                 raise forms.Refused('repeated middle word')
         if name in ('record_count', 'word_count') and not forms._valid_count(value):
             raise forms.Refused('invalid count condition')
-        if name in ('missing_links', 'missing_why') and type(value) is not bool:
+        if name in ('missing_links', 'missing_why', 'graph_parts') and type(value) is not bool:
             raise forms.Refused(name + ' must be boolean')
     if set(when.get('kinds_present', [])) & set(when.get('kinds_absent', [])):
         raise forms.Refused('middle word both present and absent')
@@ -79,6 +79,12 @@ def compile_when(when: dict, *, kinds=None) -> str:
         elif name in ('missing_links', 'missing_why'):
             predicate = 'missingLinks' if name == 'missing_links' else 'missingWhy'
             lines.append('    ?screen screen:' + predicate + ' ' + Literal(value).n3() + ' .')
+        elif name == 'graph_parts':
+            lines.append('    ?screen screen:graphParts ' + Literal(value).n3() + ' .')
+            if value:
+                lines.append('    ?screen screen:part ?lined_up_part, ?open_part .')
+                lines.append('    ?lined_up_part screen:graphConnected true .')
+                lines.append('    ?open_part screen:graphConnected false .')
     return '\n'.join([*lines, '  }', '}'])
 
 
@@ -91,6 +97,23 @@ def _project(target: Graph, screen, context: URIRef):
     target.add((context, SCREEN.wordCount, Literal(len(screen.words))))
     target.add((context, SCREEN.missingLinks, Literal(screen.missing_links)))
     target.add((context, SCREEN.middleWordsComplete, Literal(screen.middle_words_complete)))
+    target.add((context, SCREEN.graphParts, Literal(bool(screen.parts))))
+    for index, part in enumerate(screen.parts):
+        node = URIRef(str(context) + '/part/' + str(index))
+        target.add((context, SCREEN.part, node))
+        target.add((node, SCREEN.position, Literal(index)))
+        target.add((node, SCREEN.text, Literal(part.text)))
+        target.add((node, SCREEN.graphConnected, Literal(bool(part.connected))))
+        target.add((node, SCREEN.source, Literal(f'screen.parts[{index}].text')))
+        for word in part.words:
+            target.add((node, SCREEN.word, word_node(word)))
+        for word in part.connected:
+            target.add((node, SCREEN.connectedWord, word_node(word)))
+        for word in part.missing:
+            target.add((node, SCREEN.missingWord, word_node(word)))
+        for word, records in part.records.items():
+            for record in records:
+                target.add((node, SCREEN.record, URIRef(record)))
     gaps = [forms_middle.gap_span(why.text) for why in screen.whys]
     target.add((context, SCREEN.missingWhy, Literal(any(gaps))))
     for index, word in enumerate(screen.words):

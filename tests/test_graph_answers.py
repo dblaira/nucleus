@@ -107,7 +107,9 @@ def test_multipart_historical_replay_keeps_every_source_field_exact(setup, monke
     item = {'question': 'ALPHA feels clear, but how did the app behave?',
             'screen': deepcopy(original), 'reason': None, 'raw': deepcopy(raw)}
     forms_night.replay_graph_labels([item], engine)
-    assert item['screen'] == {**original, 'answer': 'not_sure'}
+    assert {k:v for k,v in item['screen'].items() if k != 'parts'} == {**original, 'answer': 'not_sure'}
+    assert item['screen']['parts'][1]['text'] == 'how did the app behave?'
+    assert '“how did the app behave?”' in item['graph_replay_parts_text']
     assert item['raw'] == raw
     assert item['graph_label']['rule'] == 'question parts'
     assert len(item['graph_label']['parts']) == 2
@@ -230,7 +232,7 @@ def test_the_exact_missing_part_is_visible_source_for_a_form(setup, monkeypatch)
     question = 'ALPHA but I cannot establish how “the app” behaved?'
     result = ask.ask(question, store=store, brief=lambda _: reading('ALPHA'),
                      model_call=never, meaning_graph=engine)
-    why = 'you said ALPHA. Your records do not show “I cannot establish how “the app” behaved?”.'
+    why = 'you said ALPHA. “ALPHA” lines up here. Your records do not show “I cannot establish how “the app” behaved?”.'
     assert result.answer == 'not_sure'
     assert result.words[0]['why'] == why and why in result.text
     assert result.records[0]['quote'] == 'A clear sign.'
@@ -253,7 +255,7 @@ def test_multiple_missing_parts_stay_exact_and_visible(setup, monkeypatch):
     question = 'ALPHA but I do not know? Yet “Nothing changed.”'
     label = graph_answers.label_question(question, engine)
     picture = graph_answers.paint(label.touched, engine, label)
-    why = 'you said ALPHA. Your records do not show “I do not know?”. Your records do not show ““Nothing changed.””.'
+    why = 'you said ALPHA. “ALPHA” lines up here. Your records do not show “I do not know?”. Your records do not show ““Nothing changed.””.'
     assert label.answer == 'not_sure'
     assert [part.text for part in label.parts] == ['ALPHA', 'I do not know?', '“Nothing changed.”']
     assert picture.words[0]['why'] == why and why in picture.text
@@ -328,3 +330,19 @@ def test_an_invalid_part_reading_never_becomes_an_unconnected_guess(setup, monke
     monkeypatch.setattr(engine, 'label', never)
     with pytest.raises(ValueError, match='^dictionary returned invalid question part$'):
         graph_answers.label_question('ALPHA but another part?', engine)
+
+
+def test_replay_recovers_only_the_original_whole_printed_meaning(setup):
+    store, engine = setup
+    old_quote = 'I cannot claim a prerequisite for the coordinator.'
+    raw = {'text': 'aligned and why\n\nALPHA — “' + old_quote + '”\nyou said ALPHA\n\nALPHA supports “An old whole record.”',
+           'reply_json': json.dumps({'words':[{'word':'ALPHA','why':'you said ALPHA'}],
+                                    'records':[{'id':'old','quote':'An old whole record.'}]})}
+    original = {'answer':'aligned','words':['ALPHA'], 'rows':[], 'missing_links':False}
+    item = {'question':'What is ALPHA?', 'screen':dict(original), 'raw':dict(raw), 'reason':None}
+    forms_night.replay_graph_labels([item],engine)
+    assert item['raw']==raw
+    assert item['screen']['rows']==original['rows']
+    assert item['screen']['meanings']==[{'word':'ALPHA','quote':old_quote}]
+    assert item['screen']['meanings'][0]['quote']!=engine.meanings[0].text
+    assert item['screen']['parts']==[]

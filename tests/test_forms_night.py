@@ -236,7 +236,8 @@ def test_limit_never_writes_more_than_twelve_proposal_rows_but_keeps_overflow(co
     values = [candidate(when={**candidate()['when'], 'record_count': {'min': 0, 'max': i+3}}) for i in range(14)]
     result = run(copy, values)
     assert len(copy.form_proposals()) == 12
-    assert (result['proposed'], result['refused']) == (12, 2)
+    assert (result['proposed'], result['refused']) == (1, 13)
+    assert all(r['reason'] == 'same form' for r in result['results'][1:12])
     assert [r['raw'] for r in result['results']] == values
     assert result['results'][12]['reason'] == 'night limit: more than 12 forms'
 
@@ -364,7 +365,9 @@ def test_downvote_uses_miss_snapshot_when_historical_text_has_no_middle(copy):
     copy.save_explanation(qid, 'FLOW old paragraph', None, 'test', 'fixture', 1)
     copy.thumb_explanation(qid, False)
     result = run(copy, [candidate(when={**candidate()['when'], 'record_count': {'min': 2}})])
-    assert result['usable_inputs'] == result['proposed'] == 1
+    assert result['usable_inputs'] == 1
+    assert result['proposed'] == 0 and result['results'][0]['reason'] == 'same form'
+    assert any(e['question_id'] == qid for e in night.coverage_for(copy, result['results'][0]['proposal_id']))
 
 
 def test_live_file_and_aliases_refused_before_any_schema_write(tmp_path, monkeypatch):

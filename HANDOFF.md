@@ -698,3 +698,103 @@ merge, or launchd installation/loading.
 See [slice details](docs/forms-slice-7b.md),
 [night summary](docs/forms-slice-7b-night.json) and
 [preservation/timing proof](docs/forms-slice-7b-proof.json). **Stop after slice 7b.**
+
+## Forms slice 7c — October 2, 2026 Pacific
+
+Built on `codex/forms-slice-7c` from exactly
+`265eb880d9bff33de43a228f056cfa1acecd81df`, worktree
+`/Users/adamblair/.codex/worktrees/nucleus-forms-slice-7c`. Adam's complete
+request is appended on private companion branch `codex/forms-slice-7c-ledger`.
+
+Graph middle forms can now fill `{lined_up_part}` and `{open_part}` with the
+exact visible text of connected and unconnected question parts. The specified
+frame contract is “{lined_up_part}” lines up with {word}: “{meaning}”.
+“{open_part}” is still open. It requires `answer=not_sure`, `graph_parts=true`,
+one connected part, one part with no path to records, and the connected word's
+own printed meaning. Both parts are Adam's source words and receive no style,
+negative, advice or reading-level judgment. Only this exact frame gets the
+two-sentence / “still open” exception. Hidden graph data cannot fill a blank.
+
+Part evidence is saved with the visible graph screen and checked by SPARQL ASK
+inside isolated screen contexts. Historical replay keeps original answers and
+source fields intact; only graph-label/part evidence is added. An omitted
+meaning is recovered only when its whole exact quote was already printed in
+the saved screen. The graph/query budget, count fallback and plain-code day
+selection remain. Proposed forms are never selected; only Adam's Yes approves.
+
+The same explicit answer plus the same quoted middle words is now one idea,
+regardless of counts or wording. Code retains the valid form fitting the most
+different questions, ties to the earlier number, and refuses the rest as
+`same form`. Semantic refusals cannot displace a valid form; Adam's Yes/No
+and the approved catalog are protected. **F-54 replaces F-48 (8 versus 7
+fits), F-56 replaces F-47 (8 versus 6), F-57 replaces F-50 (7 versus 5).**
+Old payloads remain exact; only the three waiting decisions changed.
+
+**617 tests pass. One manual night pass completed**, run
+`74f40812-763d-4ded-8746-f9bbe79ad5dc`, **210 inputs / 202 usable**.
+**Eight candidates: three proposed, five refused.** F-62 fits 6 real / 0
+practice questions; F-63 fits 6 real / 2 practice. **F-66 is the new middle
+frame: 6 real / 62 practice questions, 68 different questions across 44 bound
+words.** Prior practice contributes to that fit count. F-59–F-61 were refused
+by semantic review for “requires” as necessity wording; F-64 fits only one
+bound word (`fits too few answers`); F-65 has no real fit (`needs one real
+question`). Counts/minimums, three different questions, two words and one real
+question remain required.
+
+**Real questions: 33 aligned, 21 middle, 30 dont_know**, plus **one
+dictionary-stopped question**. This census covers all 120 real web/iPhone
+question rows, deduplicated to 85 different questions; grade/CLI/practice are
+excluded. The normal dictionary gate and phrase reader precede graph labels.
+**This pass's practice: 0 aligned, 17 middle, 0 dont_know**. Twenty questions
+were generated; three were refused at the dictionary gate before any ask.
+All 17 saved practice questions have two parts, surface `practice`, zero
+per-question model calls, and stay out of history/grade/live records.
+
+Across **all 77 different saved practice questions**, the current graph replay
+is **15 aligned, 62 middle, 0 dont_know**, including the 17 new middle questions.
+All 77 have replay evidence, with no replay refusal/budget miss. The three
+dictionary-stopped proposals have no saved question and are separate. These
+are current graph labels; original historical answers remain unchanged.
+
+The first writer request exceeded the provider's input limit before generation.
+Its 1,408,881-character receipt and pre-resume checkpoint remain intact. Only
+the writer stage resumed with the **same run ID**; no second pass, practice
+batch or extra question ran. Whole-screen writer sampling now bounds the
+request (successful: 750,146 characters). Three bounded semantic packets
+review every distinct fill with whole exact sources. Full saved history still
+determines coverage. Five successful night calls and one failed writer attempt
+are retained with separate receipts and append-only resume evidence.
+
+Backup `slice-7c-before.sqlite3` SHA-256
+`5585c383eec655b962e3bc26b23a1bd1fba010f8837cc4a4f9520106dfd289e5`;
+backup and copy integrity pass. Of **5,444 original rows**, **5,441 stay exact**;
+the other three retain their payloads and every field outside the authorized
+duplicate rejection status/reason/time. All **13 source hashes/sizes/mtimes**
+match. Real history, links, grades, prior answers and approval receipts remain
+exact. Saved waiting-form fills have 753 exact source parts, including 144
+exact question-part copies. Full private sources, examples, RDF, model traces,
+checkpoints and screenshots stay local because the nucleus repository is public.
+Independent audit refilled all 357 measured matches and checked 999 exact
+source parts. Forward traversal agrees with every saved question part's
+connected/missing/reached-record metadata. All ten waiting ideas are unique
+and meet the coverage floors. Public-diff audit found no secrets, new private
+source disclosures, unrelated changes or unjustified test weakening.
+
+Practice graph/form queries: **3.982–40.705 ms**, median **15.061 ms**, zero
+budget misses/count fallbacks. Review graph: **14,591 triples**, startup
+**336.672 ms**, outside the per-answer query budget. These are graph-query
+times, not full-answer latency measurements.
+
+**Phone: http://100.111.154.126:8767/forms**. Review PID **42349** runs this
+worktree and the existing copy; `slice-7c-start.py`, `slice-7c-server.json`
+and `slice-7c-server.log` are beside the copy. Browser/HTTP verify ten waiting
+cards, F-66 first, descending distinct-question fits, up to three examples
+from different words, Yes/No only, no editing or horizontal overflow. Practice
+direct history is 404. **Ten waiting, 56 rejected, zero approvals** at verification.
+Only old review PID 8264 was stopped. Live PID 1941 on 8766 and its database
+are untouched; no live request was made. `NUCLEUS_FORMS_ONLY=0`; no approval,
+merge, launchd installation or loading.
+
+See [slice details](docs/forms-slice-7c.md),
+[night summary](docs/forms-slice-7c-night.json) and
+[preservation/timing proof](docs/forms-slice-7c-proof.json). **Stop after slice 7c.**

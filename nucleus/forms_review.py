@@ -193,6 +193,9 @@ def fires_when(when: dict) -> str:
             phrases.append(f'At least {count["min"]} {noun}' + ('' if count['min'] == 1 else 's'))
         else:
             phrases.append(f'At most {count["max"]} {noun}' + ('' if count['max'] == 1 else 's'))
+    if 'graph_parts' in when:
+        phrases.append('One part of the question connects to your records and one part stays open' if when['graph_parts']
+                       else 'The question leaves out a connected or open graph part')
     if 'missing_links' in when:
         phrases.append('A word has missing links' if when['missing_links'] else 'Every word has links')
     if 'missing_why' in when:

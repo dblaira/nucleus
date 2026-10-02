@@ -19,8 +19,8 @@ from .kinds import load_kinds
 
 FORMS_PATH = Path(__file__).resolve().parent.parent / "forms.txt"
 FIELDS = {"number", "when", "sentence", "status", "author", "date"}
-CONDITIONS = {"answer", "kinds_present", "kinds_absent", "record_count", "word_count", "missing_links", "missing_why"}
-BLANKS = {"word", "other_word", "kind", "count", "word_count", "strongest_kind", "meaning", "record_quote", "missing_why", "missing_word", "absent_kind"}
+CONDITIONS = {"answer", "kinds_present", "kinds_absent", "record_count", "word_count", "missing_links", "missing_why", "graph_parts"}
+BLANKS = {"word", "other_word", "kind", "count", "word_count", "strongest_kind", "meaning", "record_quote", "missing_why", "missing_word", "absent_kind", "lined_up_part", "open_part"}
 ANSWERS = {"aligned", "not_sure", "dont_know"}
 _BLANK = re.compile(r"\{([^{}]*)\}")
 _TOKEN = re.compile(r"\w+(?:[’'\-]\w+)*", re.UNICODE)
@@ -50,6 +50,16 @@ class Why:
 
 
 @dataclass(frozen=True)
+class GraphPart:
+    """An exact question slice and its checked graph paths, never model metadata."""
+    text: str
+    words: tuple[str, ...]
+    connected: tuple[str, ...]
+    missing: tuple[str, ...]
+    records: dict[str, tuple[str, ...]]
+
+
+@dataclass(frozen=True)
 class Screen:
     answer: str
     words: tuple[str, ...]
@@ -59,6 +69,50 @@ class Screen:
     whys: tuple[Why, ...] = ()
     missing_words: tuple[str, ...] = ()
     middle_words_complete: bool = True
+    parts: tuple[GraphPart, ...] = ()
+
+
+def _check_graph_parts(parts) -> None:
+    if not isinstance(parts, tuple):
+        raise Refused('invalid graph parts')
+    for part in parts:
+        if not isinstance(part, GraphPart) or not isinstance(part.text, str) or not part.text.strip():
+            raise Refused('invalid graph part text')
+        for values in (part.words, part.connected, part.missing):
+            if (not isinstance(values, tuple) or any(not isinstance(w, str) or not w.strip() for w in values)
+                    or len(set(values)) != len(values)):
+                raise Refused('invalid graph part words')
+        if (set(part.connected) & set(part.missing) or
+                set(part.connected) | set(part.missing) != set(part.words)):
+            raise Refused('graph part paths do not match its words')
+        if not isinstance(part.records, dict) or set(part.records) != set(part.words):
+            raise Refused('invalid graph part records')
+        for word, records in part.records.items():
+            if (not isinstance(records, tuple) or any(not isinstance(r, str) or not r for r in records)
+                    or len(set(records)) != len(records) or bool(records) != (word in part.connected)):
+                raise Refused('graph part connections do not match its records')
+
+
+def restore_parts(raw) -> tuple[GraphPart, ...]:
+    """Restore only the five checked metadata fields from a saved screen."""
+    if not isinstance(raw, (tuple, list)):
+        raise Refused('invalid graph parts')
+    result = []
+    for value in raw:
+        if isinstance(value, GraphPart):
+            result.append(value)
+            continue
+        if not isinstance(value, dict) or set(value) != {'text', 'words', 'connected', 'missing', 'records'}:
+            raise Refused('unknown or missing graph part fields')
+        if (any(not isinstance(value[name], (tuple, list)) for name in ('words', 'connected', 'missing'))
+                or not isinstance(value['records'], dict)
+                or any(not isinstance(records, (tuple, list)) for records in value['records'].values())):
+            raise Refused('invalid graph part paths')
+        result.append(GraphPart(value['text'], tuple(value['words']), tuple(value['connected']),
+                                tuple(value['missing']), {word: tuple(records) for word, records in value['records'].items()}))
+    parts = tuple(result)
+    _check_graph_parts(parts)
+    return parts
 
 
 @dataclass(frozen=True)
@@ -153,7 +207,7 @@ def check(form: object, *, kinds: list[str] | None = None) -> str | None:
                 return "repeated middle word"
         if name in ("record_count", "word_count") and not _valid_count(value):
             return "invalid count condition"
-        if name in ("missing_links", "missing_why") and type(value) is not bool:
+        if name in ("missing_links", "missing_why", "graph_parts") and type(value) is not bool:
             return name + " must be boolean"
     if set(when.get("kinds_present", [])) & set(when.get("kinds_absent", [])):
         return "middle word both present and absent"
@@ -177,6 +231,8 @@ def check(form: object, *, kinds: list[str] | None = None) -> str | None:
     from . import forms_middle
     if forms_middle.is_middle(form):
         return forms_middle.check(form, kinds)
+    if "graph_parts" in when:
+        return "graph_parts requires a graph-part form"
     if "missing_why" in when:
         return "missing_why requires a middle-option form"
     literal = literal_words(sentence)
@@ -256,6 +312,7 @@ def _check_screen(screen: Screen, kinds: list[str]) -> None:
         raise Refused("invalid screen why lines")
     if type(screen.middle_words_complete) is not bool:
         raise Refused("invalid middle-word completeness")
+    _check_graph_parts(screen.parts)
     if not isinstance(screen.missing_words, tuple) or any(w not in screen.words for w in screen.missing_words):
         raise Refused("invalid displayed missing words")
     records = set()

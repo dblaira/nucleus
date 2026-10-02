@@ -9,8 +9,10 @@ import time
 from . import forms, forms_middle, model
 
 # Revisit exact source screens under literal-only author style checks.
-POLICY = 'graph-parts-own-words-v2'
+POLICY = 'graph-parts-text-v3'
 REVIEW_SCHEMA = Path(__file__).with_name('forms-review.schema.json')
+REVIEW_PROMPT_LIMIT = 750_000
+REVIEW_PROMPT_OVERHEAD = 2_048  # Reserve for the schema and model wrapper, outside the saved prompt.
 PUSHING_KINDS = frozenset({'rejects', 'contradicts', 'prevents', 'inhibits', 'constrains', 'limits'})
 NO_PATTERN = 'conditions do not require a row pattern'
 RESTATEMENT = 'sentence only restates counts or middle words'
@@ -144,42 +146,157 @@ halves remain faithful to their own explicit screen sources for every matching s
 """
 
 
-def review(store, run_id: str, candidates: list[dict], model_call=None) -> dict[str, dict]:
-    """One separate batch call. Missing/malformed judgments fail the run closed."""
+GRAPH_PART_REVIEW_CONTRACT = """For the exact graph-part frame, apply ONLY this narrow exception
+instead of the two-row-quote and older record_quote/missing-half rules above:
+“{lined_up_part}” lines up with {word}: “{meaning}”. “{open_part}” is still open.
+It MUST require answer=not_sure and graph_parts=true. Its two short sentences are explicitly
+allowed. Report one_sentence truthfully for the author's frame; code recognizes this exact
+two-sentence exception. Other forms still require one sentence.
+The complete exact lined_up_part must have a checked graph connection for the selected word.
+That word's complete exact meaning must be printed on the screen. The complete exact open_part
+must have ZERO checked graph connections. Never pick an unrelated word or meaning, or call a
+connected part open. The graph parts establish this pattern; no record_quote or missing_why
+blank or two-middle-word row pattern is required for this exact frame.
+Question parts, dictionary words and meanings inside blanks are Adam's exact source wording.
+Never judge their negatives, advice, vocabulary, length, punctuation or reading level. Judge
+style and fifth-grade reading level ONLY in literal_words, as with every form. The exact literal
+"is still open" is allowed ONLY in this frame; it never licenses another caveat or negative.
+Refuse invented source text, broken binding, advice or added meaning. A favorable review never
+approves anything. All ordinary coverage, exact-source and approval gates still apply.
+"""
+
+
+def review_packets(candidates: list[dict]) -> list[tuple[str, list[dict]]]:
+    """Bound each prompt by moving whole examples, never shortening a source.
+
+    A form can occur in several packets, but never twice in one packet. Every
+    supplied example occurs once, and each packet repeats that form's complete
+    conditions and literal frame. An individually oversized example fails closed.
+    """
     contract = REVIEW_CONTRACT
-    if any(forms_middle.is_middle(c['form']) for c in candidates):
+    if any(forms_middle.is_middle(c['form']) and not forms_middle.is_graph_parts(c['form']) for c in candidates):
         contract += '\n' + MIDDLE_REVIEW_CONTRACT
+    if any(forms_middle.is_graph_parts(c['form']) for c in candidates):
+        contract += '\n' + GRAPH_PART_REVIEW_CONTRACT
     reviewed = [{**candidate, 'literal_words': forms.literal_words(candidate['form']['sentence'])}
                 for candidate in candidates]
-    prompt = contract + '\nCandidates:\n' + json.dumps(reviewed, ensure_ascii=False, sort_keys=True)
-    call_id = 'forms-night:' + run_id + ':review'
-    started = time.time()
-    reply = None
+    numbers = [candidate['form']['number'] for candidate in reviewed]
+    if len(set(numbers)) != len(numbers):
+        raise ValueError('duplicate review candidate number')
+    if any(not isinstance(candidate.get('examples'), list) for candidate in reviewed):
+        raise ValueError('review candidate examples must be an array')
+    prefix = contract + '\nCandidates:\n'
+    limit = REVIEW_PROMPT_LIMIT - REVIEW_PROMPT_OVERHEAD
+    encode = lambda value: json.dumps(value, ensure_ascii=False, sort_keys=True)
+    whole = prefix + encode(reviewed)
+    if len(whole) <= limit:
+        return [(whole, reviewed)]
+    packets, current = [], []
+    length = len(prefix) + 2  # The surrounding JSON array brackets.
+
+    def flush():
+        nonlocal current, length
+        if current:
+            prompt = prefix + encode(current)
+            if len(prompt) > limit:
+                raise ValueError('review packet exceeds prompt limit')
+            packets.append((prompt, current))
+            current, length = [], len(prefix) + 2
+
+    for candidate in reviewed:
+        base = {**candidate, 'examples': []}
+        base_size = len(encode(base))
+        examples = candidate['examples']
+        sizes = [len(encode(example)) for example in examples]
+        position = 0
+        # Even a candidate with no examples must be reviewed, not silently omitted.
+        if not examples:
+            addition = base_size + (2 if current else 0)
+            if length + addition > limit:
+                flush()
+                addition = base_size
+            if length + addition > limit:
+                raise ValueError('whole review form exceeds prompt limit: ' + candidate['form']['number'])
+            current.append(base)
+            length += addition
+            continue
+        while position < len(examples):
+            addition = base_size + (2 if current else 0)
+            chunk, chunk_size = [], 0
+            while position < len(examples):
+                next_size = sizes[position] + (2 if chunk else 0)
+                if length + addition + chunk_size + next_size > limit:
+                    break
+                chunk.append(examples[position])
+                chunk_size += next_size
+                position += 1
+            if not chunk:
+                if current:
+                    flush()
+                    continue
+                raise ValueError('whole review example exceeds prompt limit: ' + candidate['form']['number'])
+            current.append({**candidate, 'examples': chunk})
+            length += addition + chunk_size
+            if position < len(examples):
+                flush()
+    flush()
+    return packets
+
+
+def _review_decisions(text: str, candidates: list[dict]) -> dict[str, dict]:
+    payload = json.loads(text)
+    if not isinstance(payload, dict) or set(payload) != {'reviews'} or not isinstance(payload['reviews'], list):
+        raise ValueError('meaning review must contain only a reviews array')
+    expected = {c['form']['number'] for c in candidates}
+    decisions = {}
+    for item in payload['reviews']:
+        if (not isinstance(item, dict) or set(item) != {'number', 'verdict', 'reason', 'reading_grade', 'one_sentence'}
+                or not isinstance(item['number'], str) or item['number'] not in expected
+                or item['number'] in decisions
+                or item['verdict'] not in ('explains_pattern', 'restates_rows', 'unsupported_meaning')
+                or type(item['reading_grade']) is not int or not 1 <= item['reading_grade'] <= 12
+                or type(item['one_sentence']) is not bool
+                or not isinstance(item['reason'], str) or not item['reason'].strip()):
+            raise ValueError('invalid or duplicate meaning review')
+        decisions[item['number']] = item
+    if set(decisions) != expected:
+        raise ValueError('missing meaning review for a candidate')
+    return decisions
+
+
+def review(store, run_id: str, candidates: list[dict], model_call=None) -> dict[str, dict]:
+    """One logical review phase; every whole example receives a bounded review.
+
+    Each packet has an independent complete call receipt under the existing
+    review question ID. A later failure never changes an earlier receipt.
+    """
     try:
-        reply = (model_call or model.call)(prompt, schema=REVIEW_SCHEMA)
-        store.save_model_call(call_id, reply.provider, reply.model, prompt, started, reply.text, True, None)
-        payload = json.loads(reply.text)
-        if not isinstance(payload, dict) or set(payload) != {'reviews'} or not isinstance(payload['reviews'], list):
-            raise ValueError('meaning review must contain only a reviews array')
-        expected = {c['form']['number'] for c in candidates}
-        decisions = {}
-        for item in payload['reviews']:
-            if (not isinstance(item, dict) or set(item) != {'number', 'verdict', 'reason', 'reading_grade', 'one_sentence'}
-                    or not isinstance(item['number'], str) or item['number'] not in expected
-                    or item['number'] in decisions
-                    or item['verdict'] not in ('explains_pattern', 'restates_rows', 'unsupported_meaning')
-                    or type(item['reading_grade']) is not int or not 1 <= item['reading_grade'] <= 12
-                    or type(item['one_sentence']) is not bool
-                    or not isinstance(item['reason'], str) or not item['reason'].strip()):
-                raise ValueError('invalid or duplicate meaning review')
-            decisions[item['number']] = item
-        if set(decisions) != expected:
-            raise ValueError('missing meaning review for a candidate')
-        return decisions
+        packets = review_packets(candidates)
     except Exception as error:
-        if reply is None:
-            store.save_model_call(call_id, '?', '?', prompt, started, None, False, str(error))
-        else:
-            store.connection.execute('UPDATE model_calls SET ok=0,error=? WHERE question_id=?', (str(error), call_id))
-            store.connection.commit()
         raise ValueError(f'meaning review failed: {error}') from error
+    call_id = 'forms-night:' + run_id + ':review'
+    combined = {}
+    rank = {'explains_pattern': 0, 'restates_rows': 1, 'unsupported_meaning': 2}
+    for prompt, packet in packets:
+        started = time.time()
+        reply = None
+        try:
+            reply = (model_call or model.call)(prompt, schema=REVIEW_SCHEMA)
+            decisions = _review_decisions(reply.text, packet)
+        except Exception as error:
+            store.save_model_call(call_id, reply.provider if reply else '?', reply.model if reply else '?',
+                                  prompt, started, reply.text if reply else None, False, str(error))
+            raise ValueError(f'meaning review failed: {error}') from error
+        store.save_model_call(call_id, reply.provider, reply.model, prompt, started, reply.text, True, None)
+        for number, item in decisions.items():
+            if number not in combined:
+                combined[number] = dict(item)
+                continue
+            prior = combined[number]
+            if rank[item['verdict']] > rank[prior['verdict']]:
+                prior['verdict'] = item['verdict']
+            prior['reading_grade'] = max(prior['reading_grade'], item['reading_grade'])
+            prior['one_sentence'] = prior['one_sentence'] and item['one_sentence']
+            if item['reason'] != prior['reason']:
+                prior['reason'] += '; ' + item['reason']
+    return combined

@@ -1,0 +1,169 @@
+{
+  "run_id": "74f40812-763d-4ded-8746-f9bbe79ad5dc",
+  "status": "completed",
+  "provider": "codex",
+  "model": "gpt-5.6-sol",
+  "inputs": 210,
+  "usable_inputs": 202,
+  "proposed": 3,
+  "refused": 5,
+  "refusal_reasons": {
+    "unsupported pattern meaning: The joining frame uses \u201crequires,\u201d which adds the refused necessity wording.": 2,
+    "unsupported pattern meaning: \u201cRejects\u201d names a real row relationship, but \u201crequires\u201d adds the refused necessity wording.": 1,
+    "fits too few answers": 1,
+    "needs one real question": 1
+  },
+  "candidates": 8,
+  "real_questions": {
+    "different_questions": 85,
+    "labels": {
+      "aligned": 33,
+      "dont_know": 30,
+      "middle": 21
+    },
+    "refused": 1,
+    "source_question_rows": 120,
+    "refusal_reason": "dictionary stopped question"
+  },
+  "practice": {
+    "generated": 20,
+    "asked": 17,
+    "answered": 17,
+    "refused": 3,
+    "refusal_reasons": {
+      "dictionary stopped practice question": 3
+    },
+    "two_part_questions": 17,
+    "labels": {
+      "aligned": 0,
+      "middle": 17,
+      "dont_know": 0
+    }
+  },
+  "per_practice_model_calls": 0,
+  "successful_night_model_calls": 5,
+  "failed_writer_attempts": 1,
+  "writer_continued_same_run": true,
+  "second_night_run": false,
+  "extra_practice_on_resume": false,
+  "request_characters": {
+    "initial_failed_writer": 1408881,
+    "provider_maximum": 1048576,
+    "successful_writer": 750146,
+    "semantic_review_packets": [
+      743364,
+      736214,
+      46658
+    ]
+  },
+  "prior_proposals_refused": [
+    {
+      "number": "F-47",
+      "reason": "same form"
+    },
+    {
+      "number": "F-48",
+      "reason": "same form"
+    },
+    {
+      "number": "F-50",
+      "reason": "same form"
+    }
+  ],
+  "results": [
+    {
+      "number": "F-59",
+      "status": "rejected",
+      "reason": "unsupported pattern meaning: The joining frame uses \u201crequires,\u201d which adds the refused necessity wording.",
+      "questions": 15,
+      "bound_words": 9,
+      "real_questions": 10,
+      "practice_questions": 5
+    },
+    {
+      "number": "F-60",
+      "status": "rejected",
+      "reason": "unsupported pattern meaning: The joining frame uses \u201crequires,\u201d which adds the refused necessity wording.",
+      "questions": 11,
+      "bound_words": 6,
+      "real_questions": 7,
+      "practice_questions": 4
+    },
+    {
+      "number": "F-61",
+      "status": "rejected",
+      "reason": "unsupported pattern meaning: \u201cRejects\u201d names a real row relationship, but \u201crequires\u201d adds the refused necessity wording.",
+      "questions": 9,
+      "bound_words": 4,
+      "real_questions": 7,
+      "practice_questions": 2
+    },
+    {
+      "number": "F-62",
+      "status": "proposed",
+      "reason": null,
+      "questions": 6,
+      "bound_words": 2,
+      "real_questions": 6,
+      "practice_questions": 0
+    },
+    {
+      "number": "F-63",
+      "status": "proposed",
+      "reason": null,
+      "questions": 8,
+      "bound_words": 4,
+      "real_questions": 6,
+      "practice_questions": 2
+    },
+    {
+      "number": "F-64",
+      "status": "rejected",
+      "reason": "fits too few answers",
+      "questions": 5,
+      "bound_words": 1,
+      "real_questions": 5,
+      "practice_questions": 0
+    },
+    {
+      "number": "F-65",
+      "status": "rejected",
+      "reason": "needs one real question",
+      "questions": 3,
+      "bound_words": 2,
+      "real_questions": 0,
+      "practice_questions": 3
+    },
+    {
+      "number": "F-66",
+      "status": "proposed",
+      "reason": null,
+      "questions": 68,
+      "bound_words": 44,
+      "real_questions": 6,
+      "practice_questions": 62
+    }
+  ],
+  "practice_graph_query_times": {
+    "min": 3.982,
+    "median": 15.061,
+    "max": 40.705
+  },
+  "practice_graph_budget_misses": 0,
+  "practice_count_fallbacks": 0,
+  "all_practice_questions": {
+    "different_saved_questions": 77,
+    "labels": {
+      "aligned": 15,
+      "middle": 62,
+      "dont_know": 0
+    },
+    "source": "current night run graph replay evidence",
+    "all_saved_questions_have_replay_evidence": true,
+    "replay_refusals": 0,
+    "replay_budget_misses": 0,
+    "new_questions_included": 17,
+    "unsaved_dictionary_stops": 3,
+    "historical_answer_rows_unchanged": true
+  }
+}

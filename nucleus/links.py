@@ -69,6 +69,7 @@ class Picture:
     records: list[dict] = field(default_factory=list)
     touched: list[str] = field(default_factory=list)
     missing: list[str] = field(default_factory=list)
+    parts: list = field(default_factory=list)
 
 
 def touched_words(reading: dict, hits, known: set[str]) -> list[str]:

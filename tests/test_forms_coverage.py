@@ -171,7 +171,8 @@ def test_review_lists_largest_fit_first_with_different_words_and_keeps_yes_no(co
         value = picture(word); value['records'].append({'link_word': word, 'leaf': 'r3', 'kind': 'supports', 'quote': 'Third quote'})
         copy.save_form_miss(qid, value, 'snapshot')
     for word in ['VALUE', 'WORK']: miss(copy, word)
-    limited = candidate(when={**candidate()['when'], 'kinds_present': ['depends on', 'rejects', 'supports']})
+    limited = candidate(when={**candidate()['when'], 'kinds_present': ['depends on', 'rejects', 'supports']},
+                        sentence='{word} depends on “{quote:depends on}” and supports “{quote:supports}”.')
     result = run(copy, [limited, candidate()])
     assert result['proposed'] == 2
     queue = review.pending(copy, forms.FORMS_PATH)

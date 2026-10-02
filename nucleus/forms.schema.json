@@ -26,7 +26,8 @@
               "record_count",
               "word_count",
               "missing_links",
-              "missing_why"
+              "missing_why",
+              "graph_parts"
             ],
             "properties": {
               "answer": {
@@ -147,6 +148,12 @@
                 ]
               },
               "missing_why": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
+              "graph_parts": {
                 "type": [
                   "boolean",
                   "null"

@@ -9,7 +9,9 @@ import json
 import re
 from .gate import unescape_label
 
-SLOTS = frozenset({'meaning', 'record_quote', 'missing_why', 'missing_word', 'absent_kind'})
+PART_SLOTS = frozenset({'lined_up_part', 'open_part'})
+SLOTS = frozenset({'meaning', 'record_quote', 'missing_why', 'missing_word', 'absent_kind'}) | PART_SLOTS
+PART_FRAME = '“{lined_up_part}” lines up with {word}: “{meaning}”. “{open_part}” is still open.'
 HEADS = (
     '{word} — “{meaning}” — and “{record_quote}” line up here',
     '{word}: “{meaning}” and “{record_quote}” line up here',
@@ -35,8 +37,17 @@ def is_middle(form: dict) -> bool:
     return any(blank in SLOTS for _, blank in forms._parts(form['sentence']))
 
 
+def is_graph_parts(form: dict) -> bool:
+    """Only Adam's exact authorized frame receives the two-sentence exception."""
+    return (form.get('sentence') == PART_FRAME and form.get('when', {}).get('answer') == 'not_sure'
+            and form.get('when', {}).get('graph_parts') is True)
+
+
+is_graph_part = is_graph_parts
+
+
 def is_filled(filled) -> bool:
-    return any(p.source.startswith(('screen.meanings[', 'screen.whys[', 'screen.missing_words['))
+    return any(p.source.startswith(('screen.meanings[', 'screen.whys[', 'screen.missing_words[', 'screen.parts['))
                for p in filled.parts)
 
 
@@ -47,6 +58,35 @@ def source_reason(text: str) -> str | None:
     return None
 
 
+def graph_part_whys(parts, words=None) -> dict[str, str]:
+    """Print the checked part sources; the same exact lines are checked on refill."""
+    from . import forms
+    parts = forms.restore_parts(parts)
+    names = tuple(dict.fromkeys(word for part in parts for word in part.connected)) if words is None else words
+    open_parts = [part for part in parts if not part.connected]
+    result = {}
+    for word in names:
+        connected = [part for part in parts if word in part.connected]
+        if connected:
+            result[word] = ('you said ' + word + '. '
+                            + ' '.join('“' + part.text + '” lines up here.' for part in connected)
+                            + ((' ' + ' '.join('Your records do not show “' + part.text + '”.' for part in open_parts))
+                               if open_parts else ''))
+    return result
+
+
+def _quoted_end(text: str, position: int) -> int | None:
+    """End of one complete quoted source, including balanced nested quotes."""
+    start, depth = position, 1
+    while position < len(text) and depth:
+        if text[position] == '“':
+            depth += 1
+        elif text[position] == '”':
+            depth -= 1
+        position += 1
+    return position if not depth and position > start + 1 else None
+
+
 def _quoted_question_gaps(text: str) -> bool:
     """Whole program clauses, with nested source quotes and no added assertion."""
     position = 0
@@ -55,22 +95,29 @@ def _quoted_question_gaps(text: str) -> bool:
         if opening is None:
             return False
         position += opening.end()
-        start, depth = position, 1
-        while position < len(text) and depth:
-            if text[position] == '“':
-                depth += 1
-            elif text[position] == '”':
-                depth -= 1
-            position += 1
-        if depth or position <= start + 1 or text[position:position + 1] != '.':
+        end = _quoted_end(text, position)
+        if end is None or text[end:end + 1] != '.':
             return False
-        position += 1
+        position = end + 1
         if position == len(text):
             return True
         if text[position:position + 1] != ' ':
             return False
         position += 1
     return False
+
+
+def _graph_gap_start(why: str) -> int | None:
+    leading = re.match(r'you said [^\r\n]+?\. ', why)
+    if leading is None:
+        return None
+    position = leading.end()
+    while why[position:position + 1] == '“':
+        end = _quoted_end(why, position + 1)
+        if end is None or why[end:end + len(' lines up here. ')] != ' lines up here. ':
+            return None
+        position = end + len(' lines up here. ')
+    return position if re.match(r'(?:Your|your) records do not show “', why[position:]) else None
 
 
 def gap_span(why: str) -> tuple[int, int] | None:
@@ -80,9 +127,9 @@ def gap_span(why: str) -> tuple[int, int] | None:
     starts = [0] + [m.end() for m in re.finditer(r', but |; ', why)]
     # Graph-authored multipart why: split only its exact leading scaffold,
     # never arbitrary sentence punctuation inside Adam's quoted question.
-    multipart = re.match(r'you said [^\r\n]+?\. (?=(?:Your|your) records do not show “)', why)
-    if multipart:
-        starts.append(multipart.end())
+    multipart = _graph_gap_start(why)
+    if multipart is not None:
+        starts.append(multipart)
     for start in starts:
         clause = why[start:]
         # The program's missing-question clause quotes the exact question part.
@@ -106,6 +153,21 @@ def check(form: dict, kinds: list[str]) -> str | None:
     blanks = {b for _, b in forms._parts(form['sentence']) if b}
     if when.get('answer') != 'not_sure':
         return 'middle-option forms fire only on not_sure'
+    if blanks & PART_SLOTS:
+        if when.get('graph_parts') is not True:
+            return 'graph-part blanks need graph_parts=true'
+        if form['sentence'] != PART_FRAME:
+            return 'graph-part sentence must use the exact lined-up and open frame'
+        for name in ('record_count', 'word_count'):
+            if name in when:
+                value = when[name]
+                if type(value) is int or (isinstance(value, dict) and value.get('min') == value.get('max')):
+                    return 'exact counts refused'
+                if not isinstance(value, dict) or 'min' not in value:
+                    return 'counts must be minimums or ranges'
+        return None
+    if 'graph_parts' in when:
+        return 'graph_parts requires a graph-part form'
     if not {'word', 'meaning', 'record_quote'} <= blanks:
         return 'middle-option form needs exact word and record quotes'
     gaps = blanks & {'missing_why', 'missing_word', 'absent_kind'}
@@ -144,12 +206,16 @@ def positive_half(why: str) -> bool:
                 not re.search(r"\b(?:not|no|never|cannot|can[’']t|couldn[’']t|doesn[’']t|don[’']t|isn[’']t|aren[’']t|won[’']t|unable to|fails? to|failed to|might|may|could|perhaps|possibly)\s+(?:\w+\s+){0,2}$", prefix[:marker.start()], re.I))
 
 
-def from_visible(answer: str, words: list[dict], records: list[dict], text: str, kinds=None):
+def from_visible(answer: str, words: list[dict], records: list[dict], text: str, kinds=None, *, parts=()):
     """Recover only values printed in this answer; never enrich with today's data."""
     from . import forms
     kinds = forms.load_kinds() if kinds is None else kinds
     if not isinstance(text, str) or not isinstance(words, list) or not isinstance(records, list):
         raise forms.Refused('invalid visible answer')
+    graph_parts = forms.restore_parts(parts)
+    for line in graph_part_whys(graph_parts).values():
+        if '\n' + line + '\n' not in '\n' + text + '\n':
+            raise forms.Refused('graph part source is not printed on the screen')
     names = tuple(w['word'] for w in words)
     positive_words = [w['word'] for w in words if isinstance(w.get('why'), str)
                       and ('\n' + w['why'] + '\n' in '\n' + text + '\n')
@@ -160,7 +226,7 @@ def from_visible(answer: str, words: list[dict], records: list[dict], text: str,
     cursor = text.find('\n') + 1
     for entry in words:
         word, why = entry['word'], entry.get('why', '')
-        boundary = text.find('\n' + why + '\n', cursor) if why else -1
+        boundary = (text + '\n').find('\n' + why + '\n', cursor) if why else -1
         chunk = text[cursor:boundary] if boundary >= 0 else ''
         pattern = re.compile(r'(?:\A|\n)' + re.escape(word) + r' — “(.*?)”(?=\n|\Z)', re.S)
         if boundary >= 0:
@@ -204,6 +270,7 @@ def from_visible(answer: str, words: list[dict], records: list[dict], text: str,
         rows.append(forms.Row(word, record.get('leaf') or record['id'], kind, quote))
     positive = set(positive_words) | {row.word for row in rows if row.kind is not None
                and row.kind not in {'rejects', 'contradicts', 'prevents', 'inhibits', 'constrains', 'limits'}}
+    positive.update(word for part in graph_parts for word in part.connected)
     meanings = [m for m in meanings if m.word in positive]
     for word in names:
         # Explicit printed no-links wording only; absence in a model's selected
@@ -211,7 +278,7 @@ def from_visible(answer: str, words: list[dict], records: list[dict], text: str,
         if any(re.fullmatch(re.escape(word) + r' has no links[.!]?', why.text) for why in whys):
             missing.append(word)
     screen = forms.Screen(answer, names, tuple(rows), bool(missing), tuple(meanings), tuple(whys), tuple(missing),
-                          len(rows) == len(records) and all(row.kind is not None for row in rows))
+                          len(rows) == len(records) and all(row.kind is not None for row in rows), graph_parts)
     forms._check_screen(screen, kinds)
     return screen
 
@@ -221,7 +288,8 @@ def saved_screen(raw: dict, kinds: list[str]):
     if not isinstance(payload, dict) or payload.get('answer') != 'not_sure':
         from . import forms
         raise forms.Refused('saved answer is not not_sure')
-    return from_visible(payload['answer'], payload['words'], payload['records'], raw['text'], kinds)
+    return from_visible(payload['answer'], payload['words'], payload['records'], raw['text'], kinds,
+                        parts=payload.get('parts', ()))
 
 
 _COMMON = frozenset("adam blair a an and are as at be because been being but by can do does for from had has have he her here him his how i if in into is it its me my no not of on or our she so than that the their them there these they this those to was we were what when where which who will with without you your".split())
@@ -237,6 +305,25 @@ def shared_words(meaning: str, quote: str) -> set[str]:
 def values(form, screen):
     """Choose whole exact sources; a missing slot makes a form miss, never guesses."""
     from . import forms
+    if is_graph_parts(form):
+        if screen.answer != 'not_sure' or len(screen.parts) < 2:
+            return None
+        open_index = next((i for i, part in enumerate(screen.parts) if not part.connected), None)
+        if open_index is None:
+            return None
+        for pi, part in enumerate(screen.parts):
+            for word in part.connected:
+                if word not in screen.words:
+                    continue
+                for mi, meaning in enumerate(screen.meanings):
+                    if meaning.word == word:
+                        return {
+                            'lined_up_part': forms.Part(part.text, f'screen.parts[{pi}].text'),
+                            'word': forms.Part(word, f'screen.words[{screen.words.index(word)}]'),
+                            'meaning': forms.Part(meaning.quote, f'screen.meanings[{mi}].quote'),
+                            'open_part': forms.Part(screen.parts[open_index].text, f'screen.parts[{open_index}].text'),
+                        }
+        return None
     gaps = []
     for i, why in enumerate(screen.whys):
         span = gap_span(why.text)

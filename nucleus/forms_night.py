@@ -22,10 +22,11 @@ from .store import Store, normalize_question
 SCHEMA = Path(__file__).with_name("forms.schema.json")
 REVIEW_PATH = STORE_PATH.parent / "forms-review" / "nucleus.sqlite3"
 LIMIT = 12
+PROMPT_LIMIT = 750_000  # Whole source screens; leave room for the schema and model wrapper.
 
 
 def replay_graph_labels(inputs, engine):
-    """A labelled replay; never edit the original answer or enrich its visible sources."""
+    """Replay graph labels and exact question parts; keep saved row/meaning sources."""
     for item in inputs:
         if item['screen'] is None:
             continue
@@ -42,7 +43,54 @@ def replay_graph_labels(inputs, engine):
             item['screen'] = None
             item['reason'] = 'graph budget miss'
         else:
-            item['screen']['answer'] = label.answer
+            from .graph_answers import visible_parts, render_question_parts
+            parts = visible_parts(label)
+            parts_text = render_question_parts(parts)
+            screen = item['screen']
+            # Preserve original source fields and container shapes. Only recover
+            # omitted meaning lines when their exact text is printed in that saved answer.
+            raw = item.get('raw', {})
+            if not screen.get('meanings') and raw.get('reply_json') and raw.get('text'):
+                try:
+                    payload = json.loads(raw['reply_json'])
+                    visible = forms_middle.from_visible(screen['answer'], payload['words'], payload['records'],
+                        raw['text'] + ('\n\n' + parts_text if parts_text else ''), engine.kinds, parts=parts)
+                    if visible.meanings:
+                        screen['meanings'] = [asdict(m) for m in visible.meanings]
+                except (forms.Refused, KeyError, TypeError, ValueError):
+                    pass  # Unrecoverable sources cannot bind the new meaning blank.
+            screen['answer'] = label.answer
+            screen['parts'] = [asdict(part) for part in parts]
+            item['graph_replay_parts_text'] = parts_text
+
+
+def real_graph_labels(store, engine):
+    """Each different real question is read normally and checked against this copy."""
+    from .graph_answers import label_question
+    from . import dictionary
+    from .phrases import PhraseIndex
+    index = PhraseIndex(engine.meanings, engine.legacy_graph)
+    seen, results = set(), []
+    for qid, question, surface in store.connection.execute(
+            'SELECT id,question,surface FROM questions WHERE surface IN (?,?) ORDER BY asked_at,id', Store.HIS_SURFACES):
+        key = forms_practice.question_key(question)
+        if key in seen:
+            continue
+        seen.add(key)
+        try:
+            reading = dictionary.brief(question)
+            if not isinstance(reading, dict) or reading.get('outcome') in ('stopped', 'ask'):
+                raise ValueError('dictionary stopped real question')
+            label = label_question(question, engine, reading=reading, hits=index.lookup(question))
+            results.append({'question_id': qid, 'question': question, 'surface': surface,
+                            'label': label.to_dict(), 'reason': 'graph budget miss' if label.budget_miss else None})
+        except Exception as error:
+            results.append({'question_id': qid, 'question': question, 'surface': surface,
+                            'label': None, 'reason': str(error)})
+    counts = Counter(r['label']['answer'] for r in results if r['label'] and not r['reason'])
+    return {'different_questions': len(results), 'labels': {'aligned': counts['aligned'],
+            'middle': counts['not_sure'], 'dont_know': counts['dont_know']},
+            'refused': sum(bool(r['reason']) for r in results), 'results': results}
 
 
 def save_graph_condition(store, proposal_id, run_id, form, kinds):
@@ -73,7 +121,7 @@ def screen_from_picture(picture: dict, kinds: list[str]) -> forms.Screen:
     if not isinstance(picture["missing"], list) or any(not isinstance(w, str) for w in picture["missing"]):
         raise forms.Refused("invalid missing words in saved picture")
     if 'text' in picture:
-        return forms_middle.from_visible(picture['answer'], picture['words'], picture['records'], picture['text'], kinds)
+        return forms_middle.from_visible(picture['answer'], picture['words'], picture['records'], picture['text'], kinds, parts=forms.restore_parts(picture.get('parts', [])))
     screen = forms.Screen(picture["answer"], tuple(w["word"] for w in picture["words"]),
                           tuple(forms.Row(r["link_word"], r["leaf"], r.get("kind"),
                                           unescape_label(r["quote"]) if "quote" in r else None) for r in picture["records"]),
@@ -116,7 +164,8 @@ def restore_screen(value: dict) -> forms.Screen:
                         tuple(forms.Row(**r) for r in value["rows"]), value["missing_links"],
                         tuple(forms.Meaning(**m) for m in value.get('meanings', [])),
                         tuple(forms.Why(**w) for w in value.get('whys', [])),
-                        tuple(value.get('missing_words', [])), value.get('middle_words_complete', True))
+                        tuple(value.get('missing_words', [])), value.get('middle_words_complete', True),
+                        forms.restore_parts(value.get('parts', [])))
 
 
 def past_answers(store: Store, kinds: list[str]) -> list[dict]:
@@ -359,9 +408,10 @@ The full painted history is supplied, including answers already consumed by olde
 Use conditions that fit EVERY matching screen. Real questions come only from Adam's web and
 cowboyai-iphone surfaces; practice questions are AI-written tests, not Adam's history. Every form
 needs at least ONE real question among its three different questions across two bound words.
-Fewer than twelve is fine. One idea, one form: conditions alone identify a form, regardless of
-wording. Keep the first; later proposals with the same conditions are refused as "same form".
-Widened conditions are distinct from a narrow original.
+Fewer than twelve is fine. One idea, one form: the same answer plus the same named quote middle words identifies one idea,
+regardless of wording or count limits. Code keeps the form fitting the most different questions
+and refuses the rest as "same form". Adam's Yes or No is never changed. A widened form is distinct
+from an old narrow refusal, but competes with other waiting forms for the same idea.
 """
 
 
@@ -410,9 +460,34 @@ repeats for auditing every different fill.
 Propose a general frame when the supplied screens prove both halves. Fewer than twelve is fine.
 At least ONE of those different questions must be real: from Adam's web or cowboyai-iphone
 surface. Practice questions are AI-written tests and may supply the remaining coverage.
-One idea, one form: never repeat the same conditions even with different wording. Keep the first;
-code refuses later variants as "same form". All forms still await Adam's yes.
+One idea, one form: the same answer plus the same named quote middle words identifies one idea.
+Code keeps the form fitting the most different questions and refuses the rest as "same form".
+Adam's Yes or No is never changed. All forms still await Adam's yes.
 """
+
+
+def bounded_screens(samples, budget):
+    """Sample whole exact screens fairly; full history remains the coverage authority."""
+    buckets = {}
+    for sample in samples:
+        screen = sample['screen']
+        key = (sample.get('surface') == 'practice', screen.get('answer') != 'not_sure',
+               screen.get('answer', ''), next(iter(screen.get('words', [])), ''), sample.get('surface') or '')
+        buckets.setdefault(key, []).append(sample)
+    buckets = [items for key, items in sorted(buckets.items())]
+    chosen, used = [], 2
+    while buckets:
+        remaining = []
+        for items in buckets:
+            sample = items.pop(0)
+            size = len(encoded(sample)) + (2 if chosen else 0)
+            if used + size <= budget:
+                chosen.append(sample)
+                used += size
+            if items:
+                remaining.append(items)
+        buckets = remaining
+    return chosen
 
 
 def make_prompt(inputs: list[dict], previous: list[dict], kinds: list[str], *, middle_only: bool = False) -> str:
@@ -433,7 +508,28 @@ def make_prompt(inputs: list[dict], previous: list[dict], kinds: list[str], *, m
         'Other forms keep every rule above.\n' +
         MIDDLE_CONTRACT.replace('This pass proposes ONLY forms requiring answer=not_sure.',
                                 'You may also propose middle-option forms requiring answer=not_sure.'))
-    return contract + "\nAllowed middle words:\n" + encoded(kinds) + "\nPrevious forms:\n" + encoded(previous) + "\nSaved screens:\n" + encoded(samples)
+    contract += """
+Graph-part middle exception: use ONLY answer=not_sure and graph_parts=true, with all other
+conditions unused. New blanks {lined_up_part} and {open_part} copy COMPLETE exact question-part
+text from screen.parts: a part with connected words, and a part with zero connected words.
+Both are Adam's words and NEVER judged. {word} and {meaning} must belong to the connected part.
+The ONLY graph-part frame is:
+“{lined_up_part}” lines up with {word}: “{meaning}”. “{open_part}” is still open.
+These two short sentences are explicitly allowed. This frame needs no record_quote or missing_why
+and does not need two middle-word rows; the graph parts prove both halves. Never invent a gap.
+If the supplied screens support it, include this graph-part middle form, not just aligned row forms.
+The same coverage checks hold: three different questions, two bound words, including one real.
+"""
+    prefix = (contract + "\nCode samples whole exact screens for the writer; it tests every candidate "
+              "against the complete saved real/practice history, including screens omitted from this packet. "
+              "Never infer coverage from the sample size.\nAllowed middle words:\n" + encoded(kinds)
+              + "\nPrevious forms:\n" + encoded(previous) + "\nSaved screens:\n")
+    if len(prefix) + 2 > PROMPT_LIMIT:
+        raise ValueError('forms contract exceeds writer input budget')
+    selected = bounded_screens(samples, PROMPT_LIMIT - len(prefix))
+    if samples and not selected:
+        raise ValueError('no whole saved screen fits the writer input budget')
+    return prefix + encoded(selected)
 
 
 def signature(form: dict) -> str:
@@ -442,6 +538,45 @@ def signature(form: dict) -> str:
         when = {k: sorted(v) if k in ("kinds_present", "kinds_absent") and isinstance(v, list)
                 and all(isinstance(x, str) for x in v) else v for k, v in when.items() if v is not None}
     return encoded(when)
+
+
+def idea(form: dict) -> str:
+    """Quoted middle words and answer name one idea, regardless of count limits."""
+    try:
+        kinds = sorted({blank[6:] for _, blank in forms._parts(form['sentence'])
+                        if blank and blank.startswith('quote:')})
+    except (forms.Refused, TypeError, KeyError):
+        kinds = []
+    when = form.get('when') if isinstance(form.get('when'), dict) else {}
+    if kinds:
+        return encoded({'answer': when.get('answer'), 'quoted_middle_words': kinds})
+    if when.get('graph_parts') is True:
+        return encoded({'answer': when.get('answer'), 'graph_parts': True})
+    return signature(form)
+
+
+def repeat_key(form):
+    return encoded([signature(form), idea(form)])
+
+
+def duplicate_ideas(entries, protected=()):
+    """Greatest distinct-question fit wins; ties keep the earliest form number.
+
+    Human decisions are never ranked or changed. They block another waiting
+    version of that idea. Invalid forms must be filtered before calling this.
+    """
+    seen, refused = set(protected), set()
+    def rank(entry):
+        key, form, matches = entry
+        number = form.get('number', '')
+        return (-fit_counts(matches)[0], int(number[2:]) if re.fullmatch(r'F-[1-9][0-9]*', number) else float('inf'))
+    for key, form, matches in sorted(entries, key=rank):
+        fingerprint = idea(form)
+        if fingerprint in seen:
+            refused.add(key)
+        else:
+            seen.add(fingerprint)
+    return refused
 
 
 def checked(raw: object, number: str, author: str, inputs: list[dict], kinds: list[str], seen: set[str], *, middle_only: bool = False, graph=None):
@@ -455,10 +590,9 @@ def checked(raw: object, number: str, author: str, inputs: list[dict], kinds: li
             return form, "unknown or missing conditions", []
         form["when"] = {k: v for k, v in form["when"].items() if v is not None}
     reason = forms.check(form, kinds=kinds)
-    fingerprint = signature(form)
+    fingerprint = repeat_key(form)
     if fingerprint in seen:
         reason = reason or "same form"
-    seen.add(fingerprint)
     if reason:
         return form, reason, []
     if middle_only and not forms_middle.is_middle(form):
@@ -503,7 +637,10 @@ def report(store: Store, run_id: str) -> dict:
                         "raw": json.loads(raw), "reason": reason, "examples": json.loads(examples),
                         "fit_count": fit_count, "fit_word_count": fit_word_count,
                         "real_fit_count": real_count, "practice_fit_count": practice_count})
-    return {"run_id": run_id, "database": str(store.path), "status": status, "provider": provider, "model": engine,
+    census = store.connection.execute('SELECT note FROM steps WHERE question_id=? AND name=?',
+                                      ('forms-night:' + run_id, '4 real graph labels')).fetchone()
+    return {"real_questions": json.loads(census[0]) if census else None,
+            "run_id": run_id, "database": str(store.path), "status": status, "provider": provider, "model": engine,
             "error": error, "practice": forms_practice.report(store, run_id),
             "graph": getattr(store, 'meaning_graph', None).stats if getattr(store, 'meaning_graph', None) else None,
             "meaning_reviews": reviews, "prior_proposals_refused": rechecks,
@@ -605,7 +742,7 @@ def _night(store: Store, bootstrap: bool, forms_path: Path | None, model_call, w
 def _propose(store, run_id, started, bootstrap, forms_path, model_call, widen, middle_only, recheck=()):
     kinds = load_kinds()
     previous = forms.load(forms.FORMS_PATH if forms_path is None else forms_path, kinds=kinds)
-    catalog_signatures = {signature(p) for p in previous}
+    catalog_signatures = {repeat_key(p) for p in previous}
     proposals = store.form_proposals()
     replacements = (widened_candidates(proposals, widen) if widen else
                     rechecked_candidates(proposals, recheck) if recheck else [])
@@ -613,17 +750,26 @@ def _propose(store, run_id, started, bootstrap, forms_path, model_call, widen, m
     engine = getattr(store, 'meaning_graph', None)
     if engine is not None:
         replay_graph_labels(history, engine)
+        census_saved = store.connection.execute('SELECT 1 FROM steps WHERE question_id=? AND name=?',
+            ('forms-night:' + run_id, '4 real graph labels')).fetchone()
+        if census_saved is None:
+            census_started = time.time()
+            census = real_graph_labels(store, engine)
+            store.connection.execute('INSERT INTO steps(question_id,name,started,finished,note) VALUES (?,?,?,?,?)',
+                ('forms-night:' + run_id, '4 real graph labels', census_started, time.time(), encoded(census)))
+            store.connection.commit()
     pending_refusals = []
     pending_checks = []
-    seen_existing = {signature(p) for p in previous}
+    human_ideas = {idea(p) for p in previous if p.get('status') == 'approved'}
+    human_ideas.update(idea(p['form']) for p in proposals if p['status'] == 'approved'
+                       or (p['reason'] or '').startswith('Adam said no'))
+    approved_numbers = {p['number'] for p in previous if p.get('status') == 'approved'}
     for p in proposals:
         reason = None
-        if p['status'] == 'proposed':
+        if p['status'] == 'proposed' and p['number'] not in approved_numbers:
             matches = []
             reason = ('fit one screen only' if p['number'] in widen else
                       forms.check(p['form'], kinds=kinds) or forms_patterns.check(p['form'], kinds))
-            if reason is None and signature(p['form']) in seen_existing:
-                reason = 'same form'
             if reason is None:
                 try:
                     matches = matching_answers(p['form'], history, kinds, graph=engine.graph if engine else None)
@@ -633,7 +779,6 @@ def _propose(store, run_id, started, bootstrap, forms_path, model_call, widen, m
             pending_checks.append((p['id'], matches, reason))
             if reason:
                 pending_refusals.append((p['id'], reason))
-        seen_existing.add(signature(p['form']))
         previous.append({**p['form'], 'refusal_reason': p['reason'], 'current_check_refusal': reason})
     # Overflow stays rejected and is supplied to later calls, though it is outside
     # the twelve-row proposal budget. A refusal without a number is still retained.
@@ -664,6 +809,7 @@ def _propose(store, run_id, started, bootstrap, forms_path, model_call, widen, m
     store.connection.commit()
     reply = None
     writer_attempted = False
+    writer_call_row = None
     try:
         candidates = replacements
         author = 'program/widen-counts'
@@ -677,6 +823,7 @@ def _propose(store, run_id, started, bootstrap, forms_path, model_call, widen, m
             reply = (model_call or model.call)(prompt, schema=SCHEMA)
             # Save the complete provider response before parsing it.
             store.save_model_call("forms-night:" + run_id, reply.provider, reply.model, prompt, started, reply.text, True, None)
+            writer_call_row = store.connection.execute("SELECT last_insert_rowid()").fetchone()[0]
             store.connection.execute("UPDATE form_night_runs SET reply=?,provider=?,model=? WHERE id=?",
                                      (reply.text, reply.provider, reply.model, run_id))
             store.connection.commit()
@@ -692,17 +839,17 @@ def _propose(store, run_id, started, bootstrap, forms_path, model_call, widen, m
         used = [int(p["number"][2:]) for p in previous if isinstance(p.get("number"), str)
                 and re.fullmatch(r"F-[1-9][0-9]*", p["number"])]
         next_number = max(used, default=0) + 1
-        seen = {signature(p) for p in previous}
+        seen = {repeat_key(p) for p in previous if p.get('status') != 'proposed'}
         prepared = []
         for position, raw in enumerate(candidates, 1):
             if position > LIMIT:
                 prepared.append((None, "night limit: more than 12 forms", []))
             else:
                 # Only this explicit old refusal may be re-proposed unchanged. Other
-                # prior forms and all later wording variants retain conditions-only identity.
+                # prior refusals keep their exact idea/conditions repeat key.
                 if recheck and position <= len(replacements):
-                    fingerprint = signature(raw)
-                    other = [p for p in previous if signature(p) == fingerprint and p.get('number') != recheck[position - 1]]
+                    fingerprint = repeat_key(raw)
+                    other = [p for p in previous if repeat_key(p) == fingerprint and p.get('number') != recheck[position - 1]]
                     if not other and fingerprint not in catalog_signatures:
                         seen.discard(fingerprint)
                 prepared.append(checked(raw, f"F-{next_number + position - 1}",
@@ -710,6 +857,28 @@ def _propose(store, run_id, started, bootstrap, forms_path, model_call, widen, m
                                         history, kinds, seen, middle_only=middle_only, graph=engine.graph if engine else None))
         reviewable = [{"form": f, "examples": distinct_fills(e)} for f, r, e in prepared if r is None]
         decisions = forms_patterns.review(store, run_id, reviewable, model_call) if reviewable else {}
+        for index, (form, reason, examples) in enumerate(prepared):
+            if reason is not None:
+                continue
+            decision = decisions[form['number']]
+            if decision['reading_grade'] > 5:
+                reason = f"reading level above fifth grade: {decision['reading_grade']}: {decision['reason']}"
+            elif not decision['one_sentence'] and not forms_middle.is_graph_part(form):
+                reason = f"not one plain sentence: {decision['reason']}"
+            elif decision['verdict'] != 'explains_pattern':
+                category = forms_patterns.RESTATEMENT if decision['verdict'] == 'restates_rows' else 'unsupported pattern meaning'
+                reason = f"{category}: {decision['reason']}"
+            prepared[index] = (form, reason, examples)
+        proposed_by_id = {p['id']: p for p in proposals}
+        entries = [(('old', pid), proposed_by_id[pid]['form'], matches)
+                   for pid, matches, reason in pending_checks if reason is None]
+        entries += [(('new', i), form, matches) for i, (form, reason, matches) in enumerate(prepared) if reason is None]
+        duplicates = duplicate_ideas(entries, human_ideas)
+        pending_checks = [(pid, matches, 'same form' if ('old', pid) in duplicates else reason)
+                          for pid, matches, reason in pending_checks]
+        pending_refusals = [(pid, reason) for pid, matches, reason in pending_checks if reason]
+        prepared = [(form, 'same form' if ('new', i) in duplicates else reason, matches)
+                    for i, (form, reason, matches) in enumerate(prepared)]
         with store.connection:
             for old in proposals:
                 save_graph_condition(store, old['id'], run_id, old['form'], kinds)
@@ -723,15 +892,6 @@ def _propose(store, run_id, started, bootstrap, forms_path, model_call, widen, m
                                          (run_id, proposal_id, reason))
             for position, (raw, (form, reason, examples)) in enumerate(zip(candidates, prepared), 1):
                 pid = None
-                if reason is None:
-                    decision = decisions[form['number']]
-                    if decision['reading_grade'] > 5:
-                        reason = f"reading level above fifth grade: {decision['reading_grade']}: {decision['reason']}"
-                    elif not decision['one_sentence']:
-                        reason = f"not one plain sentence: {decision['reason']}"
-                    elif decision['verdict'] != 'explains_pattern':
-                        category = forms_patterns.RESTATEMENT if decision['verdict'] == 'restates_rows' else 'unsupported pattern meaning'
-                        reason = f"{category}: {decision['reason']}"
                 if form is not None:
                     pid = store.save_form_proposal(form, reason, commit=False)
                     save_graph_condition(store, pid, run_id, form, kinds)
@@ -747,8 +907,8 @@ def _propose(store, run_id, started, bootstrap, forms_path, model_call, widen, m
         if reply is None and writer_attempted:
             store.save_model_call("forms-night:" + run_id, "?", "?", prompt, started, None, False, str(error))
         elif reply is not None:
-            store.connection.execute("UPDATE model_calls SET ok=0,error=? WHERE question_id=?",
-                                     (str(error), "forms-night:" + run_id))
+            store.connection.execute("UPDATE model_calls SET ok=0,error=? WHERE rowid=?",
+                                     (str(error), writer_call_row))
         store.connection.execute("UPDATE form_night_runs SET status='failed',finished=?,error=? WHERE id=?",
                                  (time.time(), str(error), run_id))
         store.connection.commit()

@@ -20,7 +20,21 @@ from nucleus.forms_night import screen_from_picture
 def ready(copy):
     history(copy)
     miss(copy)
-    result = run(copy, [candidate(), candidate(when={**candidate()['when'], 'record_count': {'min': 2}})])
+    # Two distinct ideas still exercise independent Yes/No decisions.
+    for qid, reply, text in copy.connection.execute('SELECT question_id,reply_json,text FROM answers').fetchall():
+        payload = json.loads(reply)
+        word = payload['words'][0]['word']
+        payload['records'].append({'id':'r3','quote':'Third quote'})
+        copy.connection.execute('UPDATE answers SET text=?,reply_json=? WHERE question_id=?',
+            (text + '\n\n0.70 — ' + word + ' supports “Third quote”', json.dumps(payload), qid))
+    qid = copy.connection.execute('SELECT question_id FROM form_misses').fetchone()[0]
+    value = picture()
+    value['records'].append({'link_word':'FLOW','leaf':'r3','kind':'supports','quote':'Third quote'})
+    copy.save_form_miss(qid,value,'second snapshot')
+    copy.connection.commit()
+    second = candidate(when={'answer':'aligned','kinds_present':['depends on','supports']},
+                       sentence='{word} depends on “{quote:depends on}” and supports “{quote:supports}”.')
+    result = run(copy, [candidate(), second])
     assert result['proposed'] == 2
     return copy, forms.FORMS_PATH, review.pending(copy, forms.FORMS_PATH)
 
