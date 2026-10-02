@@ -1,5 +1,4 @@
 from copy import deepcopy
-from dataclasses import asdict
 import fcntl
 import json
 from pathlib import Path
@@ -8,21 +7,21 @@ import sqlite3
 
 import pytest
 
-from nucleus import forms, forms_night as night
+from nucleus import forms, forms_night as night, forms_patterns as patterns
 from nucleus.model import ModelReply
 from nucleus.store import Store
 
-KINDS = ['depends on', 'supports', 'requires', 'should not']
+KINDS = ['depends on', 'supports', 'requires', 'should not', *sorted(patterns.PUSHING_KINDS)]
 
 
 def candidate(**changes):
-    value = {'when': {'answer': 'aligned', 'kinds_present': ['depends on']},
-             'sentence': 'Your rows say {word} depends on {count} things you have written down.'}
+    value = {'when': {'answer': 'aligned', 'kinds_present': ['rejects']},
+             'sentence': 'For {word}, an exclusion marks a boundary on what these records can support.'}
     value.update(changes)
     return value
 
 
-def picture(word='FLOW', kind='depends on'):
+def picture(word='FLOW', kind='rejects'):
     return {'answer': 'aligned', 'words': [{'word': word}], 'records': [
         {'link_word': word, 'leaf': 'r1', 'kind': kind, 'quote': 'First quote'},
         {'link_word': word, 'leaf': 'r2', 'kind': kind, 'quote': 'Second quote'}], 'missing': []}
@@ -30,6 +29,11 @@ def picture(word='FLOW', kind='depends on'):
 
 def model_reply(candidates):
     def call(prompt, *, schema):
+        if schema == patterns.REVIEW_SCHEMA:
+            batch = json.loads(prompt.split('\nCandidates:\n', 1)[1])
+            return ModelReply('test', 'review-fixture', json.dumps({'reviews': [
+                {'number': c['form']['number'], 'verdict': 'explains_pattern',
+                 'reason': 'Test reviewer: the exclusion limits the scope of the picture.'} for c in batch]}))
         assert schema == night.SCHEMA
         return ModelReply('test', 'fixture', json.dumps({'forms': candidates}))
     return call
@@ -48,13 +52,13 @@ def copy(tmp_path, monkeypatch):
     store.connection.close()
 
 
-def miss(store, word='FLOW', kind='depends on'):
+def miss(store, word='FLOW', kind='rejects'):
     qid = store.new_question(f'What is {word}?', 'test')
     store.save_form_miss(qid, picture(word, kind), 'no approved forms')
     return qid
 
 
-def painted(store, word='FLOW', kind='depends on', printed_kind=None):
+def painted(store, word='FLOW', kind='rejects', printed_kind=None):
     qid = store.new_question(f'What is {word}?', 'test')
     payload = {'answer': 'aligned', 'words': [{'word': word}],
                'records': [{'id': 'r1', 'quote': 'Quote'}]}
@@ -74,7 +78,7 @@ def test_preview_does_not_approve_or_change_day_selection(copy):
     proposal = {'number': 'F-1', 'status': 'proposed', 'author': 'test', 'date': '2026-10-01', **candidate()}
     original = deepcopy(proposal)
     screen = night.screen_from_picture(picture(), KINDS)
-    assert forms.preview(proposal, screen).text == 'Your rows say FLOW depends on 2 things you have written down.'
+    assert forms.preview(proposal, screen).text == 'For FLOW, an exclusion marks a boundary on what these records can support.'
     assert forms.fill(proposal, screen) is None
     assert forms.pick(screen)[0] is None
     assert proposal == original
@@ -97,6 +101,8 @@ def test_one_pass_retains_exact_trace_and_three_real_distinct_examples(copy):
     trace = copy.connection.execute('SELECT prompt,reply FROM model_calls').fetchone()
     assert 'Saved screens:' in trace[0]
     assert json.loads(trace[1]) == {'forms': [candidate()]}
+    assert copy.connection.execute('SELECT count(*) FROM model_calls').fetchone()[0] == 2
+    assert result['meaning_reviews'][0]['ok']
     assert forms.load(forms.FORMS_PATH) == []
     assert not forms.forms_only()
 
@@ -109,7 +115,7 @@ def test_one_pass_retains_exact_trace_and_three_real_distinct_examples(copy):
     (candidate(sentence='You should follow {word}.'), 'advice'),
     (candidate(sentence='{word}. Two. Three. Four. Five.'), 'more than 4 sentences'),
     (candidate(sentence='pre{word}.'), 'kill switch'),
-    (candidate(when={'answer': 'dont_know'}, sentence='{word} has no rows.'), 'no safe filled example'),
+    (candidate(when={'answer': 'dont_know', 'kinds_present': ['rejects']}), 'no safe filled example'),
     ({**candidate(), 'status': 'approved'}, 'unknown or missing proposal fields'),
     ('malformed', 'unknown or missing proposal fields'),
 ])
@@ -125,7 +131,7 @@ def test_every_refused_form_and_original_payload_are_retained(copy, value, reaso
 
 def test_null_conditions_are_wire_format_only(copy):
     miss(copy)
-    result = run(copy, [candidate(when={'answer': 'aligned', 'kinds_present': ['depends on'],
+    result = run(copy, [candidate(when={'answer': 'aligned', 'kinds_present': ['rejects'],
         'kinds_absent': None, 'record_count': None, 'word_count': None, 'missing_links': None})])
     assert result['proposed'] == 1
     assert result['results'][0]['form']['when'] == candidate()['when']
@@ -142,7 +148,7 @@ def test_fill_checks_all_matching_answers_not_just_first_three(copy):
 
 def test_limit_never_writes_more_than_twelve_proposal_rows_but_keeps_overflow(copy):
     miss(copy)
-    values = [candidate(sentence=f'Pattern {i}: {{word}} depends on {{count}} things.') for i in range(14)]
+    values = [candidate(sentence=f'For {{word}}, exclusion sets a boundary: this picture does not cover every situation. Frame {i}.') for i in range(14)]
     result = run(copy, values)
     assert len(copy.form_proposals()) == 12
     assert (result['proposed'], result['refused']) == (12, 2)
@@ -155,11 +161,11 @@ def test_duplicate_previous_rejected_proposed_approved_and_same_batch(copy):
     first = run(copy)
     copy.reject_form_proposal(first['results'][0]['proposal_id'], 'Adam said no')
     miss(copy, 'LIFT')
-    result = run(copy, [candidate(), candidate(sentence='{word} appears on your rows.'), candidate(sentence='{word} appears on your rows.')])
+    result = run(copy, [candidate(), candidate(sentence='For {word}, an exclusion draws a limit around this picture.'), candidate(sentence='For {word}, an exclusion draws a limit around this picture.')])
     assert (result['proposed'], result['refused']) == (1, 2)
     assert result['results'][0]['reason'] == result['results'][2]['reason'] == 'duplicate of a previous form'
     miss(copy, 'MOMENTUM')
-    result = run(copy, [candidate(sentence='{word} appears on your rows.')])
+    result = run(copy, [candidate(sentence='For {word}, an exclusion draws a limit around this picture.')])
     assert result['refused'] == 1
     forms.FORMS_PATH.write_text('''[[forms]]
 number = "F-80"
@@ -213,7 +219,7 @@ def test_atomic_write_failure_keeps_no_half_proposals_and_does_not_consume(copy,
             raise OSError('test disk failure')
         return original(self, payload, reason, **kwargs)
     monkeypatch.setattr(Store, 'save_form_proposal', fail)
-    result = run(copy, [candidate(), candidate(sentence='{word} has rows.')])
+    result = run(copy, [candidate(), candidate(sentence='For {word}, an exclusion draws a limit around this picture.')])
     assert result['status'] == 'failed'
     assert copy.form_proposals() == []
     assert copy.connection.execute('SELECT count(*) FROM form_night_results').fetchone()[0] == 0
@@ -230,8 +236,8 @@ def test_bootstrap_uses_historical_printed_kind_never_current_links(copy):
     assert first['proposed'] == 1
     example = first['results'][0]['examples'][0]
     assert example['question_id'] == qid
-    assert example['screen']['rows'][0]['kind'] == 'depends on'
-    assert 'depends on 1 things' in example['text']
+    assert example['screen']['rows'][0]['kind'] == 'rejects'
+    assert example['text'] == 'For FLOW, an exclusion marks a boundary on what these records can support.'
     assert run(copy, bootstrap=True)['inputs'] == 0
 
 
@@ -263,7 +269,7 @@ def test_downvote_uses_miss_snapshot_when_historical_text_has_no_middle(copy):
     run(copy)
     copy.save_explanation(qid, 'FLOW old paragraph', None, 'test', 'fixture', 1)
     copy.thumb_explanation(qid, False)
-    result = run(copy, [candidate(sentence='{word} has links.')])
+    result = run(copy, [candidate(sentence='For {word}, an exclusion draws a limit around this picture.')])
     assert result['usable_inputs'] == result['proposed'] == 1
 
 

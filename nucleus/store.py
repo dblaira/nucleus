@@ -68,6 +68,10 @@ CREATE TABLE IF NOT EXISTS form_night_results (
   raw_json TEXT NOT NULL, reason TEXT, examples_json TEXT NOT NULL,
   PRIMARY KEY (run_id, position)
 );
+CREATE TABLE IF NOT EXISTS form_night_rechecks (
+  run_id TEXT NOT NULL, proposal_id TEXT NOT NULL, reason TEXT NOT NULL,
+  PRIMARY KEY (run_id, proposal_id)
+);
 """
 
 
@@ -381,7 +385,7 @@ class Store:
                  "status": s, "reason": r,
                  "created": c, "decided": d} for i, n, p, s, r, c, d in rows]
 
-    def reject_form_proposal(self, proposal_id: str, reason: str) -> None:
+    def reject_form_proposal(self, proposal_id: str, reason: str, *, commit: bool = True) -> None:
         """Retain the original payload. A second rejection cannot rewrite the first decision."""
         if not isinstance(reason, str) or not reason.strip():
             raise ValueError("a rejection needs a reason")
@@ -389,6 +393,7 @@ class Store:
             "UPDATE form_proposals SET status = 'rejected', reason = ?, decided = ? WHERE id = ? AND status = 'proposed'",
             (reason, time.time(), proposal_id),
         )
-        self.connection.commit()
+        if commit:
+            self.connection.commit()
         if cursor.rowcount != 1:
             raise ValueError("proposal missing or already rejected")

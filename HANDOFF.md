@@ -183,3 +183,47 @@ preserved. The exact request is appended on the companion Cowboyai branch
 `codex/forms-slice-3-ledger`.
 
 **Stopped before slice 4. No approval page or approval action was built.**
+
+## Forms slice 3b — October 1, 2026 Pacific
+
+Adam's next request in the same Codex chat:
+
+> Build slice 3b on a new branch codex/forms-slice-3b from 7249b63. Change the night pass so forms explain what a pattern of rows means, not how many rows there are. Refuse any form whose sentence only restates a count or a middle word. Each form must fire on a pattern: two or more middle words together; a middle word that pushes against another, such as rejects, contradicts, prevents, inhibits, constrains, or limits; or a word with missing links. Keep every existing rule: blanks only from the screen, no advice, nothing used without Adam's yes. Rerun on the copy, never the live file. Report proposed and refused with reasons, and paste five filled examples. Push, do not merge, update HANDOFF.md, and stop before slice 4.
+
+Slice 3b is built on `codex/forms-slice-3b`, from exactly
+`7249b63abc78e5df9277aa797fd59681ec3f5b84`, in
+`/Users/adamblair/.codex/worktrees/nucleus-forms-slice-3b`.
+The night pass now requires a combination of middle words, a stated opposing
+middle word, or missing links. A deterministic restatement check and a separate
+night-time meaning review refuse row inventories and unsupported implications.
+The day path and screen-only filler are unchanged; no model runs there for forms.
+
+**Rerun: 11 new proposals, 1 new refusal.** F-19 was refused because it treated
+two kinds as referring to the same thing, although the rows can point to
+different records. **All 12 earlier proposals were retained as rejected:**
+11 lack a qualifying pattern, and one only lists middle words. Original
+payloads, examples, and first-run traces are preserved. None is approved.
+
+The existing review copy at
+`~/Library/Application Support/nucleus/forms-review/nucleus.sqlite3` was backed
+up to `slice-3b-before.sqlite3` before the rerun. The live database was not
+opened. Run `bf075602-fcb5-4c95-8ce7-1463697ffacd` used two existing-door Codex
+`gpt-5.6-sol` calls (writer and reviewer), revisiting the same 120 painted
+answers under `patterns-v1`: 106 usable, 14 skipped for unrecoverable middle
+words. It saved 17 proposed examples and one refused example. All 18 refill
+exactly. The new policy revisits each old input once without erasing history.
+
+**226 tests pass.** Copy and backup integrity checks pass; the backup hash,
+original answers/links/explanations, earlier calls/runs/results, and old
+proposal payloads are preserved. The only existing fields changed are the
+twelve prior proposals' status, refusal reason, and decision time.
+Read [docs/forms-slice-3b.md](docs/forms-slice-3b.md),
+[the complete report](docs/forms-slice-3b-night.json), and
+[the proof with five filled examples](docs/forms-slice-3b-proof.json).
+
+`forms.txt` is still empty, `NUCLEUS_FORMS_ONLY` is off, and the unchanged
+launchd plist is not installed or loaded. No service/phone deployment or
+merge to main was performed. The exact request is appended on companion
+branch `codex/forms-slice-3b-ledger` in Cowboyai.
+
+**Stopped before slice 4. No approval page or approval action was built.**

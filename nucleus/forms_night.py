@@ -13,7 +13,7 @@ import re
 import time
 import uuid
 
-from . import STORE_PATH, forms, model
+from . import STORE_PATH, forms, forms_patterns, model
 from .kinds import load_kinds
 from .store import Store
 
@@ -83,7 +83,7 @@ def collect(store: Store, kinds: list[str], bootstrap: bool) -> list[dict]:
     inputs = []
 
     def add(source, source_id, qid, question, raw, picture=None):
-        key = f"{source}:{source_id}:" + hashlib.sha256(encoded(raw).encode()).hexdigest()
+        key = f"{forms_patterns.POLICY}:{source}:{source_id}:" + hashlib.sha256(encoded(raw).encode()).hexdigest()
         if key in consumed:
             return
         item = {"key": key, "source": source, "source_id": source_id, "question_id": qid,
@@ -140,8 +140,26 @@ make sure, you need to, you must, you could, or it would help. One plain paragra
 4 sentences and 900 characters. A filled paragraph must mention a displayed word: use {word}.
 Literal wording must be reusable and justified by the conditions; do not hardcode a source quote,
 a particular question, word, record, or count. Use only middle words in the supplied allowed list.
-Example sentence: Your rows say {word} depends on {count} things you have written down.
-It needs kinds_present=["depends on"]. Do not repeat any previous form, including rejected ones.
+Explain what a PATTERN of rows means. Every form must require at least one of:
+two or more distinct kinds_present together; a present kind that pushes against something
+(rejects, contradicts, prevents, inhibits, constrains, limits); or missing_links=true.
+Counts, a lone non-opposing kind, or absent kinds alone are not a firing pattern.
+Refused: sentences that just name/count rows or middle words, even in different words.
+Refused: 'Your screen connects {word} with 3 supports rows'; 'The rows for {word} include both
+supports and explains'; 'This means {word} has {count} links'; generic filler about significance.
+Explain the distinction, consequence, boundary, or limitation that the pattern establishes.
+Examples of the requested quality (not approved forms): with supports + requires for one word,
+'For {word}, backing does not establish that its prerequisites are in place.' With correlates
+with + depends on for one word, 'For {word}, moving together and being necessary are different
+claims; one does not establish the other.' Aim for varied, concrete explanations of real patterns.
+Conditions must support the whole sentence on EVERY matching screen. For claims that several
+kinds all belong to {word}, require word_count=1. Otherwise describe the whole picture without
+assigning the combined kinds to its first word. A missing link is a gap in evidence, not proof
+against the user. Kinds can point to different records: their presence alone does not prove a
+contradiction about one target, a causal chain, a loop, or a stronger/weaker net outcome.
+Preserve direction: word -> kind -> record. A word that rejects something is not itself rejected.
+Do not repeat any previous form, including rejected ones. A separate meaning review will refuse
+inventory-only or unsupported explanations. Nothing becomes approved through either model call.
 Propose only forms with a real matching supplied screen. Returning fewer than 12 is fine.
 """
 
@@ -188,6 +206,9 @@ def checked(raw: object, number: str, author: str, inputs: list[dict], kinds: li
     seen.add(fingerprint)
     if reason:
         return form, reason, []
+    reason = forms_patterns.check(form, kinds)
+    if reason:
+        return form, reason, []
     examples, texts = [], set()
     for item in inputs:
         if item["screen"] is None:
@@ -210,15 +231,27 @@ def report(store: Store, run_id: str) -> dict:
         "SELECT status,inputs_json,provider,model,error FROM form_night_runs WHERE id=?", (run_id,)
     ).fetchone()
     inputs = json.loads(raw_inputs)
+    rechecks = [{"proposal_id": pid, "number": number, "reason": reason} for pid, number, reason in store.connection.execute(
+        "SELECT r.proposal_id,p.form_number,r.reason FROM form_night_rechecks r "
+        "JOIN form_proposals p ON p.id=r.proposal_id WHERE r.run_id=? ORDER BY p.created,p.id", (run_id,)
+    )]
+    reviews = []
+    for provider_name, model_name, reply, ok, error_text in store.connection.execute(
+        "SELECT provider,model,reply,ok,error FROM model_calls WHERE question_id=?", ("forms-night:" + run_id + ":review",)
+    ):
+        reviews.append({"provider": provider_name, "model": model_name, "reply": reply, "ok": bool(ok), "error": error_text})
     results = []
     for position, pid, raw, reason, examples in store.connection.execute(
         "SELECT position,proposal_id,raw_json,reason,examples_json FROM form_night_results WHERE run_id=? ORDER BY position", (run_id,)
     ):
-        saved = store.connection.execute("SELECT payload FROM form_proposals WHERE id=?", (pid,)).fetchone()
-        results.append({"position": position, "proposal_id": pid, "form": json.loads(saved[0]) if saved else None,
+        saved = store.connection.execute("SELECT payload,status FROM form_proposals WHERE id=?", (pid,)).fetchone()
+        payload = json.loads(saved[0]) if saved else None
+        results.append({"position": position, "proposal_id": pid, "payload": payload,
+                        "form": {**payload, "status": saved[1]} if saved else None,
                         "raw": json.loads(raw), "reason": reason, "examples": json.loads(examples)})
     return {"run_id": run_id, "database": str(store.path), "status": status, "provider": provider, "model": engine,
-            "error": error, "inputs": len(inputs), "usable_inputs": sum(i["screen"] is not None for i in inputs),
+            "error": error, "meaning_reviews": reviews, "prior_proposals_refused": rechecks,
+            "inputs": len(inputs), "usable_inputs": sum(i["screen"] is not None for i in inputs),
             "skipped_inputs": [{"source": i["source"], "question_id": i["question_id"], "reason": i["reason"]}
                                for i in inputs if i["reason"]],
             "proposed": sum(r["reason"] is None for r in results),
@@ -245,7 +278,14 @@ def night(path: Path = REVIEW_PATH, *, bootstrap: bool = False, forms_path: Path
 def _night(store: Store, bootstrap: bool, forms_path: Path | None, model_call) -> dict:
     kinds = load_kinds()
     previous = forms.load(forms.FORMS_PATH if forms_path is None else forms_path, kinds=kinds)
-    previous += [{**p["form"], "refusal_reason": p["reason"]} for p in store.form_proposals()]
+    pending_refusals = []
+    for p in store.form_proposals():
+        reason = None
+        if p['status'] == 'proposed':
+            reason = forms.check(p['form'], kinds=kinds) or forms_patterns.check(p['form'], kinds)
+            if reason:
+                pending_refusals.append((p['id'], reason))
+        previous.append({**p['form'], 'refusal_reason': p['reason'], 'current_check_refusal': reason})
     # Overflow stays rejected and is supplied to later calls, though it is outside
     # the twelve-row proposal budget. A refusal without a number is still retained.
     for raw, reason in store.connection.execute(
@@ -279,14 +319,28 @@ def _night(store: Store, bootstrap: bool, forms_path: Path | None, model_call) -
                 and re.fullmatch(r"F-[1-9][0-9]*", p["number"])]
         next_number = max(used, default=0) + 1
         seen = {signature(p) for p in previous}
+        prepared = []
+        for position, raw in enumerate(candidates, 1):
+            if position > LIMIT:
+                prepared.append((None, "night limit: more than 12 forms", []))
+            else:
+                prepared.append(checked(raw, f"F-{next_number + position - 1}",
+                                        f"{reply.provider}/{reply.model}", inputs, kinds, seen))
+        reviewable = [{"form": f, "examples": e} for f, r, e in prepared if r is None]
+        decisions = forms_patterns.review(store, run_id, reviewable, model_call) if reviewable else {}
         with store.connection:
-            for position, raw in enumerate(candidates, 1):
-                pid, examples = None, []
-                if position > LIMIT:
-                    reason = "night limit: more than 12 forms"
-                else:
-                    form, reason, examples = checked(raw, f"F-{next_number + position - 1}",
-                                                     f"{reply.provider}/{reply.model}", inputs, kinds, seen)
+            for proposal_id, reason in pending_refusals:
+                store.reject_form_proposal(proposal_id, reason, commit=False)
+                store.connection.execute("INSERT INTO form_night_rechecks (run_id,proposal_id,reason) VALUES (?,?,?)",
+                                         (run_id, proposal_id, reason))
+            for position, (raw, (form, reason, examples)) in enumerate(zip(candidates, prepared), 1):
+                pid = None
+                if reason is None:
+                    decision = decisions[form['number']]
+                    if decision['verdict'] != 'explains_pattern':
+                        category = forms_patterns.RESTATEMENT if decision['verdict'] == 'restates_rows' else 'unsupported pattern meaning'
+                        reason = f"{category}: {decision['reason']}"
+                if form is not None:
                     pid = store.save_form_proposal(form, reason, commit=False)
                 store.connection.execute(
                     "INSERT INTO form_night_results (run_id,position,proposal_id,raw_json,reason,examples_json) VALUES (?,?,?,?,?,?)",

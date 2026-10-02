@@ -1,0 +1,2584 @@
+{
+  "run_id": "bf075602-fcb5-4c95-8ce7-1463697ffacd",
+  "database": "/Users/adamblair/Library/Application Support/nucleus/forms-review/nucleus.sqlite3",
+  "status": "completed",
+  "provider": "codex",
+  "model": "gpt-5.6-sol",
+  "error": null,
+  "meaning_reviews": [
+    {
+      "provider": "codex",
+      "model": "gpt-5.6-sol",
+      "reply": "{\"reviews\":[{\"number\":\"F-13\",\"verdict\":\"explains_pattern\",\"reason\":\"The sentence distinguishes dependency from constraint and correctly explains that what the word relies on does not, from those labels alone, identify what restricts it.\"},{\"number\":\"F-14\",\"verdict\":\"explains_pattern\",\"reason\":\"The sentence explains the boundary between containment and necessity: a contained record is not thereby established as a prerequisite.\"},{\"number\":\"F-15\",\"verdict\":\"explains_pattern\",\"reason\":\"The sentence explains that rejecting one connection does not negate distinct explanatory connections; the required one-word pattern guarantees both relationship kinds without making them the same connection.\"},{\"number\":\"F-16\",\"verdict\":\"explains_pattern\",\"reason\":\"The sentence identifies the key limitation: support and rejection may concern different records, so their coexistence alone cannot establish that one claim is contradicted.\"},{\"number\":\"F-17\",\"verdict\":\"explains_pattern\",\"reason\":\"The sentence distinguishes correlation from necessity and correctly states that association alone does not establish a prerequisite.\"},{\"number\":\"F-18\",\"verdict\":\"explains_pattern\",\"reason\":\"The sentence explains why the two labels cannot be combined into a net outcome: supportive and inhibiting connections may point to different records.\"},{\"number\":\"F-19\",\"verdict\":\"unsupported_meaning\",\"reason\":\"The wording implies that the thing appearing alongside the word is also the thing distinguished from it, but the co-occurs-with and is-different-from rows may point to different records.\"},{\"number\":\"F-20\",\"verdict\":\"explains_pattern\",\"reason\":\"The sentence distinguishes overlap from evidential support and correctly explains that shared scope alone does not establish backing.\"},{\"number\":\"F-21\",\"verdict\":\"explains_pattern\",\"reason\":\"The sentence distinguishes support from enablement and correctly states that backing a record does not by itself establish making it possible.\"},{\"number\":\"F-22\",\"verdict\":\"explains_pattern\",\"reason\":\"The sentence correctly exposes the directional distinction: the word can depend on one record and enable another, and neither relationship establishes the other.\"},{\"number\":\"F-23\",\"verdict\":\"explains_pattern\",\"reason\":\"The sentence distinguishes scope from temporal order and correctly explains that being broader than a record does not establish happening after it, or conversely.\"},{\"number\":\"F-24\",\"verdict\":\"explains_pattern\",\"reason\":\"The sentence distinguishes membership from correlation and correctly states that varying alongside a record does not establish belonging within it.\"}]}",
+      "ok": true,
+      "error": null
+    }
+  ],
+  "prior_proposals_refused": [
+    {
+      "proposal_id": "0db3e3fb-85c3-4af5-bedd-514c2395aeb5",
+      "number": "F-1",
+      "reason": "conditions do not require a row pattern"
+    },
+    {
+      "proposal_id": "09352e10-bb38-43b5-b7aa-63535f481976",
+      "number": "F-2",
+      "reason": "conditions do not require a row pattern"
+    },
+    {
+      "proposal_id": "e451a85e-e6a4-4625-a766-697bff4ab9f2",
+      "number": "F-3",
+      "reason": "conditions do not require a row pattern"
+    },
+    {
+      "proposal_id": "5e412e89-7b33-4295-9e61-fedb2243c54f",
+      "number": "F-4",
+      "reason": "conditions do not require a row pattern"
+    },
+    {
+      "proposal_id": "b54073c6-4fa5-4e0e-ac28-17d8d6846c34",
+      "number": "F-5",
+      "reason": "conditions do not require a row pattern"
+    },
+    {
+      "proposal_id": "8430956d-3b10-4a28-9cf8-ea38120b172b",
+      "number": "F-6",
+      "reason": "conditions do not require a row pattern"
+    },
+    {
+      "proposal_id": "3bc15bfb-79d2-4023-8f8f-52b95cb54569",
+      "number": "F-7",
+      "reason": "conditions do not require a row pattern"
+    },
+    {
+      "proposal_id": "b34d68ac-3564-4223-902b-e2ef6b0aa8af",
+      "number": "F-8",
+      "reason": "conditions do not require a row pattern"
+    },
+    {
+      "proposal_id": "99841865-7518-4ddc-bf7b-56df262a594c",
+      "number": "F-9",
+      "reason": "conditions do not require a row pattern"
+    },
+    {
+      "proposal_id": "f220643a-94f3-4530-9fbe-f70e4cf47189",
+      "number": "F-10",
+      "reason": "conditions do not require a row pattern"
+    },
+    {
+      "proposal_id": "4a8f77b6-72a8-45c5-a82f-ea32b6e0abbf",
+      "number": "F-11",
+      "reason": "conditions do not require a row pattern"
+    },
+    {
+      "proposal_id": "9f8b538e-7aee-4e15-a4ab-f067596f4d8d",
+      "number": "F-12",
+      "reason": "sentence only restates counts or middle words"
+    }
+  ],
+  "inputs": 120,
+  "usable_inputs": 106,
+  "skipped_inputs": [
+    {
+      "source": "bootstrap",
+      "question_id": "fa8ab633-74e8-4021-af15-2cd6a1777224",
+      "reason": "saved row conn-obs-fable5-2026-07-10-affect-work-momentum-compass has no unambiguous printed middle word"
+    },
+    {
+      "source": "bootstrap",
+      "question_id": "879c76be-821d-41e0-b0d0-0d90e0516dac",
+      "reason": "saved row conn-obs-fable5-2026-07-10-affect-work-momentum-compass has no unambiguous printed middle word"
+    },
+    {
+      "source": "bootstrap",
+      "question_id": "2defec22-46dc-4fa1-be37-921ff6cf7ff6",
+      "reason": "saved row conn-obs-direct-2026-07-10-execute-dont-recommend has no unambiguous printed middle word"
+    },
+    {
+      "source": "bootstrap",
+      "question_id": "3652490d-7cae-4a68-9919-2915d33408ac",
+      "reason": "saved row conn-obs-direct-2026-07-10-execute-dont-recommend has no unambiguous printed middle word"
+    },
+    {
+      "source": "bootstrap",
+      "question_id": "d6216ca4-48e4-48e9-a703-6c3ed8d333da",
+      "reason": "saved row conn-obs-fable5-2026-07-10-insight-work-importance-first has no unambiguous printed middle word"
+    },
+    {
+      "source": "bootstrap",
+      "question_id": "e840a1b6-107a-40f3-8bd6-561b39655a87",
+      "reason": "saved row conn-obs-fable5-2026-07-10-insight-work-importance-first has no unambiguous printed middle word"
+    },
+    {
+      "source": "bootstrap",
+      "question_id": "f27d2fc4-175b-49ea-aaf4-c8b00b81fd39",
+      "reason": "saved row conn-obs-direct-2026-07-10-execute-dont-recommend has no unambiguous printed middle word"
+    },
+    {
+      "source": "bootstrap",
+      "question_id": "47faaeb7-a671-453b-b40d-41aaf21a626c",
+      "reason": "saved row conn-obs-direct-2026-07-10-execute-dont-recommend has no unambiguous printed middle word"
+    },
+    {
+      "source": "bootstrap",
+      "question_id": "78eae01b-b3d9-44a8-b503-1c9224dca4e8",
+      "reason": "saved row conn-obs-fable5-2026-07-10-affect-work-momentum-compass has no unambiguous printed middle word"
+    },
+    {
+      "source": "bootstrap",
+      "question_id": "37f0cded-445b-4612-91da-b2faf513638d",
+      "reason": "saved row conn-obs-fable5-2026-07-10-affect-work-momentum-compass has no unambiguous printed middle word"
+    },
+    {
+      "source": "bootstrap",
+      "question_id": "daf92c25-eda5-411c-b85c-56e6ade896cf",
+      "reason": "saved row conn-obs-claude-2026-07-02-ambition-work-stated-relationship has no unambiguous printed middle word"
+    },
+    {
+      "source": "bootstrap",
+      "question_id": "f0feeda6-06c4-49fa-934d-5229e421b496",
+      "reason": "saved row conn-obs-direct-2026-07-10-execute-dont-recommend has no unambiguous printed middle word"
+    },
+    {
+      "source": "bootstrap",
+      "question_id": "e0a37bf7-a8bf-4ade-b88d-20e87caaf281",
+      "reason": "saved row conn-obs-fable5-2026-07-10-affect-work-momentum-compass has no unambiguous printed middle word"
+    },
+    {
+      "source": "bootstrap",
+      "question_id": "69c0ff85-cd48-45d2-9d02-1ac5cfacc72c",
+      "reason": "saved row conn-obs-fable5-2026-07-10-affect-work-momentum-compass has no unambiguous printed middle word"
+    }
+  ],
+  "proposed": 11,
+  "refused": 1,
+  "refusal_reasons": {
+    "unsupported pattern meaning: The wording implies that the thing appearing alongside the word is also the thing distinguished from it, but the co-occurs-with and is-different-from rows may point to different records.": 1
+  },
+  "results": [
+    {
+      "position": 1,
+      "proposal_id": "243a725e-06d1-46c2-a397-75036feff98a",
+      "payload": {
+        "number": "F-13",
+        "when": {
+          "answer": "aligned",
+          "kinds_present": [
+            "depends on",
+            "constrains"
+          ],
+          "word_count": 1
+        },
+        "sentence": "For {word}, reliance and constraint establish different boundaries: what it depends on does not identify what restricts it.",
+        "status": "proposed",
+        "author": "codex/gpt-5.6-sol",
+        "date": "2026-10-01"
+      },
+      "form": {
+        "number": "F-13",
+        "when": {
+          "answer": "aligned",
+          "kinds_present": [
+            "depends on",
+            "constrains"
+          ],
+          "word_count": 1
+        },
+        "sentence": "For {word}, reliance and constraint establish different boundaries: what it depends on does not identify what restricts it.",
+        "status": "proposed",
+        "author": "codex/gpt-5.6-sol",
+        "date": "2026-10-01"
+      },
+      "raw": {
+        "sentence": "For {word}, reliance and constraint establish different boundaries: what it depends on does not identify what restricts it.",
+        "when": {
+          "answer": "aligned",
+          "kinds_absent": null,
+          "kinds_present": [
+            "depends on",
+            "constrains"
+          ],
+          "missing_links": null,
+          "record_count": null,
+          "word_count": 1
+        }
+      },
+      "reason": null,
+      "examples": [
+        {
+          "input_key": "patterns-v1:bootstrap:824874cd-b533-473f-ba73-f0e8b2922050:76b3aa527f17a9f77bf5ff967230f0ed59ffcba276ad27ca90a6688cdf388e06",
+          "parts": [
+            {
+              "source": "form.sentence",
+              "text": "For "
+            },
+            {
+              "source": "screen.words[0]",
+              "text": "A VISION"
+            },
+            {
+              "source": "form.sentence",
+              "text": ", reliance and constraint establish different boundaries: what it depends on does not identify what restricts it."
+            }
+          ],
+          "question": "What does A VISION mean to me?",
+          "question_id": "824874cd-b533-473f-ba73-f0e8b2922050",
+          "screen": {
+            "answer": "aligned",
+            "missing_links": false,
+            "rows": [
+              {
+                "kind": "depends on",
+                "record": "conn-obs-fable5-2026-07-10-affect-work-momentum-compass",
+                "word": "A VISION"
+              },
+              {
+                "kind": "depends on",
+                "record": "conn-obs-claude-2026-07-02-ambition-work-stated-relationship",
+                "word": "A VISION"
+              },
+              {
+                "kind": "constrains",
+                "record": "conn-obs-mined-2026-07-10-hardcode-only-what-he-is-best-at",
+                "word": "A VISION"
+              },
+              {
+                "kind": "depends on",
+                "record": "conn-obs-hiswords-2026-07-10-builds-for-himself-first",
+                "word": "A VISION"
+              },
+              {
+                "kind": "contains",
+                "record": "conn-obs-claude-2026-07-02-exercise-ambition-marathon-goal",
+                "word": "A VISION"
+              },
+              {
+                "kind": "depends on",
+                "record": "conn-obs-fable5-2026-07-10-affect-ambition-jazzed-is-important",
+                "word": "A VISION"
+              },
+              {
+                "kind": "requires",
+                "record": "conn-obs-hiswords-2026-07-10-compounding-filter-strong-yes",
+                "word": "A VISION"
+              },
+              {
+                "kind": "contains",
+                "record": "cand-hiswords-2026-07-10-morning-peptide-regimen",
+                "word": "A VISION"
+              },
+              {
+                "kind": "rejects",
+                "record": "conn-obs-claude-2026-07-02-belief-insight-stated-relationship",
+                "word": "A VISION"
+              },
+              {
+                "kind": "explains",
+                "record": "conn-obs-grok-2026-07-02-belief-ambition-same-direction",
+                "word": "A VISION"
+              },
+              {
+                "kind": "contains",
+                "record": "conn-obs-hiswords-2026-07-10-states-outcome-on-tiny-tasks",
+                "word": "A VISION"
+              },
+              {
+                "kind": "contains",
+                "record": "conn-obs-grok-2026-07-02-ambition-health-business-from-transformation",
+                "word": "A VISION"
+              },
+              {
+                "kind": "requires",
+                "record": "conn-obs-mined-2026-07-10-easy-innocent-changes-stick",
+                "word": "A VISION"
+              }
+            ],
+            "words": [
+              "A VISION"
+            ]
+          },
+          "text": "For A VISION, reliance and constraint establish different boundaries: what it depends on does not identify what restricts it."
+        }
+      ]
+    },
+    {
+      "position": 2,
+      "proposal_id": "05bb3fe0-39f9-4871-91fb-14fbe17ca361",
+      "payload": {
+        "number": "F-14",
+        "when": {
+          "answer": "aligned",
+          "kinds_present": [
+            "contains",
+            "requires"
+          ],
+          "word_count": 1
+        },
+        "sentence": "For {word}, including something does not establish that it is a prerequisite; containment and necessity are different claims.",
+        "status": "proposed",
+        "author": "codex/gpt-5.6-sol",
+        "date": "2026-10-01"
+      },
+      "form": {
+        "number": "F-14",
+        "when": {
+          "answer": "aligned",
+          "kinds_present": [
+            "contains",
+            "requires"
+          ],
+          "word_count": 1
+        },
+        "sentence": "For {word}, including something does not establish that it is a prerequisite; containment and necessity are different claims.",
+        "status": "proposed",
+        "author": "codex/gpt-5.6-sol",
+        "date": "2026-10-01"
+      },
+      "raw": {
+        "sentence": "For {word}, including something does not establish that it is a prerequisite; containment and necessity are different claims.",
+        "when": {
+          "answer": "aligned",
+          "kinds_absent": null,
+          "kinds_present": [
+            "contains",
+            "requires"
+          ],
+          "missing_links": null,
+          "record_count": null,
+          "word_count": 1
+        }
+      },
+      "reason": null,
+      "examples": [
+        {
+          "input_key": "patterns-v1:bootstrap:824874cd-b533-473f-ba73-f0e8b2922050:76b3aa527f17a9f77bf5ff967230f0ed59ffcba276ad27ca90a6688cdf388e06",
+          "parts": [
+            {
+              "source": "form.sentence",
+              "text": "For "
+            },
+            {
+              "source": "screen.words[0]",
+              "text": "A VISION"
+            },
+            {
+              "source": "form.sentence",
+              "text": ", including something does not establish that it is a prerequisite; containment and necessity are different claims."
+            }
+          ],
+          "question": "What does A VISION mean to me?",
+          "question_id": "824874cd-b533-473f-ba73-f0e8b2922050",
+          "screen": {
+            "answer": "aligned",
+            "missing_links": false,
+            "rows": [
+              {
+                "kind": "depends on",
+                "record": "conn-obs-fable5-2026-07-10-affect-work-momentum-compass",
+                "word": "A VISION"
+              },
+              {
+                "kind": "depends on",
+                "record": "conn-obs-claude-2026-07-02-ambition-work-stated-relationship",
+                "word": "A VISION"
+              },
+              {
+                "kind": "constrains",
+                "record": "conn-obs-mined-2026-07-10-hardcode-only-what-he-is-best-at",
+                "word": "A VISION"
+              },
+              {
+                "kind": "depends on",
+                "record": "conn-obs-hiswords-2026-07-10-builds-for-himself-first",
+                "word": "A VISION"
+              },
+              {
+                "kind": "contains",
+                "record": "conn-obs-claude-2026-07-02-exercise-ambition-marathon-goal",
+                "word": "A VISION"
+              },
+              {
+                "kind": "depends on",
+                "record": "conn-obs-fable5-2026-07-10-affect-ambition-jazzed-is-important",
+                "word": "A VISION"
+              },
+              {
+                "kind": "requires",
+                "record": "conn-obs-hiswords-2026-07-10-compounding-filter-strong-yes",
+                "word": "A VISION"
+              },
+              {
+                "kind": "contains",
+                "record": "cand-hiswords-2026-07-10-morning-peptide-regimen",
+                "word": "A VISION"
+              },
+              {
+                "kind": "rejects",
+                "record": "conn-obs-claude-2026-07-02-belief-insight-stated-relationship",
+                "word": "A VISION"
+              },
+              {
+                "kind": "explains",
+                "record": "conn-obs-grok-2026-07-02-belief-ambition-same-direction",
+                "word": "A VISION"
+              },
+              {
+                "kind": "contains",
+                "record": "conn-obs-hiswords-2026-07-10-states-outcome-on-tiny-tasks",
+                "word": "A VISION"
+              },
+              {
+                "kind": "contains",
+                "record": "conn-obs-grok-2026-07-02-ambition-health-business-from-transformation",
+                "word": "A VISION"
+              },
+              {
+                "kind": "requires",
+                "record": "conn-obs-mined-2026-07-10-easy-innocent-changes-stick",
+                "word": "A VISION"
+              }
+            ],
+            "words": [
+              "A VISION"
+            ]
+          },
+          "text": "For A VISION, including something does not establish that it is a prerequisite; containment and necessity are different claims."
+        }
+      ]
+    },
+    {
+      "position": 3,
+      "proposal_id": "a7a186ef-e4f7-4a84-b339-fa8ec2157451",
+      "payload": {
+        "number": "F-15",
+        "when": {
+          "answer": "aligned",
+          "kinds_present": [
+            "rejects",
+            "explains"
+          ],
+          "word_count": 1
+        },
+        "sentence": "For {word}, rejecting one connection does not erase separate connections that explain it.",
+        "status": "proposed",
+        "author": "codex/gpt-5.6-sol",
+        "date": "2026-10-01"
+      },
+      "form": {
+        "number": "F-15",
+        "when": {
+          "answer": "aligned",
+          "kinds_present": [
+            "rejects",
+            "explains"
+          ],
+          "word_count": 1
+        },
+        "sentence": "For {word}, rejecting one connection does not erase separate connections that explain it.",
+        "status": "proposed",
+        "author": "codex/gpt-5.6-sol",
+        "date": "2026-10-01"
+      },
+      "raw": {
+        "sentence": "For {word}, rejecting one connection does not erase separate connections that explain it.",
+        "when": {
+          "answer": "aligned",
+          "kinds_absent": null,
+          "kinds_present": [
+            "rejects",
+            "explains"
+          ],
+          "missing_links": null,
+          "record_count": null,
+          "word_count": 1
+        }
+      },
+      "reason": null,
+      "examples": [
+        {
+          "input_key": "patterns-v1:bootstrap:824874cd-b533-473f-ba73-f0e8b2922050:76b3aa527f17a9f77bf5ff967230f0ed59ffcba276ad27ca90a6688cdf388e06",
+          "parts": [
+            {
+              "source": "form.sentence",
+              "text": "For "
+            },
+            {
+              "source": "screen.words[0]",
+              "text": "A VISION"
+            },
+            {
+              "source": "form.sentence",
+              "text": ", rejecting one connection does not erase separate connections that explain it."
+            }
+          ],
+          "question": "What does A VISION mean to me?",
+          "question_id": "824874cd-b533-473f-ba73-f0e8b2922050",
+          "screen": {
+            "answer": "aligned",
+            "missing_links": false,
+            "rows": [
+              {
+                "kind": "depends on",
+                "record": "conn-obs-fable5-2026-07-10-affect-work-momentum-compass",
+                "word": "A VISION"
+              },
+              {
+                "kind": "depends on",
+                "record": "conn-obs-claude-2026-07-02-ambition-work-stated-relationship",
+                "word": "A VISION"
+              },
+              {
+                "kind": "constrains",
+                "record": "conn-obs-mined-2026-07-10-hardcode-only-what-he-is-best-at",
+                "word": "A VISION"
+              },
+              {
+                "kind": "depends on",
+                "record": "conn-obs-hiswords-2026-07-10-builds-for-himself-first",
+                "word": "A VISION"
+              },
+              {
+                "kind": "contains",
+                "record": "conn-obs-claude-2026-07-02-exercise-ambition-marathon-goal",
+                "word": "A VISION"
+              },
+              {
+                "kind": "depends on",
+                "record": "conn-obs-fable5-2026-07-10-affect-ambition-jazzed-is-important",
+                "word": "A VISION"
+              },
+              {
+                "kind": "requires",
+                "record": "conn-obs-hiswords-2026-07-10-compounding-filter-strong-yes",
+                "word": "A VISION"
+              },
+              {
+                "kind": "contains",
+                "record": "cand-hiswords-2026-07-10-morning-peptide-regimen",
+                "word": "A VISION"
+              },
+              {
+                "kind": "rejects",
+                "record": "conn-obs-claude-2026-07-02-belief-insight-stated-relationship",
+                "word": "A VISION"
+              },
+              {
+                "kind": "explains",
+                "record": "conn-obs-grok-2026-07-02-belief-ambition-same-direction",
+                "word": "A VISION"
+              },
+              {
+                "kind": "contains",
+                "record": "conn-obs-hiswords-2026-07-10-states-outcome-on-tiny-tasks",
+                "word": "A VISION"
+              },
+              {
+                "kind": "contains",
+                "record": "conn-obs-grok-2026-07-02-ambition-health-business-from-transformation",
+                "word": "A VISION"
+              },
+              {
+                "kind": "requires",
+                "record": "conn-obs-mined-2026-07-10-easy-innocent-changes-stick",
+                "word": "A VISION"
+              }
+            ],
+            "words": [
+              "A VISION"
+            ]
+          },
+          "text": "For A VISION, rejecting one connection does not erase separate connections that explain it."
+        },
+        {
+          "input_key": "patterns-v1:bootstrap:837f2e37-9dce-46b3-aa39-e27240ed89b7:4f8a39fe9ae3907c68d9dc634dc5822bd3ce4976b7061671e51471a220b5b98d",
+          "parts": [
+            {
+              "source": "form.sentence",
+              "text": "For "
+            },
+            {
+              "source": "screen.words[0]",
+              "text": "FLOW"
+            },
+            {
+              "source": "form.sentence",
+              "text": ", rejecting one connection does not erase separate connections that explain it."
+            }
+          ],
+          "question": "Does the kitchen faucet FLOW enough when the dishwasher is running?",
+          "question_id": "837f2e37-9dce-46b3-aa39-e27240ed89b7",
+          "screen": {
+            "answer": "aligned",
+            "missing_links": false,
+            "rows": [
+              {
+                "kind": "depends on",
+                "record": "conn-obs-fable5-2026-07-10-affect-work-momentum-compass",
+                "word": "FLOW"
+              },
+              {
+                "kind": "rejects",
+                "record": "conn-obs-fable5-2026-07-10-belief-work-distraction-rule",
+                "word": "FLOW"
+              },
+              {
+                "kind": "supports",
+                "record": "conn-obs-claude-2026-07-02-learning-work-stated-relationship",
+                "word": "FLOW"
+              },
+              {
+                "kind": "supports",
+                "record": "conn-obs-mined-2026-07-10-hardcode-only-what-he-is-best-at",
+                "word": "FLOW"
+              },
+              {
+                "kind": "values",
+                "record": "conn-obs-fable5-2026-07-10-affect-ambition-jazzed-is-important",
+                "word": "FLOW"
+              },
+              {
+                "kind": "enables",
+                "record": "conn-obs-fable5-2026-07-10-affect-insight-capture-then-calm",
+                "word": "FLOW"
+              },
+              {
+                "kind": "contributes to",
+                "record": "conn-obs-fable5-2026-07-10-belief-work-done-is-discovered",
+                "word": "FLOW"
+              },
+              {
+                "kind": "requires",
+                "record": "conn-obs-hiswords-2026-07-10-compounding-filter-strong-yes",
+                "word": "FLOW"
+              },
+              {
+                "kind": "rejects",
+                "record": "conn-obs-claude-2026-07-02-belief-insight-stated-relationship",
+                "word": "FLOW"
+              },
+              {
+                "kind": "explains",
+                "record": "conn-obs-mined-2026-07-10-forward-wired-review-is-friction",
+                "word": "FLOW"
+              },
+              {
+                "kind": "explains",
+                "record": "conn-obs-claude-2026-07-02-affect-work-stated-relationship",
+                "word": "FLOW"
+              },
+              {
+                "kind": "depends on",
+                "record": "conn-obs-mined-2026-07-10-external-scaffolding-by-design",
+                "word": "FLOW"
+              },
+              {
+                "kind": "requires",
+                "record": "conn-obs-mined-2026-07-10-easy-innocent-changes-stick",
+                "word": "FLOW"
+              },
+              {
+                "kind": "depends on",
+                "record": "conn-obs-mined-2026-07-10-affect-is-his-blind-spot",
+                "word": "FLOW"
+              },
+              {
+                "kind": "supports",
+                "record": "conn-obs-mined-2026-07-10-cast-wide-commit-thirty-percent",
+                "word": "FLOW"
+              }
+            ],
+            "words": [
+              "FLOW"
+            ]
+          },
+          "text": "For FLOW, rejecting one connection does not erase separate connections that explain it."
+        }
+      ]
+    },
+    {
+      "position": 4,
+      "proposal_id": "bfdc7938-76c4-4fc6-9160-ea3ab769e884",
+      "payload": {
+        "number": "F-16",
+        "when": {
+          "answer": "aligned",
+          "kinds_present": [
+            "supports",
+            "rejects"
+          ],
+          "word_count": 1
+        },
+        "sentence": "For {word}, support and rejection can apply to different connections, so their coexistence does not establish a contradiction.",
+        "status": "proposed",
+        "author": "codex/gpt-5.6-sol",
+        "date": "2026-10-01"
+      },
+      "form": {
+        "number": "F-16",
+        "when": {
+          "answer": "aligned",
+          "kinds_present": [
+            "supports",
+            "rejects"
+          ],
+          "word_count": 1
+        },
+        "sentence": "For {word}, support and rejection can apply to different connections, so their coexistence does not establish a contradiction.",
+        "status": "proposed",
+        "author": "codex/gpt-5.6-sol",
+        "date": "2026-10-01"
+      },
+      "raw": {
+        "sentence": "For {word}, support and rejection can apply to different connections, so their coexistence does not establish a contradiction.",
+        "when": {
+          "answer": "aligned",
+          "kinds_absent": null,
+          "kinds_present": [
+            "supports",
+            "rejects"
+          ],
+          "missing_links": null,
+          "record_count": null,
+          "word_count": 1
+        }
+      },
+      "reason": null,
+      "examples": [
+        {
+          "input_key": "patterns-v1:bootstrap:837f2e37-9dce-46b3-aa39-e27240ed89b7:4f8a39fe9ae3907c68d9dc634dc5822bd3ce4976b7061671e51471a220b5b98d",
+          "parts": [
+            {
+              "source": "form.sentence",
+              "text": "For "
+            },
+            {
+              "source": "screen.words[0]",
+              "text": "FLOW"
+            },
+            {
+              "source": "form.sentence",
+              "text": ", support and rejection can apply to different connections, so their coexistence does not establish a contradiction."
+            }
+          ],
+          "question": "Does the kitchen faucet FLOW enough when the dishwasher is running?",
+          "question_id": "837f2e37-9dce-46b3-aa39-e27240ed89b7",
+          "screen": {
+            "answer": "aligned",
+            "missing_links": false,
+            "rows": [
+              {
+                "kind": "depends on",
+                "record": "conn-obs-fable5-2026-07-10-affect-work-momentum-compass",
+                "word": "FLOW"
+              },
+              {
+                "kind": "rejects",
+                "record": "conn-obs-fable5-2026-07-10-belief-work-distraction-rule",
+                "word": "FLOW"
+              },
+              {
+                "kind": "supports",
+                "record": "conn-obs-claude-2026-07-02-learning-work-stated-relationship",
+                "word": "FLOW"
+              },
+              {
+                "kind": "supports",
+                "record": "conn-obs-mined-2026-07-10-hardcode-only-what-he-is-best-at",
+                "word": "FLOW"
+              },
+              {
+                "kind": "values",
+                "record": "conn-obs-fable5-2026-07-10-affect-ambition-jazzed-is-important",
+                "word": "FLOW"
+              },
+              {
+                "kind": "enables",
+                "record": "conn-obs-fable5-2026-07-10-affect-insight-capture-then-calm",
+                "word": "FLOW"
+              },
+              {
+                "kind": "contributes to",
+                "record": "conn-obs-fable5-2026-07-10-belief-work-done-is-discovered",
+                "word": "FLOW"
+              },
+              {
+                "kind": "requires",
+                "record": "conn-obs-hiswords-2026-07-10-compounding-filter-strong-yes",
+                "word": "FLOW"
+              },
+              {
+                "kind": "rejects",
+                "record": "conn-obs-claude-2026-07-02-belief-insight-stated-relationship",
+                "word": "FLOW"
+              },
+              {
+                "kind": "explains",
+                "record": "conn-obs-mined-2026-07-10-forward-wired-review-is-friction",
+                "word": "FLOW"
+              },
+              {
+                "kind": "explains",
+                "record": "conn-obs-claude-2026-07-02-affect-work-stated-relationship",
+                "word": "FLOW"
+              },
+              {
+                "kind": "depends on",
+                "record": "conn-obs-mined-2026-07-10-external-scaffolding-by-design",
+                "word": "FLOW"
+              },
+              {
+                "kind": "requires",
+                "record": "conn-obs-mined-2026-07-10-easy-innocent-changes-stick",
+                "word": "FLOW"
+              },
+              {
+                "kind": "depends on",
+                "record": "conn-obs-mined-2026-07-10-affect-is-his-blind-spot",
+                "word": "FLOW"
+              },
+              {
+                "kind": "supports",
+                "record": "conn-obs-mined-2026-07-10-cast-wide-commit-thirty-percent",
+                "word": "FLOW"
+              }
+            ],
+            "words": [
+              "FLOW"
+            ]
+          },
+          "text": "For FLOW, support and rejection can apply to different connections, so their coexistence does not establish a contradiction."
+        },
+        {
+          "input_key": "patterns-v1:bootstrap:e8fcd352-24ad-45dd-9fc3-b0c271af2d96:d1b29b06a3204f8f003cb9cb523a982bcb1a78e349e4ba3480bbd9fd7455256b",
+          "parts": [
+            {
+              "source": "form.sentence",
+              "text": "For "
+            },
+            {
+              "source": "screen.words[0]",
+              "text": "MOMENTUM"
+            },
+            {
+              "source": "form.sentence",
+              "text": ", support and rejection can apply to different connections, so their coexistence does not establish a contradiction."
+            }
+          ],
+          "question": "Why does exercise ruin my momentum?",
+          "question_id": "e8fcd352-24ad-45dd-9fc3-b0c271af2d96",
+          "screen": {
+            "answer": "aligned",
+            "missing_links": false,
+            "rows": [
+              {
+                "kind": "serves the purpose of",
+                "record": "conn-obs-fable5-2026-07-10-affect-work-momentum-compass",
+                "word": "MOMENTUM"
+              },
+              {
+                "kind": "depends on",
+                "record": "conn-obs-fable5-2026-07-10-belief-work-distraction-rule",
+                "word": "MOMENTUM"
+              },
+              {
+                "kind": "correlates with",
+                "record": "conn-obs-fable5-2026-07-10-affect-ambition-jazzed-is-important",
+                "word": "MOMENTUM"
+              },
+              {
+                "kind": "supports",
+                "record": "conn-obs-fable5-2026-07-10-affect-insight-capture-then-calm",
+                "word": "MOMENTUM"
+              },
+              {
+                "kind": "requires",
+                "record": "conn-obs-hiswords-2026-07-10-compounding-filter-strong-yes",
+                "word": "MOMENTUM"
+              },
+              {
+                "kind": "prefers",
+                "record": "conn-obs-mined-2026-07-10-numbers-and-patterns-not-space",
+                "word": "MOMENTUM"
+              },
+              {
+                "kind": "rejects",
+                "record": "conn-obs-claude-2026-07-02-belief-insight-stated-relationship",
+                "word": "MOMENTUM"
+              },
+              {
+                "kind": "inhibits",
+                "record": "conn-obs-mined-2026-07-10-forward-wired-review-is-friction",
+                "word": "MOMENTUM"
+              },
+              {
+                "kind": "correlates with",
+                "record": "conn-obs-claude-2026-07-02-affect-work-stated-relationship",
+                "word": "MOMENTUM"
+              },
+              {
+                "kind": "supports",
+                "record": "conn-obs-hiswords-2026-07-10-eighty-twenty-reverse-engineer",
+                "word": "MOMENTUM"
+              },
+              {
+                "kind": "depends on",
+                "record": "conn-obs-mined-2026-07-10-easy-innocent-changes-stick",
+                "word": "MOMENTUM"
+              }
+            ],
+            "words": [
+              "MOMENTUM"
+            ]
+          },
+          "text": "For MOMENTUM, support and rejection can apply to different connections, so their coexistence does not establish a contradiction."
+        }
+      ]
+    },
+    {
+      "position": 5,
+      "proposal_id": "0c17bcb7-dfeb-41a8-aa43-77f0e8074bdc",
+      "payload": {
+        "number": "F-17",
+        "when": {
+          "answer": "aligned",
+          "kinds_present": [
+            "correlates with",
+            "requires"
+          ],
+          "word_count": 1
+        },
+        "sentence": "For {word}, moving together and being necessary are different claims; association alone does not establish a prerequisite.",
+        "status": "proposed",
+        "author": "codex/gpt-5.6-sol",
+        "date": "2026-10-01"
+      },
+      "form": {
+        "number": "F-17",
+        "when": {
+          "answer": "aligned",
+          "kinds_present": [
+            "correlates with",
+            "requires"
+          ],
+          "word_count": 1
+        },
+        "sentence": "For {word}, moving together and being necessary are different claims; association alone does not establish a prerequisite.",
+        "status": "proposed",
+        "author": "codex/gpt-5.6-sol",
+        "date": "2026-10-01"
+      },
+      "raw": {
+        "sentence": "For {word}, moving together and being necessary are different claims; association alone does not establish a prerequisite.",
+        "when": {
+          "answer": "aligned",
+          "kinds_absent": null,
+          "kinds_present": [
+            "correlates with",
+            "requires"
+          ],
+          "missing_links": null,
+          "record_count": null,
+          "word_count": 1
+        }
+      },
+      "reason": null,
+      "examples": [
+        {
+          "input_key": "patterns-v1:bootstrap:60d4be93-2999-4088-bd93-bb13579e7533:225335045ded7342ddb24e08375489526abc7dd3214b008fcc6c3e5a4e9a468a",
+          "parts": [
+            {
+              "source": "form.sentence",
+              "text": "For "
+            },
+            {
+              "source": "screen.words[0]",
+              "text": "LIFT"
+            },
+            {
+              "source": "form.sentence",
+              "text": ", moving together and being necessary are different claims; association alone does not establish a prerequisite."
+            }
+          ],
+          "question": "Which elevator gives the smoothest LIFT in a hotel?",
+          "question_id": "60d4be93-2999-4088-bd93-bb13579e7533",
+          "screen": {
+            "answer": "aligned",
+            "missing_links": false,
+            "rows": [
+              {
+                "kind": "requires",
+                "record": "conn-obs-direct-2026-07-10-execute-dont-recommend",
+                "word": "LIFT"
+              },
+              {
+                "kind": "depends on",
+                "record": "conn-obs-fable5-2026-07-10-insight-work-vocabulary-gap",
+                "word": "LIFT"
+              },
+              {
+                "kind": "is part of",
+                "record": "conn-obs-claude-2026-07-02-belief-work-stated-relationship",
+                "word": "LIFT"
+              },
+              {
+                "kind": "depends on",
+                "record": "conn-obs-fable5-2026-07-10-social-work-good-people-in-the-room",
+                "word": "LIFT"
+              },
+              {
+                "kind": "requires",
+                "record": "conn-obs-fable5-2026-07-10-purchase-insight-filter-ugly",
+                "word": "LIFT"
+              },
+              {
+                "kind": "requires",
+                "record": "conn-obs-fable5-2026-07-10-social-insight-strong-recommendations",
+                "word": "LIFT"
+              },
+              {
+                "kind": "explains",
+                "record": "conn-obs-claude-2026-07-02-purchase-social-stated-relationship",
+                "word": "LIFT"
+              },
+              {
+                "kind": "requires",
+                "record": "conn-obs-hiswords-2026-07-10-say-it-once-hold-it-forever",
+                "word": "LIFT"
+              },
+              {
+                "kind": "prefers",
+                "record": "conn-obs-hiswords-2026-07-10-picks-ai-for-faithful-restraint",
+                "word": "LIFT"
+              },
+              {
+                "kind": "explains",
+                "record": "conn-obs-claude-2026-07-02-exercise-social-stated-relationship",
+                "word": "LIFT"
+              },
+              {
+                "kind": "explains",
+                "record": "conn-obs-claude-2026-07-02-social-exercise-fitness-help",
+                "word": "LIFT"
+              },
+              {
+                "kind": "explains",
+                "record": "conn-obs-mined-2026-07-10-go-between-roles-delegates-details",
+                "word": "LIFT"
+              },
+              {
+                "kind": "correlates with",
+                "record": "conn-obs-supabase-2026-07-01-ambition-social-observed-correlation",
+                "word": "LIFT"
+              },
+              {
+                "kind": "correlates with",
+                "record": "conn-obs-005",
+                "word": "LIFT"
+              },
+              {
+                "kind": "correlates with",
+                "record": "conn-obs-008",
+                "word": "LIFT"
+              },
+              {
+                "kind": "correlates with",
+                "record": "conn-obs-supabase-2026-07-01-belief-social-observed-correlation",
+                "word": "LIFT"
+              },
+              {
+                "kind": "correlates with",
+                "record": "conn-obs-010",
+                "word": "LIFT"
+              },
+              {
+                "kind": "correlates with",
+                "record": "conn-obs-supabase-2026-07-01-health-social-observed-correlation",
+                "word": "LIFT"
+              },
+              {
+                "kind": "correlates with",
+                "record": "conn-obs-supabase-2026-07-01-purchase-social-observed-correlation",
+                "word": "LIFT"
+              },
+              {
+                "kind": "correlates with",
+                "record": "conn-obs-supabase-2026-07-01-insight-social-observed-correlation",
+                "word": "LIFT"
+              }
+            ],
+            "words": [
+              "LIFT"
+            ]
+          },
+          "text": "For LIFT, moving together and being necessary are different claims; association alone does not establish a prerequisite."
+        },
+        {
+          "input_key": "patterns-v1:bootstrap:e8fcd352-24ad-45dd-9fc3-b0c271af2d96:d1b29b06a3204f8f003cb9cb523a982bcb1a78e349e4ba3480bbd9fd7455256b",
+          "parts": [
+            {
+              "source": "form.sentence",
+              "text": "For "
+            },
+            {
+              "source": "screen.words[0]",
+              "text": "MOMENTUM"
+            },
+            {
+              "source": "form.sentence",
+              "text": ", moving together and being necessary are different claims; association alone does not establish a prerequisite."
+            }
+          ],
+          "question": "Why does exercise ruin my momentum?",
+          "question_id": "e8fcd352-24ad-45dd-9fc3-b0c271af2d96",
+          "screen": {
+            "answer": "aligned",
+            "missing_links": false,
+            "rows": [
+              {
+                "kind": "serves the purpose of",
+                "record": "conn-obs-fable5-2026-07-10-affect-work-momentum-compass",
+                "word": "MOMENTUM"
+              },
+              {
+                "kind": "depends on",
+                "record": "conn-obs-fable5-2026-07-10-belief-work-distraction-rule",
+                "word": "MOMENTUM"
+              },
+              {
+                "kind": "correlates with",
+                "record": "conn-obs-fable5-2026-07-10-affect-ambition-jazzed-is-important",
+                "word": "MOMENTUM"
+              },
+              {
+                "kind": "supports",
+                "record": "conn-obs-fable5-2026-07-10-affect-insight-capture-then-calm",
+                "word": "MOMENTUM"
+              },
+              {
+                "kind": "requires",
+                "record": "conn-obs-hiswords-2026-07-10-compounding-filter-strong-yes",
+                "word": "MOMENTUM"
+              },
+              {
+                "kind": "prefers",
+                "record": "conn-obs-mined-2026-07-10-numbers-and-patterns-not-space",
+                "word": "MOMENTUM"
+              },
+              {
+                "kind": "rejects",
+                "record": "conn-obs-claude-2026-07-02-belief-insight-stated-relationship",
+                "word": "MOMENTUM"
+              },
+              {
+                "kind": "inhibits",
+                "record": "conn-obs-mined-2026-07-10-forward-wired-review-is-friction",
+                "word": "MOMENTUM"
+              },
+              {
+                "kind": "correlates with",
+                "record": "conn-obs-claude-2026-07-02-affect-work-stated-relationship",
+                "word": "MOMENTUM"
+              },
+              {
+                "kind": "supports",
+                "record": "conn-obs-hiswords-2026-07-10-eighty-twenty-reverse-engineer",
+                "word": "MOMENTUM"
+              },
+              {
+                "kind": "depends on",
+                "record": "conn-obs-mined-2026-07-10-easy-innocent-changes-stick",
+                "word": "MOMENTUM"
+              }
+            ],
+            "words": [
+              "MOMENTUM"
+            ]
+          },
+          "text": "For MOMENTUM, moving together and being necessary are different claims; association alone does not establish a prerequisite."
+        }
+      ]
+    },
+    {
+      "position": 6,
+      "proposal_id": "e4f63bc8-44c0-47aa-9513-16c7ef21a1bf",
+      "payload": {
+        "number": "F-18",
+        "when": {
+          "answer": "aligned",
+          "kinds_present": [
+            "supports",
+            "inhibits"
+          ],
+          "word_count": 1
+        },
+        "sentence": "For {word}, supportive and inhibiting connections do not cancel into a net result because they can point to different records.",
+        "status": "proposed",
+        "author": "codex/gpt-5.6-sol",
+        "date": "2026-10-01"
+      },
+      "form": {
+        "number": "F-18",
+        "when": {
+          "answer": "aligned",
+          "kinds_present": [
+            "supports",
+            "inhibits"
+          ],
+          "word_count": 1
+        },
+        "sentence": "For {word}, supportive and inhibiting connections do not cancel into a net result because they can point to different records.",
+        "status": "proposed",
+        "author": "codex/gpt-5.6-sol",
+        "date": "2026-10-01"
+      },
+      "raw": {
+        "sentence": "For {word}, supportive and inhibiting connections do not cancel into a net result because they can point to different records.",
+        "when": {
+          "answer": "aligned",
+          "kinds_absent": null,
+          "kinds_present": [
+            "supports",
+            "inhibits"
+          ],
+          "missing_links": null,
+          "record_count": null,
+          "word_count": 1
+        }
+      },
+      "reason": null,
+      "examples": [
+        {
+          "input_key": "patterns-v1:bootstrap:e8fcd352-24ad-45dd-9fc3-b0c271af2d96:d1b29b06a3204f8f003cb9cb523a982bcb1a78e349e4ba3480bbd9fd7455256b",
+          "parts": [
+            {
+              "source": "form.sentence",
+              "text": "For "
+            },
+            {
+              "source": "screen.words[0]",
+              "text": "MOMENTUM"
+            },
+            {
+              "source": "form.sentence",
+              "text": ", supportive and inhibiting connections do not cancel into a net result because they can point to different records."
+            }
+          ],
+          "question": "Why does exercise ruin my momentum?",
+          "question_id": "e8fcd352-24ad-45dd-9fc3-b0c271af2d96",
+          "screen": {
+            "answer": "aligned",
+            "missing_links": false,
+            "rows": [
+              {
+                "kind": "serves the purpose of",
+                "record": "conn-obs-fable5-2026-07-10-affect-work-momentum-compass",
+                "word": "MOMENTUM"
+              },
+              {
+                "kind": "depends on",
+                "record": "conn-obs-fable5-2026-07-10-belief-work-distraction-rule",
+                "word": "MOMENTUM"
+              },
+              {
+                "kind": "correlates with",
+                "record": "conn-obs-fable5-2026-07-10-affect-ambition-jazzed-is-important",
+                "word": "MOMENTUM"
+              },
+              {
+                "kind": "supports",
+                "record": "conn-obs-fable5-2026-07-10-affect-insight-capture-then-calm",
+                "word": "MOMENTUM"
+              },
+              {
+                "kind": "requires",
+                "record": "conn-obs-hiswords-2026-07-10-compounding-filter-strong-yes",
+                "word": "MOMENTUM"
+              },
+              {
+                "kind": "prefers",
+                "record": "conn-obs-mined-2026-07-10-numbers-and-patterns-not-space",
+                "word": "MOMENTUM"
+              },
+              {
+                "kind": "rejects",
+                "record": "conn-obs-claude-2026-07-02-belief-insight-stated-relationship",
+                "word": "MOMENTUM"
+              },
+              {
+                "kind": "inhibits",
+                "record": "conn-obs-mined-2026-07-10-forward-wired-review-is-friction",
+                "word": "MOMENTUM"
+              },
+              {
+                "kind": "correlates with",
+                "record": "conn-obs-claude-2026-07-02-affect-work-stated-relationship",
+                "word": "MOMENTUM"
+              },
+              {
+                "kind": "supports",
+                "record": "conn-obs-hiswords-2026-07-10-eighty-twenty-reverse-engineer",
+                "word": "MOMENTUM"
+              },
+              {
+                "kind": "depends on",
+                "record": "conn-obs-mined-2026-07-10-easy-innocent-changes-stick",
+                "word": "MOMENTUM"
+              }
+            ],
+            "words": [
+              "MOMENTUM"
+            ]
+          },
+          "text": "For MOMENTUM, supportive and inhibiting connections do not cancel into a net result because they can point to different records."
+        }
+      ]
+    },
+    {
+      "position": 7,
+      "proposal_id": "77b29fa3-5945-499c-acaf-a5b556d26332",
+      "payload": {
+        "number": "F-19",
+        "when": {
+          "answer": "aligned",
+          "kinds_present": [
+            "co-occurs with",
+            "is different from"
+          ],
+          "word_count": 1
+        },
+        "sentence": "For {word}, appearing alongside something does not remove the distinction between them; coexistence is not sameness.",
+        "status": "proposed",
+        "author": "codex/gpt-5.6-sol",
+        "date": "2026-10-01"
+      },
+      "form": {
+        "number": "F-19",
+        "when": {
+          "answer": "aligned",
+          "kinds_present": [
+            "co-occurs with",
+            "is different from"
+          ],
+          "word_count": 1
+        },
+        "sentence": "For {word}, appearing alongside something does not remove the distinction between them; coexistence is not sameness.",
+        "status": "rejected",
+        "author": "codex/gpt-5.6-sol",
+        "date": "2026-10-01"
+      },
+      "raw": {
+        "sentence": "For {word}, appearing alongside something does not remove the distinction between them; coexistence is not sameness.",
+        "when": {
+          "answer": "aligned",
+          "kinds_absent": null,
+          "kinds_present": [
+            "co-occurs with",
+            "is different from"
+          ],
+          "missing_links": null,
+          "record_count": null,
+          "word_count": 1
+        }
+      },
+      "reason": "unsupported pattern meaning: The wording implies that the thing appearing alongside the word is also the thing distinguished from it, but the co-occurs-with and is-different-from rows may point to different records.",
+      "examples": [
+        {
+          "input_key": "patterns-v1:bootstrap:7623c1be-0c52-4191-9cfc-6c6e0d6340cc:e6e1a12e1bdcdb664bd23a1e0df83fe810187b161024aeffb3778ed559e5ffed",
+          "parts": [
+            {
+              "source": "form.sentence",
+              "text": "For "
+            },
+            {
+              "source": "screen.words[0]",
+              "text": "WORK"
+            },
+            {
+              "source": "form.sentence",
+              "text": ", appearing alongside something does not remove the distinction between them; coexistence is not sameness."
+            }
+          ],
+          "question": "I feel motivated whenever I work with AI, even though it can often make mistakes. I wonder why",
+          "question_id": "7623c1be-0c52-4191-9cfc-6c6e0d6340cc",
+          "screen": {
+            "answer": "aligned",
+            "missing_links": false,
+            "rows": [
+              {
+                "kind": "is different from",
+                "record": "conn-obs-direct-2026-07-10-execute-dont-recommend",
+                "word": "WORK"
+              },
+              {
+                "kind": "is different from",
+                "record": "conn-obs-fable5-2026-07-10-insight-work-importance-first",
+                "word": "WORK"
+              },
+              {
+                "kind": "is different from",
+                "record": "conn-obs-fable5-2026-07-10-belief-work-distraction-rule",
+                "word": "WORK"
+              },
+              {
+                "kind": "is different from",
+                "record": "conn-obs-claude-2026-07-02-learning-work-stated-relationship",
+                "word": "WORK"
+              },
+              {
+                "kind": "is different from",
+                "record": "conn-obs-fable5-2026-07-10-belief-insight-data-not-rules",
+                "word": "WORK"
+              },
+              {
+                "kind": "co-occurs with",
+                "record": "conn-obs-hiswords-2026-07-10-studies-his-claude-tools",
+                "word": "WORK"
+              },
+              {
+                "kind": "is different from",
+                "record": "conn-obs-hiswords-2026-07-10-builds-a-curriculum-per-project",
+                "word": "WORK"
+              },
+              {
+                "kind": "co-occurs with",
+                "record": "conn-obs-hiswords-2026-07-10-ai-news-via-daily-shows",
+                "word": "WORK"
+              },
+              {
+                "kind": "is different from",
+                "record": "conn-obs-fable5-2026-07-10-work-ambition-app-architect",
+                "word": "WORK"
+              },
+              {
+                "kind": "is different from",
+                "record": "conn-obs-mined-2026-07-10-hardcode-only-what-he-is-best-at",
+                "word": "WORK"
+              },
+              {
+                "kind": "is different from",
+                "record": "conn-obs-claude-2026-07-02-ambition-work-stated-relationship",
+                "word": "WORK"
+              },
+              {
+                "kind": "is different from",
+                "record": "conn-obs-fable5-2026-07-10-belief-ambition-name-our-price",
+                "word": "WORK"
+              },
+              {
+                "kind": "is different from",
+                "record": "conn-obs-hiswords-2026-07-10-builds-for-himself-first",
+                "word": "WORK"
+              },
+              {
+                "kind": "is different from",
+                "record": "conn-obs-fable5-2026-07-10-learning-work-teach-me-first",
+                "word": "WORK"
+              },
+              {
+                "kind": "is different from",
+                "record": "conn-obs-fable5-2026-07-10-belief-work-done-is-discovered",
+                "word": "WORK"
+              },
+              {
+                "kind": "is different from",
+                "record": "conn-obs-fable5-2026-07-10-social-work-good-people-in-the-room",
+                "word": "WORK"
+              },
+              {
+                "kind": "is different from",
+                "record": "conn-obs-fable5-2026-07-10-social-insight-strong-recommendations",
+                "word": "WORK"
+              },
+              {
+                "kind": "is different from",
+                "record": "conn-obs-fable5-2026-07-10-affect-ambition-jazzed-is-important",
+                "word": "WORK"
+              },
+              {
+                "kind": "is different from",
+                "record": "conn-obs-claude-2026-07-02-belief-work-stated-relationship",
+                "word": "WORK"
+              },
+              {
+                "kind": "is different from",
+                "record": "conn-obs-fable5-2026-07-10-learning-insight-working-code-first",
+                "word": "WORK"
+              },
+              {
+                "kind": "correlates with",
+                "record": "conn-obs-claude-2026-07-02-affect-work-stated-relationship",
+                "word": "WORK"
+              },
+              {
+                "kind": "is different from",
+                "record": "conn-obs-gemini-2026-07-02-health-work-builds-with-own-data",
+                "word": "WORK"
+              },
+              {
+                "kind": "depends on",
+                "record": "conn-obs-claude-grok-2026-07-02-purchase-work-hardware-as-leverage",
+                "word": "WORK"
+              },
+              {
+                "kind": "is different from",
+                "record": "conn-obs-hiswords-2026-07-10-eighty-twenty-reverse-engineer",
+                "word": "WORK"
+              },
+              {
+                "kind": "is different from",
+                "record": "conn-obs-mined-2026-07-10-go-between-roles-delegates-details",
+                "word": "WORK"
+              },
+              {
+                "kind": "overlaps",
+                "record": "conn-obs-claude-2026-07-02-exercise-social-stated-relationship",
+                "word": "WORK"
+              },
+              {
+                "kind": "is different from",
+                "record": "conn-obs-claude-2026-07-02-entertainment-work-builds-out-of-frustration",
+                "word": "WORK"
+              },
+              {
+                "kind": "is different from",
+                "record": "conn-obs-claude-2026-07-02-affect-work-emotional-resonance",
+                "word": "WORK"
+              },
+              {
+                "kind": "is different from",
+                "record": "conn-obs-recall-2026-07-02-belief-work-leverage-delegate-tags",
+                "word": "WORK"
+              },
+              {
+                "kind": "correlates with",
+                "record": "conn-obs-010",
+                "word": "WORK"
+              },
+              {
+                "kind": "correlates with",
+                "record": "conn-obs-019",
+                "word": "WORK"
+              }
+            ],
+            "words": [
+              "WORK"
+            ]
+          },
+          "text": "For WORK, appearing alongside something does not remove the distinction between them; coexistence is not sameness."
+        }
+      ]
+    },
+    {
+      "position": 8,
+      "proposal_id": "ffb136c3-8d42-4974-aebf-36696b4b75d3",
+      "payload": {
+        "number": "F-20",
+        "when": {
+          "answer": "aligned",
+          "kinds_present": [
+            "supports",
+            "overlaps"
+          ],
+          "word_count": 1
+        },
+        "sentence": "For {word}, shared scope and evidential backing are separate relationships; overlap does not establish support.",
+        "status": "proposed",
+        "author": "codex/gpt-5.6-sol",
+        "date": "2026-10-01"
+      },
+      "form": {
+        "number": "F-20",
+        "when": {
+          "answer": "aligned",
+          "kinds_present": [
+            "supports",
+            "overlaps"
+          ],
+          "word_count": 1
+        },
+        "sentence": "For {word}, shared scope and evidential backing are separate relationships; overlap does not establish support.",
+        "status": "proposed",
+        "author": "codex/gpt-5.6-sol",
+        "date": "2026-10-01"
+      },
+      "raw": {
+        "sentence": "For {word}, shared scope and evidential backing are separate relationships; overlap does not establish support.",
+        "when": {
+          "answer": "aligned",
+          "kinds_absent": null,
+          "kinds_present": [
+            "supports",
+            "overlaps"
+          ],
+          "missing_links": null,
+          "record_count": null,
+          "word_count": 1
+        }
+      },
+      "reason": null,
+      "examples": [
+        {
+          "input_key": "patterns-v1:bootstrap:51ac6ba1-0b03-4b2e-834f-2174b9ef82eb:767c17d789fa767a76c8bf653e05b13ac17be68cb8b632df4598a1782c2f9dfb",
+          "parts": [
+            {
+              "source": "form.sentence",
+              "text": "For "
+            },
+            {
+              "source": "screen.words[0]",
+              "text": "CONFIDENCE"
+            },
+            {
+              "source": "form.sentence",
+              "text": ", shared scope and evidential backing are separate relationships; overlap does not establish support."
+            }
+          ],
+          "question": "I can’t seem to hold onto both confidence and growth in my emotions. Why is that?",
+          "question_id": "51ac6ba1-0b03-4b2e-834f-2174b9ef82eb",
+          "screen": {
+            "answer": "aligned",
+            "missing_links": false,
+            "rows": [
+              {
+                "kind": "supports",
+                "record": "conn-obs-fable5-2026-07-10-affect-work-momentum-compass",
+                "word": "CONFIDENCE"
+              },
+              {
+                "kind": "supports",
+                "record": "conn-obs-fable5-2026-07-10-belief-insight-data-not-rules",
+                "word": "CONFIDENCE"
+              },
+              {
+                "kind": "enables",
+                "record": "conn-obs-hiswords-2026-07-10-learns-by-rewatching",
+                "word": "CONFIDENCE"
+              },
+              {
+                "kind": "supports",
+                "record": "conn-obs-fable5-2026-07-10-affect-insight-capture-then-calm",
+                "word": "CONFIDENCE"
+              },
+              {
+                "kind": "overlaps",
+                "record": "conn-obs-fable5-2026-07-10-purchase-insight-filter-ugly",
+                "word": "CONFIDENCE"
+              },
+              {
+                "kind": "overlaps",
+                "record": "conn-obs-fable5-2026-07-10-affect-ambition-jazzed-is-important",
+                "word": "CONFIDENCE"
+              },
+              {
+                "kind": "supports",
+                "record": "conn-obs-mined-2026-07-10-numbers-and-patterns-not-space",
+                "word": "CONFIDENCE"
+              },
+              {
+                "kind": "overlaps",
+                "record": "conn-obs-hiswords-2026-07-10-compounding-filter-strong-yes",
+                "word": "CONFIDENCE"
+              },
+              {
+                "kind": "supports",
+                "record": "conn-obs-fable5-2026-07-10-learning-insight-working-code-first",
+                "word": "CONFIDENCE"
+              },
+              {
+                "kind": "supports",
+                "record": "conn-obs-mined-2026-07-10-easy-innocent-changes-stick",
+                "word": "CONFIDENCE"
+              },
+              {
+                "kind": "supports",
+                "record": "conn-obs-mined-2026-07-10-stress-tests-own-plans-first",
+                "word": "CONFIDENCE"
+              }
+            ],
+            "words": [
+              "CONFIDENCE"
+            ]
+          },
+          "text": "For CONFIDENCE, shared scope and evidential backing are separate relationships; overlap does not establish support."
+        }
+      ]
+    },
+    {
+      "position": 9,
+      "proposal_id": "0d9ea236-3bd8-47f5-b570-ba8ee827b45e",
+      "payload": {
+        "number": "F-21",
+        "when": {
+          "answer": "aligned",
+          "kinds_present": [
+            "supports",
+            "enables"
+          ],
+          "word_count": 1
+        },
+        "sentence": "For {word}, backing something and making something possible are distinct claims; support alone does not establish enablement.",
+        "status": "proposed",
+        "author": "codex/gpt-5.6-sol",
+        "date": "2026-10-01"
+      },
+      "form": {
+        "number": "F-21",
+        "when": {
+          "answer": "aligned",
+          "kinds_present": [
+            "supports",
+            "enables"
+          ],
+          "word_count": 1
+        },
+        "sentence": "For {word}, backing something and making something possible are distinct claims; support alone does not establish enablement.",
+        "status": "proposed",
+        "author": "codex/gpt-5.6-sol",
+        "date": "2026-10-01"
+      },
+      "raw": {
+        "sentence": "For {word}, backing something and making something possible are distinct claims; support alone does not establish enablement.",
+        "when": {
+          "answer": "aligned",
+          "kinds_absent": null,
+          "kinds_present": [
+            "supports",
+            "enables"
+          ],
+          "missing_links": null,
+          "record_count": null,
+          "word_count": 1
+        }
+      },
+      "reason": null,
+      "examples": [
+        {
+          "input_key": "patterns-v1:bootstrap:837f2e37-9dce-46b3-aa39-e27240ed89b7:4f8a39fe9ae3907c68d9dc634dc5822bd3ce4976b7061671e51471a220b5b98d",
+          "parts": [
+            {
+              "source": "form.sentence",
+              "text": "For "
+            },
+            {
+              "source": "screen.words[0]",
+              "text": "FLOW"
+            },
+            {
+              "source": "form.sentence",
+              "text": ", backing something and making something possible are distinct claims; support alone does not establish enablement."
+            }
+          ],
+          "question": "Does the kitchen faucet FLOW enough when the dishwasher is running?",
+          "question_id": "837f2e37-9dce-46b3-aa39-e27240ed89b7",
+          "screen": {
+            "answer": "aligned",
+            "missing_links": false,
+            "rows": [
+              {
+                "kind": "depends on",
+                "record": "conn-obs-fable5-2026-07-10-affect-work-momentum-compass",
+                "word": "FLOW"
+              },
+              {
+                "kind": "rejects",
+                "record": "conn-obs-fable5-2026-07-10-belief-work-distraction-rule",
+                "word": "FLOW"
+              },
+              {
+                "kind": "supports",
+                "record": "conn-obs-claude-2026-07-02-learning-work-stated-relationship",
+                "word": "FLOW"
+              },
+              {
+                "kind": "supports",
+                "record": "conn-obs-mined-2026-07-10-hardcode-only-what-he-is-best-at",
+                "word": "FLOW"
+              },
+              {
+                "kind": "values",
+                "record": "conn-obs-fable5-2026-07-10-affect-ambition-jazzed-is-important",
+                "word": "FLOW"
+              },
+              {
+                "kind": "enables",
+                "record": "conn-obs-fable5-2026-07-10-affect-insight-capture-then-calm",
+                "word": "FLOW"
+              },
+              {
+                "kind": "contributes to",
+                "record": "conn-obs-fable5-2026-07-10-belief-work-done-is-discovered",
+                "word": "FLOW"
+              },
+              {
+                "kind": "requires",
+                "record": "conn-obs-hiswords-2026-07-10-compounding-filter-strong-yes",
+                "word": "FLOW"
+              },
+              {
+                "kind": "rejects",
+                "record": "conn-obs-claude-2026-07-02-belief-insight-stated-relationship",
+                "word": "FLOW"
+              },
+              {
+                "kind": "explains",
+                "record": "conn-obs-mined-2026-07-10-forward-wired-review-is-friction",
+                "word": "FLOW"
+              },
+              {
+                "kind": "explains",
+                "record": "conn-obs-claude-2026-07-02-affect-work-stated-relationship",
+                "word": "FLOW"
+              },
+              {
+                "kind": "depends on",
+                "record": "conn-obs-mined-2026-07-10-external-scaffolding-by-design",
+                "word": "FLOW"
+              },
+              {
+                "kind": "requires",
+                "record": "conn-obs-mined-2026-07-10-easy-innocent-changes-stick",
+                "word": "FLOW"
+              },
+              {
+                "kind": "depends on",
+                "record": "conn-obs-mined-2026-07-10-affect-is-his-blind-spot",
+                "word": "FLOW"
+              },
+              {
+                "kind": "supports",
+                "record": "conn-obs-mined-2026-07-10-cast-wide-commit-thirty-percent",
+                "word": "FLOW"
+              }
+            ],
+            "words": [
+              "FLOW"
+            ]
+          },
+          "text": "For FLOW, backing something and making something possible are distinct claims; support alone does not establish enablement."
+        },
+        {
+          "input_key": "patterns-v1:bootstrap:a4c820ad-a73a-42c0-a122-cbe69de2783b:f85ba9c6fe3f7d899bfa0895491b7416f972bcfb0f01635a2183daed365b2a3f",
+          "parts": [
+            {
+              "source": "form.sentence",
+              "text": "For "
+            },
+            {
+              "source": "screen.words[0]",
+              "text": "SOFTWARE"
+            },
+            {
+              "source": "form.sentence",
+              "text": ", backing something and making something possible are distinct claims; support alone does not establish enablement."
+            }
+          ],
+          "question": "Why do I lose interest in a new software tool?",
+          "question_id": "a4c820ad-a73a-42c0-a122-cbe69de2783b",
+          "screen": {
+            "answer": "aligned",
+            "missing_links": false,
+            "rows": [
+              {
+                "kind": "should",
+                "record": "conn-obs-direct-2026-07-10-execute-dont-recommend",
+                "word": "SOFTWARE"
+              },
+              {
+                "kind": "depends on",
+                "record": "conn-obs-fable5-2026-07-10-insight-work-vocabulary-gap",
+                "word": "SOFTWARE"
+              },
+              {
+                "kind": "enables",
+                "record": "conn-obs-fable5-2026-07-10-work-ambition-app-architect",
+                "word": "SOFTWARE"
+              },
+              {
+                "kind": "supports",
+                "record": "conn-obs-mined-2026-07-10-hardcode-only-what-he-is-best-at",
+                "word": "SOFTWARE"
+              },
+              {
+                "kind": "is sourced from",
+                "record": "conn-obs-hiswords-2026-07-10-builds-for-himself-first",
+                "word": "SOFTWARE"
+              },
+              {
+                "kind": "enables",
+                "record": "conn-obs-fable5-2026-07-10-health-insight-one-hub",
+                "word": "SOFTWARE"
+              },
+              {
+                "kind": "explains",
+                "record": "conn-obs-claude-2026-07-02-affect-work-stated-relationship",
+                "word": "SOFTWARE"
+              },
+              {
+                "kind": "enables",
+                "record": "conn-obs-gemini-2026-07-02-health-work-builds-with-own-data",
+                "word": "SOFTWARE"
+              },
+              {
+                "kind": "depends on",
+                "record": "conn-obs-claude-grok-2026-07-02-purchase-work-hardware-as-leverage",
+                "word": "SOFTWARE"
+              },
+              {
+                "kind": "serves the purpose of",
+                "record": "conn-obs-mined-2026-07-10-forward-wired-review-is-friction",
+                "word": "SOFTWARE"
+              },
+              {
+                "kind": "enables",
+                "record": "conn-obs-claude-2026-07-02-entertainment-work-builds-out-of-frustration",
+                "word": "SOFTWARE"
+              },
+              {
+                "kind": "requires",
+                "record": "conn-obs-mined-2026-07-10-easy-innocent-changes-stick",
+                "word": "SOFTWARE"
+              },
+              {
+                "kind": "supports",
+                "record": "conn-obs-vault-theme-2026-07-10-re-call-reminders-should-go-deeper-not-broader",
+                "word": "SOFTWARE"
+              },
+              {
+                "kind": "serves the purpose of",
+                "record": "conn-obs-vault-theme-2026-07-10-build-a-habit-tracker-that-requires-zero-daily-inp",
+                "word": "SOFTWARE"
+              }
+            ],
+            "words": [
+              "SOFTWARE"
+            ]
+          },
+          "text": "For SOFTWARE, backing something and making something possible are distinct claims; support alone does not establish enablement."
+        },
+        {
+          "input_key": "patterns-v1:bootstrap:51ac6ba1-0b03-4b2e-834f-2174b9ef82eb:767c17d789fa767a76c8bf653e05b13ac17be68cb8b632df4598a1782c2f9dfb",
+          "parts": [
+            {
+              "source": "form.sentence",
+              "text": "For "
+            },
+            {
+              "source": "screen.words[0]",
+              "text": "CONFIDENCE"
+            },
+            {
+              "source": "form.sentence",
+              "text": ", backing something and making something possible are distinct claims; support alone does not establish enablement."
+            }
+          ],
+          "question": "I can’t seem to hold onto both confidence and growth in my emotions. Why is that?",
+          "question_id": "51ac6ba1-0b03-4b2e-834f-2174b9ef82eb",
+          "screen": {
+            "answer": "aligned",
+            "missing_links": false,
+            "rows": [
+              {
+                "kind": "supports",
+                "record": "conn-obs-fable5-2026-07-10-affect-work-momentum-compass",
+                "word": "CONFIDENCE"
+              },
+              {
+                "kind": "supports",
+                "record": "conn-obs-fable5-2026-07-10-belief-insight-data-not-rules",
+                "word": "CONFIDENCE"
+              },
+              {
+                "kind": "enables",
+                "record": "conn-obs-hiswords-2026-07-10-learns-by-rewatching",
+                "word": "CONFIDENCE"
+              },
+              {
+                "kind": "supports",
+                "record": "conn-obs-fable5-2026-07-10-affect-insight-capture-then-calm",
+                "word": "CONFIDENCE"
+              },
+              {
+                "kind": "overlaps",
+                "record": "conn-obs-fable5-2026-07-10-purchase-insight-filter-ugly",
+                "word": "CONFIDENCE"
+              },
+              {
+                "kind": "overlaps",
+                "record": "conn-obs-fable5-2026-07-10-affect-ambition-jazzed-is-important",
+                "word": "CONFIDENCE"
+              },
+              {
+                "kind": "supports",
+                "record": "conn-obs-mined-2026-07-10-numbers-and-patterns-not-space",
+                "word": "CONFIDENCE"
+              },
+              {
+                "kind": "overlaps",
+                "record": "conn-obs-hiswords-2026-07-10-compounding-filter-strong-yes",
+                "word": "CONFIDENCE"
+              },
+              {
+                "kind": "supports",
+                "record": "conn-obs-fable5-2026-07-10-learning-insight-working-code-first",
+                "word": "CONFIDENCE"
+              },
+              {
+                "kind": "supports",
+                "record": "conn-obs-mined-2026-07-10-easy-innocent-changes-stick",
+                "word": "CONFIDENCE"
+              },
+              {
+                "kind": "supports",
+                "record": "conn-obs-mined-2026-07-10-stress-tests-own-plans-first",
+                "word": "CONFIDENCE"
+              }
+            ],
+            "words": [
+              "CONFIDENCE"
+            ]
+          },
+          "text": "For CONFIDENCE, backing something and making something possible are distinct claims; support alone does not establish enablement."
+        }
+      ]
+    },
+    {
+      "position": 10,
+      "proposal_id": "d9755caf-cf17-4368-ac8f-1c020406dfad",
+      "payload": {
+        "number": "F-22",
+        "when": {
+          "answer": "aligned",
+          "kinds_present": [
+            "depends on",
+            "enables"
+          ],
+          "word_count": 1
+        },
+        "sentence": "For {word}, relying on something and making something possible run in different directions; one does not establish the other.",
+        "status": "proposed",
+        "author": "codex/gpt-5.6-sol",
+        "date": "2026-10-01"
+      },
+      "form": {
+        "number": "F-22",
+        "when": {
+          "answer": "aligned",
+          "kinds_present": [
+            "depends on",
+            "enables"
+          ],
+          "word_count": 1
+        },
+        "sentence": "For {word}, relying on something and making something possible run in different directions; one does not establish the other.",
+        "status": "proposed",
+        "author": "codex/gpt-5.6-sol",
+        "date": "2026-10-01"
+      },
+      "raw": {
+        "sentence": "For {word}, relying on something and making something possible run in different directions; one does not establish the other.",
+        "when": {
+          "answer": "aligned",
+          "kinds_absent": null,
+          "kinds_present": [
+            "depends on",
+            "enables"
+          ],
+          "missing_links": null,
+          "record_count": null,
+          "word_count": 1
+        }
+      },
+      "reason": null,
+      "examples": [
+        {
+          "input_key": "patterns-v1:bootstrap:837f2e37-9dce-46b3-aa39-e27240ed89b7:4f8a39fe9ae3907c68d9dc634dc5822bd3ce4976b7061671e51471a220b5b98d",
+          "parts": [
+            {
+              "source": "form.sentence",
+              "text": "For "
+            },
+            {
+              "source": "screen.words[0]",
+              "text": "FLOW"
+            },
+            {
+              "source": "form.sentence",
+              "text": ", relying on something and making something possible run in different directions; one does not establish the other."
+            }
+          ],
+          "question": "Does the kitchen faucet FLOW enough when the dishwasher is running?",
+          "question_id": "837f2e37-9dce-46b3-aa39-e27240ed89b7",
+          "screen": {
+            "answer": "aligned",
+            "missing_links": false,
+            "rows": [
+              {
+                "kind": "depends on",
+                "record": "conn-obs-fable5-2026-07-10-affect-work-momentum-compass",
+                "word": "FLOW"
+              },
+              {
+                "kind": "rejects",
+                "record": "conn-obs-fable5-2026-07-10-belief-work-distraction-rule",
+                "word": "FLOW"
+              },
+              {
+                "kind": "supports",
+                "record": "conn-obs-claude-2026-07-02-learning-work-stated-relationship",
+                "word": "FLOW"
+              },
+              {
+                "kind": "supports",
+                "record": "conn-obs-mined-2026-07-10-hardcode-only-what-he-is-best-at",
+                "word": "FLOW"
+              },
+              {
+                "kind": "values",
+                "record": "conn-obs-fable5-2026-07-10-affect-ambition-jazzed-is-important",
+                "word": "FLOW"
+              },
+              {
+                "kind": "enables",
+                "record": "conn-obs-fable5-2026-07-10-affect-insight-capture-then-calm",
+                "word": "FLOW"
+              },
+              {
+                "kind": "contributes to",
+                "record": "conn-obs-fable5-2026-07-10-belief-work-done-is-discovered",
+                "word": "FLOW"
+              },
+              {
+                "kind": "requires",
+                "record": "conn-obs-hiswords-2026-07-10-compounding-filter-strong-yes",
+                "word": "FLOW"
+              },
+              {
+                "kind": "rejects",
+                "record": "conn-obs-claude-2026-07-02-belief-insight-stated-relationship",
+                "word": "FLOW"
+              },
+              {
+                "kind": "explains",
+                "record": "conn-obs-mined-2026-07-10-forward-wired-review-is-friction",
+                "word": "FLOW"
+              },
+              {
+                "kind": "explains",
+                "record": "conn-obs-claude-2026-07-02-affect-work-stated-relationship",
+                "word": "FLOW"
+              },
+              {
+                "kind": "depends on",
+                "record": "conn-obs-mined-2026-07-10-external-scaffolding-by-design",
+                "word": "FLOW"
+              },
+              {
+                "kind": "requires",
+                "record": "conn-obs-mined-2026-07-10-easy-innocent-changes-stick",
+                "word": "FLOW"
+              },
+              {
+                "kind": "depends on",
+                "record": "conn-obs-mined-2026-07-10-affect-is-his-blind-spot",
+                "word": "FLOW"
+              },
+              {
+                "kind": "supports",
+                "record": "conn-obs-mined-2026-07-10-cast-wide-commit-thirty-percent",
+                "word": "FLOW"
+              }
+            ],
+            "words": [
+              "FLOW"
+            ]
+          },
+          "text": "For FLOW, relying on something and making something possible run in different directions; one does not establish the other."
+        },
+        {
+          "input_key": "patterns-v1:bootstrap:a4c820ad-a73a-42c0-a122-cbe69de2783b:f85ba9c6fe3f7d899bfa0895491b7416f972bcfb0f01635a2183daed365b2a3f",
+          "parts": [
+            {
+              "source": "form.sentence",
+              "text": "For "
+            },
+            {
+              "source": "screen.words[0]",
+              "text": "SOFTWARE"
+            },
+            {
+              "source": "form.sentence",
+              "text": ", relying on something and making something possible run in different directions; one does not establish the other."
+            }
+          ],
+          "question": "Why do I lose interest in a new software tool?",
+          "question_id": "a4c820ad-a73a-42c0-a122-cbe69de2783b",
+          "screen": {
+            "answer": "aligned",
+            "missing_links": false,
+            "rows": [
+              {
+                "kind": "should",
+                "record": "conn-obs-direct-2026-07-10-execute-dont-recommend",
+                "word": "SOFTWARE"
+              },
+              {
+                "kind": "depends on",
+                "record": "conn-obs-fable5-2026-07-10-insight-work-vocabulary-gap",
+                "word": "SOFTWARE"
+              },
+              {
+                "kind": "enables",
+                "record": "conn-obs-fable5-2026-07-10-work-ambition-app-architect",
+                "word": "SOFTWARE"
+              },
+              {
+                "kind": "supports",
+                "record": "conn-obs-mined-2026-07-10-hardcode-only-what-he-is-best-at",
+                "word": "SOFTWARE"
+              },
+              {
+                "kind": "is sourced from",
+                "record": "conn-obs-hiswords-2026-07-10-builds-for-himself-first",
+                "word": "SOFTWARE"
+              },
+              {
+                "kind": "enables",
+                "record": "conn-obs-fable5-2026-07-10-health-insight-one-hub",
+                "word": "SOFTWARE"
+              },
+              {
+                "kind": "explains",
+                "record": "conn-obs-claude-2026-07-02-affect-work-stated-relationship",
+                "word": "SOFTWARE"
+              },
+              {
+                "kind": "enables",
+                "record": "conn-obs-gemini-2026-07-02-health-work-builds-with-own-data",
+                "word": "SOFTWARE"
+              },
+              {
+                "kind": "depends on",
+                "record": "conn-obs-claude-grok-2026-07-02-purchase-work-hardware-as-leverage",
+                "word": "SOFTWARE"
+              },
+              {
+                "kind": "serves the purpose of",
+                "record": "conn-obs-mined-2026-07-10-forward-wired-review-is-friction",
+                "word": "SOFTWARE"
+              },
+              {
+                "kind": "enables",
+                "record": "conn-obs-claude-2026-07-02-entertainment-work-builds-out-of-frustration",
+                "word": "SOFTWARE"
+              },
+              {
+                "kind": "requires",
+                "record": "conn-obs-mined-2026-07-10-easy-innocent-changes-stick",
+                "word": "SOFTWARE"
+              },
+              {
+                "kind": "supports",
+                "record": "conn-obs-vault-theme-2026-07-10-re-call-reminders-should-go-deeper-not-broader",
+                "word": "SOFTWARE"
+              },
+              {
+                "kind": "serves the purpose of",
+                "record": "conn-obs-vault-theme-2026-07-10-build-a-habit-tracker-that-requires-zero-daily-inp",
+                "word": "SOFTWARE"
+              }
+            ],
+            "words": [
+              "SOFTWARE"
+            ]
+          },
+          "text": "For SOFTWARE, relying on something and making something possible run in different directions; one does not establish the other."
+        }
+      ]
+    },
+    {
+      "position": 11,
+      "proposal_id": "dbde79a0-4032-46f9-a950-082a703ba0d6",
+      "payload": {
+        "number": "F-23",
+        "when": {
+          "answer": "aligned",
+          "kinds_present": [
+            "is broader than",
+            "happens after"
+          ],
+          "word_count": 1
+        },
+        "sentence": "For {word}, broader scope and later timing describe independent boundaries; neither relationship establishes the other.",
+        "status": "proposed",
+        "author": "codex/gpt-5.6-sol",
+        "date": "2026-10-01"
+      },
+      "form": {
+        "number": "F-23",
+        "when": {
+          "answer": "aligned",
+          "kinds_present": [
+            "is broader than",
+            "happens after"
+          ],
+          "word_count": 1
+        },
+        "sentence": "For {word}, broader scope and later timing describe independent boundaries; neither relationship establishes the other.",
+        "status": "proposed",
+        "author": "codex/gpt-5.6-sol",
+        "date": "2026-10-01"
+      },
+      "raw": {
+        "sentence": "For {word}, broader scope and later timing describe independent boundaries; neither relationship establishes the other.",
+        "when": {
+          "answer": "aligned",
+          "kinds_absent": null,
+          "kinds_present": [
+            "is broader than",
+            "happens after"
+          ],
+          "missing_links": null,
+          "record_count": null,
+          "word_count": 1
+        }
+      },
+      "reason": null,
+      "examples": [
+        {
+          "input_key": "patterns-v1:bootstrap:b756a2a1-ade1-42fb-938c-4c2909a28927:5064a80c004b8760e228043dc6fbd9c94237189f042b3b471db2f3282b4152eb",
+          "parts": [
+            {
+              "source": "form.sentence",
+              "text": "For "
+            },
+            {
+              "source": "screen.words[0]",
+              "text": "I BUILD PRODUCTS OTHER CAN BUY"
+            },
+            {
+              "source": "form.sentence",
+              "text": ", broader scope and later timing describe independent boundaries; neither relationship establishes the other."
+            }
+          ],
+          "question": "Peptides are important to me and yet so is social media.  I can't seem to decide which one to focus on because they are both so important.",
+          "question_id": "b756a2a1-ade1-42fb-938c-4c2909a28927",
+          "screen": {
+            "answer": "aligned",
+            "missing_links": false,
+            "rows": [
+              {
+                "kind": "depends on",
+                "record": "conn-obs-claude-2026-07-02-ambition-work-stated-relationship",
+                "word": "I BUILD PRODUCTS OTHER CAN BUY"
+              },
+              {
+                "kind": "supports",
+                "record": "conn-obs-fable5-2026-07-10-belief-ambition-name-our-price",
+                "word": "I BUILD PRODUCTS OTHER CAN BUY"
+              },
+              {
+                "kind": "is a kind of",
+                "record": "conn-obs-fable5-2026-07-10-work-ambition-app-architect",
+                "word": "I BUILD PRODUCTS OTHER CAN BUY"
+              },
+              {
+                "kind": "happens after",
+                "record": "conn-obs-hiswords-2026-07-10-builds-for-himself-first",
+                "word": "I BUILD PRODUCTS OTHER CAN BUY"
+              },
+              {
+                "kind": "is broader than",
+                "record": "conn-obs-grok-2026-07-02-ambition-health-business-from-transformation",
+                "word": "I BUILD PRODUCTS OTHER CAN BUY"
+              }
+            ],
+            "words": [
+              "I BUILD PRODUCTS OTHER CAN BUY"
+            ]
+          },
+          "text": "For I BUILD PRODUCTS OTHER CAN BUY, broader scope and later timing describe independent boundaries; neither relationship establishes the other."
+        }
+      ]
+    },
+    {
+      "position": 12,
+      "proposal_id": "33ba226b-16f9-4084-b194-1064568d9222",
+      "payload": {
+        "number": "F-24",
+        "when": {
+          "answer": "aligned",
+          "kinds_present": [
+            "is part of",
+            "correlates with"
+          ],
+          "word_count": 1
+        },
+        "sentence": "For {word}, belonging within something is different from varying alongside something; correlation does not establish membership.",
+        "status": "proposed",
+        "author": "codex/gpt-5.6-sol",
+        "date": "2026-10-01"
+      },
+      "form": {
+        "number": "F-24",
+        "when": {
+          "answer": "aligned",
+          "kinds_present": [
+            "is part of",
+            "correlates with"
+          ],
+          "word_count": 1
+        },
+        "sentence": "For {word}, belonging within something is different from varying alongside something; correlation does not establish membership.",
+        "status": "proposed",
+        "author": "codex/gpt-5.6-sol",
+        "date": "2026-10-01"
+      },
+      "raw": {
+        "sentence": "For {word}, belonging within something is different from varying alongside something; correlation does not establish membership.",
+        "when": {
+          "answer": "aligned",
+          "kinds_absent": null,
+          "kinds_present": [
+            "is part of",
+            "correlates with"
+          ],
+          "missing_links": null,
+          "record_count": null,
+          "word_count": 1
+        }
+      },
+      "reason": null,
+      "examples": [
+        {
+          "input_key": "patterns-v1:bootstrap:60d4be93-2999-4088-bd93-bb13579e7533:225335045ded7342ddb24e08375489526abc7dd3214b008fcc6c3e5a4e9a468a",
+          "parts": [
+            {
+              "source": "form.sentence",
+              "text": "For "
+            },
+            {
+              "source": "screen.words[0]",
+              "text": "LIFT"
+            },
+            {
+              "source": "form.sentence",
+              "text": ", belonging within something is different from varying alongside something; correlation does not establish membership."
+            }
+          ],
+          "question": "Which elevator gives the smoothest LIFT in a hotel?",
+          "question_id": "60d4be93-2999-4088-bd93-bb13579e7533",
+          "screen": {
+            "answer": "aligned",
+            "missing_links": false,
+            "rows": [
+              {
+                "kind": "requires",
+                "record": "conn-obs-direct-2026-07-10-execute-dont-recommend",
+                "word": "LIFT"
+              },
+              {
+                "kind": "depends on",
+                "record": "conn-obs-fable5-2026-07-10-insight-work-vocabulary-gap",
+                "word": "LIFT"
+              },
+              {
+                "kind": "is part of",
+                "record": "conn-obs-claude-2026-07-02-belief-work-stated-relationship",
+                "word": "LIFT"
+              },
+              {
+                "kind": "depends on",
+                "record": "conn-obs-fable5-2026-07-10-social-work-good-people-in-the-room",
+                "word": "LIFT"
+              },
+              {
+                "kind": "requires",
+                "record": "conn-obs-fable5-2026-07-10-purchase-insight-filter-ugly",
+                "word": "LIFT"
+              },
+              {
+                "kind": "requires",
+                "record": "conn-obs-fable5-2026-07-10-social-insight-strong-recommendations",
+                "word": "LIFT"
+              },
+              {
+                "kind": "explains",
+                "record": "conn-obs-claude-2026-07-02-purchase-social-stated-relationship",
+                "word": "LIFT"
+              },
+              {
+                "kind": "requires",
+                "record": "conn-obs-hiswords-2026-07-10-say-it-once-hold-it-forever",
+                "word": "LIFT"
+              },
+              {
+                "kind": "prefers",
+                "record": "conn-obs-hiswords-2026-07-10-picks-ai-for-faithful-restraint",
+                "word": "LIFT"
+              },
+              {
+                "kind": "explains",
+                "record": "conn-obs-claude-2026-07-02-exercise-social-stated-relationship",
+                "word": "LIFT"
+              },
+              {
+                "kind": "explains",
+                "record": "conn-obs-claude-2026-07-02-social-exercise-fitness-help",
+                "word": "LIFT"
+              },
+              {
+                "kind": "explains",
+                "record": "conn-obs-mined-2026-07-10-go-between-roles-delegates-details",
+                "word": "LIFT"
+              },
+              {
+                "kind": "correlates with",
+                "record": "conn-obs-supabase-2026-07-01-ambition-social-observed-correlation",
+                "word": "LIFT"
+              },
+              {
+                "kind": "correlates with",
+                "record": "conn-obs-005",
+                "word": "LIFT"
+              },
+              {
+                "kind": "correlates with",
+                "record": "conn-obs-008",
+                "word": "LIFT"
+              },
+              {
+                "kind": "correlates with",
+                "record": "conn-obs-supabase-2026-07-01-belief-social-observed-correlation",
+                "word": "LIFT"
+              },
+              {
+                "kind": "correlates with",
+                "record": "conn-obs-010",
+                "word": "LIFT"
+              },
+              {
+                "kind": "correlates with",
+                "record": "conn-obs-supabase-2026-07-01-health-social-observed-correlation",
+                "word": "LIFT"
+              },
+              {
+                "kind": "correlates with",
+                "record": "conn-obs-supabase-2026-07-01-purchase-social-observed-correlation",
+                "word": "LIFT"
+              },
+              {
+                "kind": "correlates with",
+                "record": "conn-obs-supabase-2026-07-01-insight-social-observed-correlation",
+                "word": "LIFT"
+              }
+            ],
+            "words": [
+              "LIFT"
+            ]
+          },
+          "text": "For LIFT, belonging within something is different from varying alongside something; correlation does not establish membership."
+        }
+      ]
+    }
+  ]
+}
