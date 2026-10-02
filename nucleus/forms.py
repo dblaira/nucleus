@@ -200,7 +200,7 @@ def forms_only() -> bool:
     return os.environ.get("NUCLEUS_FORMS_ONLY", "").strip().lower() in {"1", "true", "yes", "on"}
 
 
-def pick(screen: Screen, path: Path | None = None) -> tuple[Filled | None, str | None]:
+def pick(screen: Screen, path: Path | None = None, *, graph=None, query_trace=None) -> tuple[Filled | None, str | None]:
     """Most conditions first, then lowest numeric form number. Return a miss reason.
 
     File/validation failures refuse forms and leave the existing live paragraph available.
@@ -218,7 +218,7 @@ def pick(screen: Screen, path: Path | None = None) -> tuple[Filled | None, str |
     refused = []
     for form in approved:
         try:
-            filled = fill(form, screen, kinds=kinds)
+            filled = fill(form, screen, kinds=kinds, graph=graph, query_trace=query_trace)
         except Refused as error:
             refused.append(f"{form['number']}: {error}")
             continue
@@ -266,21 +266,22 @@ def _count_matches(actual: int, wanted: int | dict) -> bool:
     return wanted.get("min", 0) <= actual <= wanted.get("max", float("inf"))
 
 
-def fill(form: dict, screen: Screen, *, kinds: list[str] | None = None) -> Filled | None:
+def fill(form: dict, screen: Screen, *, kinds: list[str] | None = None, graph=None, query_trace=None) -> Filled | None:
     """An approved matching form, or None; unsafe input raises Refused.
 
     Nonapproved forms cannot produce text. Every part retains its origin. Counts are
-    derived only from this snapshot; no dictionary, question, database, or model is read.
+    derived only from this snapshot. The ASK shares an optional loaded graph's
+    store but sees only a temporary screen context; no hidden record is read.
     """
-    return _fill(form, screen, kinds=kinds, statuses={"approved"})
+    return _fill(form, screen, kinds=kinds, statuses={"approved"}, graph=graph, query_trace=query_trace)
 
 
-def preview(form: dict, screen: Screen, *, kinds: list[str] | None = None) -> Filled | None:
+def preview(form: dict, screen: Screen, *, kinds: list[str] | None = None, graph=None, query_trace=None) -> Filled | None:
     """Night-only example for review. Never changes status or enters the day picker."""
-    return _fill(form, screen, kinds=kinds, statuses={"proposed", "approved"})
+    return _fill(form, screen, kinds=kinds, statuses={"proposed", "approved"}, graph=graph, query_trace=query_trace)
 
 
-def _fill(form: dict, screen: Screen, *, kinds: list[str] | None, statuses: set[str]) -> Filled | None:
+def _fill(form: dict, screen: Screen, *, kinds: list[str] | None, statuses: set[str], graph=None, query_trace=None) -> Filled | None:
     kinds = load_kinds() if kinds is None else kinds
     reason = check(form, kinds=kinds)
     if reason:
@@ -291,22 +292,10 @@ def _fill(form: dict, screen: Screen, *, kinds: list[str] | None, statuses: set[
     when = form["when"]
     from . import forms_middle
     middle = forms_middle.is_middle(form)
+    from . import forms_sparql
+    if not forms_sparql.matches(when, screen, kinds=kinds, graph=graph, query_trace=query_trace):
+        return None
     counts = Counter(row.kind for row in screen.rows if row.kind is not None)
-    for name, wanted in when.items():
-        if name == "answer" and screen.answer != wanted:
-            return None
-        if name == "kinds_present" and not all(k in counts for k in wanted):
-            return None
-        if name == "kinds_absent" and any(k in counts for k in wanted):
-            return None
-        if name == "record_count" and not _count_matches(len(screen.rows), wanted):
-            return None
-        if name == "word_count" and not _count_matches(len(screen.words), wanted):
-            return None
-        if name == "missing_links" and screen.missing_links != wanted:
-            return None
-        if name == "missing_why" and bool(any(forms_middle.gap_span(w.text) for w in screen.whys)) != wanted:
-            return None
 
     template_parts = _parts(form["sentence"])
     blanks = {blank for _, blank in template_parts if blank is not None}

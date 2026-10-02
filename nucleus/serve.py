@@ -231,6 +231,8 @@ def forms_page(proposals: list[dict], token: str, error: str | None = None) -> s
                      f'<button class="yes" name="choice" value="yes"{disabled}>Yes</button>'
                      '<button class="no" name="choice" value="no">No</button></form></article>')
     notice = f'<p class="stop" role="alert">{escape(error)}</p>' if error else ''
+    if any(e.get('graph_label') for p in proposals for e in p['examples']):
+        notice += '<p class="fires">These fits are checked with your graph. Your saved answers stay as they were.</p>'
     body = ''.join(cards) if cards else '<p class="answer">No forms waiting for your yes.</p>'
     return ('<!doctype html><html lang="en"><head><meta charset="utf-8">'
             '<meta name="viewport" content="width=device-width,initial-scale=1">'
@@ -381,6 +383,8 @@ class Handler(BaseHTTPRequestHandler):
             if self.store.link(word, record) is None:
                 self.store.add_link(word, record, str(payload.get("quote", "")), "", "thumb", "adam", "adam")
             self.store.thumb(word, record, up)
+            if getattr(self, 'meaning_graph', None) is not None:
+                self.meaning_graph.refresh_links(self.store)
             self._json(200, self.store.link(word, record))
             return
         question = str(payload.get("question", "")).strip()
@@ -393,14 +397,18 @@ class Handler(BaseHTTPRequestHandler):
         self._json(202, {"question_id": question_id})
 
     def _run(self, question_id: str, question: str) -> None:
-        ask_module.ask(question, store=self.store, surface="web", question_id=question_id)
+        ask_module.ask(question, store=self.store, surface="web", question_id=question_id,
+                       meaning_graph=getattr(self, 'meaning_graph', None))
 
     def log_message(self, format: str, *args) -> None:  # noqa: A002
         sys.stderr.write("%s %s\n" % (time.strftime("%H:%M:%S"), format % args))
 
 
 def make_server(port: int = PORT, store_path: Path = STORE_PATH, *, host: str = '0.0.0.0',
-                forms_path: Path | None = None) -> ThreadingHTTPServer:
+                forms_path: Path | None = None, graph_mode: bool = False) -> ThreadingHTTPServer:
+    if graph_mode:
+        from .store import require_practice_copy
+        require_practice_copy(store_path)  # Before a port bind or any SQLite open.
     # Per-server handler state: two servers never share a store or approval file.
     handler = type('ConfiguredHandler', (Handler,), {
         'forms_path': (forms.FORMS_PATH if forms_path is None else forms_path).expanduser().resolve(),
@@ -409,7 +417,20 @@ def make_server(port: int = PORT, store_path: Path = STORE_PATH, *, host: str = 
     server = ThreadingHTTPServer((host, port), handler)
     try:
         handler.store = Store(store_path.expanduser().resolve())
+        handler.meaning_graph = None
+        if graph_mode:
+            from .meaning_graph import build
+            from .graph import load_graph
+            from . import NUCLEUS_FILES, dictionary, graph_answers
+            from .kinds import load_kinds
+            handler.meaning_graph = build(handler.store,
+                load_graph(NUCLEUS_FILES['graph'], NUCLEUS_FILES['ledger']),
+                dictionary.load_meanings(NUCLEUS_FILES['meanings']), load_kinds(),
+                output_path=handler.store.path.parent / 'forms-links.ttl')
+            graph_answers.record_build(handler.store, handler.meaning_graph)
     except Exception:
+        if hasattr(handler, 'store'):
+            handler.store.connection.close()
         server.server_close()
         raise
     return server
@@ -427,7 +448,7 @@ def parse_args(argv=None):
 
 def main() -> None:
     args = parse_args()
-    server = make_server(args.port, args.store)
+    server = make_server(args.port, args.store, graph_mode=args.store.expanduser().resolve() != STORE_PATH.resolve())
     print(f'nucleus on http://0.0.0.0:{args.port}/  (forms: /forms, store: {server.RequestHandlerClass.store.path})', flush=True)
     try:
         server.serve_forever()

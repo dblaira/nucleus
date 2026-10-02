@@ -24,6 +24,30 @@ REVIEW_PATH = STORE_PATH.parent / "forms-review" / "nucleus.sqlite3"
 LIMIT = 12
 
 
+def replay_graph_labels(inputs, engine):
+    """A labelled replay; never edit the original answer or enrich its visible sources."""
+    for item in inputs:
+        if item['screen'] is None:
+            continue
+        label = engine.label(item['screen']['words'])
+        item['graph_label'] = label.to_dict()
+        if label.budget_miss:
+            item['screen'] = None
+            item['reason'] = 'graph budget miss'
+        else:
+            item['screen']['answer'] = label.answer
+
+
+def save_graph_condition(store, proposal_id, run_id, form, kinds):
+    from .forms_sparql import compile_when
+    try:
+        query = compile_when(form['when'], kinds=kinds)
+    except (forms.Refused, TypeError, ValueError, KeyError):
+        return  # Malformed old refusals stay exact; they can never be selected.
+    store.connection.execute('INSERT INTO form_graph_conditions(proposal_id,run_id,ask) VALUES (?,?,?)',
+                             (proposal_id, run_id, query))
+
+
 def encoded(value: object) -> str:
     return json.dumps(value, ensure_ascii=False, sort_keys=True)
 
@@ -94,11 +118,11 @@ def past_answers(store: Store, kinds: list[str]) -> list[dict]:
     rows = store.connection.execute(
         "SELECT q.id,q.question,q.surface,a.text,a.reply_json,"
         "EXISTS(SELECT 1 FROM steps s WHERE s.question_id=q.id AND "
-        "(s.note='painted from your links, no model' OR s.name LIKE '5 form F-% chosen')) "
+        "(s.note='painted from your links, no model' OR s.name LIKE '5 form F-% chosen' OR s.name='5 graph answer, no model')) "
         "FROM questions q "
         "JOIN answers a ON a.question_id=q.id WHERE q.surface IN ('web','cowboyai-iphone','practice') AND a.status='answered' AND "
         "(a.answer='not_sure' OR EXISTS(SELECT 1 FROM steps s WHERE s.question_id=q.id AND "
-        "(s.note='painted from your links, no model' OR s.name LIKE '5 form F-% chosen'))) "
+        "(s.note='painted from your links, no model' OR s.name LIKE '5 form F-% chosen' OR s.name='5 graph answer, no model'))) "
         "ORDER BY a.finished,q.id")
     for qid, question, surface, text, reply, painted in rows:
         raw = {"text": text, "reply_json": reply, "painted": bool(painted)}
@@ -119,20 +143,21 @@ def past_answers(store: Store, kinds: list[str]) -> list[dict]:
     return inputs
 
 
-def matching_answers(form: dict, inputs: list[dict], kinds: list[str]) -> list[dict]:
+def matching_answers(form: dict, inputs: list[dict], kinds: list[str], graph=None) -> list[dict]:
     matches, seen = [], set()
     for item in inputs:
         if item['screen'] is None or item['question_id'] in seen:
             continue
         seen.add(item['question_id'])
         try:
-            filled = forms.preview(form, restore_screen(item['screen']), kinds=kinds)
+            filled = forms.preview(form, restore_screen(item['screen']), kinds=kinds, graph=graph)
         except forms.Refused as error:
             raise forms.Refused(f"filled example refused for {item['question_id']}: {error}") from error
         if filled is not None:
             matches.append({'question_id': item['question_id'], 'question': item['question'],
                             'surface': item.get('surface'),
                             'input_key': item['key'], 'screen': item['screen'],
+                            **({'graph_label': item['graph_label']} if 'graph_label' in item else {}),
                             'text': filled.text, 'parts': [asdict(p) for p in filled.parts]})
     return matches
 
@@ -262,7 +287,7 @@ def collect(store: Store, kinds: list[str], bootstrap: bool) -> list[dict]:
     answers = store.connection.execute(
         "SELECT q.id,q.question,q.surface,a.text,a.reply_json,"
         "EXISTS(SELECT 1 FROM steps s WHERE s.question_id=q.id AND "
-        "(s.note='painted from your links, no model' OR s.name LIKE '5 form F-% chosen')),"
+        "(s.note='painted from your links, no model' OR s.name LIKE '5 form F-% chosen' OR s.name='5 graph answer, no model')),"
         "e.thumb,e.text,e.reason,e.provider,e.model,e.finished,a.answer "
         "FROM questions q JOIN answers a ON a.question_id=q.id "
         "LEFT JOIN explanations e ON e.question_id=q.id WHERE a.status='answered' ORDER BY a.finished,q.id"
@@ -407,7 +432,7 @@ def signature(form: dict) -> str:
     return encoded(when)
 
 
-def checked(raw: object, number: str, author: str, inputs: list[dict], kinds: list[str], seen: set[str], *, middle_only: bool = False):
+def checked(raw: object, number: str, author: str, inputs: list[dict], kinds: list[str], seen: set[str], *, middle_only: bool = False, graph=None):
     form = {"number": number, "when": None, "sentence": None,
             "status": "proposed", "author": author, "date": date.today().isoformat()}
     if not isinstance(raw, dict) or set(raw) != {"when", "sentence"}:
@@ -430,7 +455,7 @@ def checked(raw: object, number: str, author: str, inputs: list[dict], kinds: li
     if reason:
         return form, reason, []
     try:
-        matches = matching_answers(form, inputs, kinds)
+        matches = matching_answers(form, inputs, kinds, graph=graph)
     except forms.Refused as error:
         return form, str(error), []
     return form, coverage_reason(matches), matches
@@ -468,6 +493,7 @@ def report(store: Store, run_id: str) -> dict:
                         "real_fit_count": real_count, "practice_fit_count": practice_count})
     return {"run_id": run_id, "database": str(store.path), "status": status, "provider": provider, "model": engine,
             "error": error, "practice": forms_practice.report(store, run_id),
+            "graph": getattr(store, 'meaning_graph', None).stats if getattr(store, 'meaning_graph', None) else None,
             "meaning_reviews": reviews, "prior_proposals_refused": rechecks,
             "inputs": len(inputs), "usable_inputs": sum(i["screen"] is not None for i in inputs),
             "skipped_inputs": [{"source": i["source"], "question_id": i["question_id"], "reason": i["reason"]}
@@ -479,7 +505,7 @@ def report(store: Store, run_id: str) -> dict:
 
 def night(path: Path = REVIEW_PATH, *, bootstrap: bool = False, forms_path: Path | None = None,
           model_call=None, widen: tuple[str, ...] = (), middle_only: bool = False,
-          practice: bool = True, practice_ask=None) -> dict:
+          practice: bool = True, practice_ask=None, graph_mode: bool = False) -> dict:
     path = check_copy(path)
     if forms.forms_only():
         raise ValueError("slice 3 requires NUCLEUS_FORMS_ONLY off")
@@ -492,6 +518,18 @@ def night(path: Path = REVIEW_PATH, *, bootstrap: bool = False, forms_path: Path
             raise ValueError("a forms night pass is already running on this copy") from error
         store = Store(path)
         try:
+            if graph_mode:
+                from . import NUCLEUS_FILES, dictionary, graph_answers
+                from .meaning_graph import build
+                from .graph import load_graph
+                from functools import partial
+                from .ask import ask
+                store.meaning_graph = build(store, load_graph(NUCLEUS_FILES['graph'], NUCLEUS_FILES['ledger']),
+                    dictionary.load_meanings(NUCLEUS_FILES['meanings']), load_kinds(),
+                    output_path=path.parent / 'forms-links.ttl')
+                graph_answers.record_build(store, store.meaning_graph)
+                if practice_ask is None:
+                    practice_ask = partial(ask, meaning_graph=store.meaning_graph)
             return _night(store, bootstrap, forms_path, model_call, widen, middle_only, practice, practice_ask)
         finally:
             store.connection.close()
@@ -542,6 +580,9 @@ def _propose(store, run_id, started, bootstrap, forms_path, model_call, widen, m
     proposals = store.form_proposals()
     replacements = widened_candidates(proposals, widen) if widen else []
     history = past_answers(store, kinds)
+    engine = getattr(store, 'meaning_graph', None)
+    if engine is not None:
+        replay_graph_labels(history, engine)
     pending_refusals = []
     pending_checks = []
     seen_existing = {signature(p) for p in previous}
@@ -555,7 +596,7 @@ def _propose(store, run_id, started, bootstrap, forms_path, model_call, widen, m
                 reason = 'same form'
             if reason is None:
                 try:
-                    matches = matching_answers(p['form'], history, kinds)
+                    matches = matching_answers(p['form'], history, kinds, graph=engine.graph if engine else None)
                     reason = coverage_reason(matches)
                 except forms.Refused as error:
                     reason = str(error)
@@ -573,9 +614,15 @@ def _propose(store, run_id, started, bootstrap, forms_path, model_call, widen, m
         if isinstance(value, dict):
             previous.append({**value, "status": "rejected", "refusal_reason": reason})
     inputs = collect(store, kinds, bootstrap)
+    if engine is not None:
+        replay_graph_labels(inputs, engine)
     if middle_only:
         inputs = [i for i in inputs if i['screen'] is None or i['screen']['answer'] == 'not_sure']
     prompt = make_prompt([*inputs, *history], previous, kinds, middle_only=middle_only)
+    if engine is not None:
+        prompt += ('\nLabels above are replayed graph answers from forward asserted paths, not row counts. '
+                   'Original saved texts and all quote sources remain unchanged. Code compiles each when '
+                   'to a SPARQL ASK; never write or invent SPARQL or graph edges.\n')
     if widen:
         prompt = 'Explicit count widening requested for ' + ', '.join(widen) + '.\n' + prompt
     store.connection.execute(
@@ -613,10 +660,12 @@ def _propose(store, run_id, started, bootstrap, forms_path, model_call, widen, m
                 prepared.append((None, "night limit: more than 12 forms", []))
             else:
                 prepared.append(checked(raw, f"F-{next_number + position - 1}",
-                                        author, history, kinds, seen, middle_only=middle_only))
+                                        author, history, kinds, seen, middle_only=middle_only, graph=engine.graph if engine else None))
         reviewable = [{"form": f, "examples": distinct_fills(e)} for f, r, e in prepared if r is None]
         decisions = forms_patterns.review(store, run_id, reviewable, model_call) if reviewable else {}
         with store.connection:
+            for old in proposals:
+                save_graph_condition(store, old['id'], run_id, old['form'], kinds)
             for proposal_id, matches, reason in pending_checks:
                 store.connection.execute(
                     'INSERT INTO form_coverage_checks(proposal_id,run_id,matches_json,examples_json,reason) VALUES (?,?,?,?,?)',
@@ -638,6 +687,7 @@ def _propose(store, run_id, started, bootstrap, forms_path, model_call, widen, m
                         reason = f"{category}: {decision['reason']}"
                 if form is not None:
                     pid = store.save_form_proposal(form, reason, commit=False)
+                    save_graph_condition(store, pid, run_id, form, kinds)
                     store.connection.execute(
                         "INSERT INTO form_night_coverage (proposal_id,run_id,matches_json) VALUES (?,?,?)",
                         (pid, run_id, encoded(examples)))
@@ -669,7 +719,7 @@ def main() -> None:
                         help='propose only not_sure forms with exact aligned and missing halves')
     args = parser.parse_args()
     try:
-        result = night(args.store, bootstrap=args.bootstrap, widen=tuple(args.widen), middle_only=args.middle_only)
+        result = night(args.store, bootstrap=args.bootstrap, widen=tuple(args.widen), middle_only=args.middle_only, graph_mode=True)
     except (ValueError, OSError, forms.Refused) as error:
         parser.exit(1, f"forms night: {error}\n")
     print(json.dumps(result, ensure_ascii=False, indent=2))

@@ -1,0 +1,67 @@
+{
+  "run_id": "779f6420-58d6-4fbe-909c-d9a25f5c4e54",
+  "status": "completed",
+  "inputs": 136,
+  "usable_inputs": 90,
+  "candidates": 4,
+  "proposed": 0,
+  "refused": 4,
+  "refusals": [
+    {
+      "number": "F-43",
+      "reason": "negative or caveat: not",
+      "reading_grade": null,
+      "fits": 0,
+      "real_fits": 0,
+      "practice_fits": 0
+    },
+    {
+      "number": "F-44",
+      "reason": "reading level above fifth grade",
+      "reading_grade": 8,
+      "fits": 10,
+      "real_fits": 6,
+      "practice_fits": 4
+    },
+    {
+      "number": "F-45",
+      "reason": "reading level above fifth grade",
+      "reading_grade": 9,
+      "fits": 5,
+      "real_fits": 2,
+      "practice_fits": 3
+    },
+    {
+      "number": "F-46",
+      "reason": "negative or caveat: not",
+      "reading_grade": null,
+      "fits": 0,
+      "real_fits": 0,
+      "practice_fits": 0
+    }
+  ],
+  "practice": {
+    "generated": 20,
+    "asked": 20,
+    "answered": 20,
+    "refused": 0
+  },
+  "night_model_calls": 3,
+  "per_practice_model_calls": 0,
+  "first_queries": {
+    "min_ms": 24.404,
+    "median_ms": 117.2385,
+    "max_ms": 528.837,
+    "budget_misses": 5
+  },
+  "timings_after_fix": {
+    "rechecked": 20,
+    "min_ms": 2.098,
+    "median_ms": 7.413,
+    "max_ms": 42.111,
+    "budget_misses": 0,
+    "one_form_cold_ms": 5.255749973002821,
+    "one_form_warm_ms": 0.9376250091008842
+  },
+  "second_night_run": false
+}

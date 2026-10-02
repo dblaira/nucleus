@@ -551,3 +551,83 @@ See [slice details](docs/forms-slice-6.md),
 [night summary](docs/forms-slice-6-night.json) and
 [preservation proof](docs/forms-slice-6-proof.json).
 **Stopped after slice 6 and its one authorized copy pass.**
+
+## Forms slice 7 — October 2, 2026 Pacific
+
+Adam's October 2 ruling restores his graph as the meaning layer and keeps the
+forms. Built on `codex/forms-slice-7`, from exactly
+`9a46317b5575c17c22c3b2fc533a85042a09ec00`, in
+`/Users/adamblair/.codex/worktrees/nucleus-forms-slice-7`. His complete request
+is preserved on private companion branch `codex/forms-slice-7-ledger`.
+
+The copy service loads all eight requested Turtle files through RDFLib 7.6.0,
+excluding the exact GitHub duplicate. Exact dictionary labels and 1,399 usable
+copy links become word → named middle word → accepted record triples in
+`forms-review/forms-links.ttl`. One thumb-down link stays excluded. All source
+files, including the excluded duplicate, remain read only. No imports,
+reasoning, inverse relations or meanings are invented. Literal authority axioms
+remain literal statements. The original record/ledger quote gate is retained.
+
+Forward graph paths now produce the three labels on the review copy: every
+word reaches accepted records → aligned; some → not_sure; none → dont_know.
+The old count proposal is a fallback only, marked `count rule`. The graph day
+path has no model or background explanation call. `NUCLEUS_FORMS_ONLY` stays
+**off**. Default live startup retains its existing route; nothing is deployed
+on 8766. Graph mode validates the copy before binding/opening SQLite, and graph
+asks require an explicitly connected copy.
+
+Every form's conditions compile into SPARQL ASK; **46 compiled queries** are
+retained in additive `form_graph_conditions`. Queries use exact screen contexts
+inside the loaded RDF store. Hidden data cannot supply blanks or absence.
+Contexts are removed afterward. Plain readable conditions, all existing fill,
+style, approval, distinct-question, real/practice and same-form rules remain.
+Historical screens are explicitly replayed with separate graph-label evidence;
+original answers and quote sources are never edited or enriched.
+
+Build and query milliseconds are saved in steps. Label and form queries share
+300 ms, including form projection/compilation/execution/cleanup. A miss stops
+further checks, discards the form, logs a miss and uses the count fallback.
+A forward adjacency index retains each original predicate and directed triple,
+while removing the expensive predicate-alternative path. Full RDF and exported
+middle-word edges are preserved.
+
+**488 tests pass. One manual night pass completed**, run
+`779f6420-58d6-4fbe-909c-d9a25f5c4e54`, 136 inputs / 90 usable. It generated,
+checked and saved **20 new practice questions**, all answered aligned, with
+zero per-question model calls. Three night calls: practice writer, form writer,
+and semantic reviewer. **Four candidates, 0 proposed, 4 refused**: F-43/F-46
+failed negative/caveat wording (`not`); F-44/F-45 exceeded fifth grade (8/9).
+F-44 fits 6 real / 4 practice questions; F-45 fits 2 real / 3 practice questions.
+No candidate was approved. The queue is empty; all **46 forms remain rejected**
+and `forms.txt` stays empty.
+
+The first 20 graph checks took 24.404–528.837 ms, with five budget misses. After
+the measured path-index fix, the same reached-record sets remain exact. Twenty
+append-only timing rechecks now take **2.098–42.111 ms**, median **7.413 ms**,
+**zero misses**. Original answers and the five first misses remain preserved;
+no second night pass, new question or model call was made for the recheck.
+The running review graph has **14,591 triples**; startup build **422.240 ms**;
+one form ASK **5.256 ms cold / 0.938 ms warm**. Startup is outside the 300 ms
+per-answer query budget.
+
+Backup `slice-7-before.sqlite3`, its hash and both integrity checks pass. All
+**4,758 original rows** are exact. All 13 source hashes and modification times
+match. Real history, grades, links, prior practice, candidates, explanations
+and approval receipts are unchanged. Independent audit verified all 20 practice
+targets, 40 meanings, 309 accepted exact displayed record quotes, 72 filled
+source parts, all 46 compiled queries and the 20 current-code timing rechecks.
+Full private questions, RDF, traces and screenshots remain local because the
+nucleus repository is public.
+
+**Phone link: http://100.111.154.126:8767/forms**. Review PID 90996 runs the
+slice-7 worktree against the existing copy. Its manifest/launcher/log are
+`slice-7-server.json`, `slice-7-start.py`, and `slice-7-server.log` beside the copy.
+The launcher uses the normal `make_server` and appends timing evidence before
+serving. Browser and HTTP verification confirm the empty review page; practice
+direct-history URLs return 404. Only old review PID 80765 was stopped. Live PID
+1941 on 8766 is untouched; no request or database open went to it. No launchd
+installation/loading, approval or merge to main.
+
+See [slice details](docs/forms-slice-7.md),
+[night summary](docs/forms-slice-7-night.json) and
+[preservation/timing proof](docs/forms-slice-7-proof.json). **Stop after slice 7.**

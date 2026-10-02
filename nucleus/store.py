@@ -91,6 +91,10 @@ CREATE TABLE IF NOT EXISTS form_practice_results (
   target_word TEXT, question_id TEXT, reading_json TEXT, result_json TEXT, reason TEXT,
   PRIMARY KEY (run_id, position)
 );
+CREATE TABLE IF NOT EXISTS form_graph_conditions (
+  proposal_id TEXT NOT NULL, run_id TEXT NOT NULL, ask TEXT NOT NULL,
+  PRIMARY KEY (proposal_id, run_id)
+);
 """
 
 

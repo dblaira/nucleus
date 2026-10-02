@@ -78,8 +78,12 @@ def _form_opening(answer: str, text: str, filled: forms_module.Filled | None) ->
 def ask(question: str, store: Store | None = None, surface: str = "cli",
         model_call: Callable[[str], model_module.ModelReply] | None = None,
         brief: Callable[[str], dict] | None = None, question_id: str | None = None,
-        explain_call=None) -> Result:
+        explain_call=None, meaning_graph=None) -> Result:
     """explain_call: the model door for the paragraph under the rows; None = the usual door, False = no paragraph."""
+    if meaning_graph is not None:
+        if store is None:
+            raise ValueError('graph answers require an explicit copy store')
+        store.require_practice_copy()
     if surface == 'practice':
         if store is None:
             require_practice_copy(STORE_PATH)  # Refuse before the default Store can open the live file.
@@ -127,12 +131,19 @@ def ask(question: str, store: Store | None = None, surface: str = "cli",
 
     # 3. his phrases, looked up by code. Meaning with meaning.
     store.start_step(question_id, STEP_PHRASES)
-    graph = load_graph(NUCLEUS_FILES["graph"], NUCLEUS_FILES["ledger"])
-    meanings = dictionary_module.load_meanings(NUCLEUS_FILES["meanings"])
+    graph = meaning_graph.legacy_graph if meaning_graph is not None else load_graph(NUCLEUS_FILES["graph"], NUCLEUS_FILES["ledger"])
+    meanings = meaning_graph.meanings if meaning_graph is not None else dictionary_module.load_meanings(NUCLEUS_FILES["meanings"])
     hits = phrases_module.PhraseIndex(meanings, graph).lookup(question)
     store.save_phrase_hits(question_id, hits)
     phrase_dicts = [{"phrase": h.phrase, "kind": h.kind, "name": h.name, "text": h.text, "strength": h.strength} for h in hits]
     store.finish_step(question_id, STEP_PHRASES, note=f"{len(hits)} of his phrases found")
+
+    if meaning_graph is not None:
+        from . import graph_answers
+        picture, text = graph_answers.answer(question_id, question, reading, hits, store, meaning_graph, explain_call)
+        return finish(Result(question_id, question, 'answered', answer=picture.answer, text=text,
+            words=picture.words, records=picture.records, reading=reading, phrases=phrase_dicts,
+            provider='graph', model='SPARQL'))
 
     # 3b. the picture from saved links. His words, his records, no model. Adam, 2026-09-11:
     #     "we're not trying to answer questions. Trying to paint accurate pictures from the information given."
