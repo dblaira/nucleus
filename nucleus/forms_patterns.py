@@ -6,9 +6,9 @@ from pathlib import Path
 import re
 import time
 
-from . import forms, model
+from . import forms, forms_middle, model
 
-POLICY = 'coverage-v1'
+POLICY = 'middle-question-v1'
 REVIEW_SCHEMA = Path(__file__).with_name('forms-review.schema.json')
 PUSHING_KINDS = frozenset({'rejects', 'contradicts', 'prevents', 'inhibits', 'constrains', 'limits'})
 NO_PATTERN = 'conditions do not require a row pattern'
@@ -61,6 +61,8 @@ def pattern_reason(when: dict) -> str | None:
 
 def check(form: dict, kinds: list[str]) -> str | None:
     """Call after forms.check: absences/counts alone do not establish a pattern."""
+    if forms_middle.is_middle(form):
+        return forms_middle.check(form, kinds) or count_reason(form['when'])
     reason = pattern_reason(form['when'])
     if reason:
         return reason
@@ -112,10 +114,33 @@ Return {"reviews":[{"number":"F-N","verdict":"explains_pattern|restates_rows|uns
 All numbers need a verdict, grade, sentence check, and reason. Uncertainty fails closed.
 """
 
+MIDDLE_REVIEW_CONTRACT = """For a form using {meaning}, {record_quote}, and one missing-half blank,
+apply this narrowly scoped middle-option rule instead of the two-row-quote rule above.
+The form MUST require answer=not_sure. It states the part that lines up using the complete exact
+displayed meaning and record quote, then names only what this same screen explicitly lacks.
+Its {word} comes from the meaning actually selected, which need not be the first displayed word.
+Model-screen quote pairs require at least two exact shared content words and displayed positive
+why clauses. Named painted rows retain their actual word binding. Merely putting two unrelated
+short quotes beside each other cannot fill. Still veto any unsupported meaning.
+The missing half can be an exact displayed why suffix naming absent records or evidence,
+a displayed word explicitly recorded as having no links, or one named middle word absent from
+this complete screen. No invented cause, behavior, row connection, or advice is allowed.
+Negative wording is allowed ONLY as part of those exact source quotes or the grounded missing
+half. It never licenses a new negative, an unsupported conclusion, or a caveat in the frame.
+Keep Adam's source words whole, including their punctuation; never improve their reading level
+by clipping or rewriting a quote. Assess the fifth-grade reading level of the joining frame;
+source quotes remain Adam's exact words. One joined sentence means the frame, because copied
+whole quotes may themselves contain sentence marks. Return explains_pattern only when both
+halves remain faithful to their own explicit screen sources for every matching screen.
+"""
+
 
 def review(store, run_id: str, candidates: list[dict], model_call=None) -> dict[str, dict]:
     """One separate batch call. Missing/malformed judgments fail the run closed."""
-    prompt = REVIEW_CONTRACT + '\nCandidates:\n' + json.dumps(candidates, ensure_ascii=False, sort_keys=True)
+    contract = REVIEW_CONTRACT
+    if any(forms_middle.is_middle(c['form']) for c in candidates):
+        contract += '\n' + MIDDLE_REVIEW_CONTRACT
+    prompt = contract + '\nCandidates:\n' + json.dumps(candidates, ensure_ascii=False, sort_keys=True)
     call_id = 'forms-night:' + run_id + ':review'
     started = time.time()
     reply = None

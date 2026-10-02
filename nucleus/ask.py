@@ -13,6 +13,7 @@ from . import dictionary as dictionary_module
 from . import gate as gate_module
 from . import explain as explain_module
 from . import forms as forms_module
+from . import forms_middle
 from . import links as links_module
 from . import model as model_module
 from . import phrases as phrases_module
@@ -52,6 +53,26 @@ class Result:
 
     def to_dict(self) -> dict:
         return asdict(self)
+
+
+def _form_screen(answer: str, words: list[dict], records: list[dict], text: str,
+                 missing: bool = False) -> forms_module.Screen:
+    """The not-sure screen includes exact displayed meanings and missing evidence."""
+    if answer == "not_sure":
+        return forms_middle.from_visible(answer, words, records, text)
+    return forms_module.Screen(
+        answer, tuple(w["word"] for w in words),
+        tuple(forms_module.Row(r["link_word"], r["leaf"], r.get("kind"),
+                               gate_module.unescape_label(r["quote"])) for r in records), missing,
+    )
+
+
+def _form_opening(answer: str, text: str, filled: forms_module.Filled | None) -> str:
+    """Only an approved middle-option form changes the opening; keep every row exact."""
+    if answer == "not_sure" and filled is not None and forms_middle.is_filled(filled):
+        _first, separator, body = text.partition("\n")
+        return filled.text + separator + body
+    return text
 
 
 def ask(question: str, store: Store | None = None, surface: str = "cli",
@@ -110,13 +131,12 @@ def ask(question: str, store: Store | None = None, surface: str = "cli",
         explanation_started = time.time()
         if explain_call is not False:
             # Only the rows actually painted, never a new lookup of all links for these words.
-            screen = forms_module.Screen(
-                picture.answer, tuple(w["word"] for w in picture.words),
-                tuple(forms_module.Row(r["link_word"], r["leaf"], r.get("kind"),
-                                       gate_module.unescape_label(r["quote"])) for r in picture.records),
-                bool(picture.missing),
-            )
-            filled, miss_reason = forms_module.pick(screen)
+            try:
+                screen = _form_screen(picture.answer, picture.words, picture.records,
+                                      picture.text, bool(picture.missing))
+                filled, miss_reason = forms_module.pick(screen)
+            except forms_module.Refused as error:
+                miss_reason = str(error)
         form_step = f"5 form {filled.number} chosen" if filled is not None else STEP_MODEL
         for name in (STEP_NUCLEUS, form_step, STEP_GATE, STEP_ANSWER):
             store.start_step(question_id, name)
@@ -132,13 +152,14 @@ def ask(question: str, store: Store | None = None, surface: str = "cli",
             # Existing screens display explanation text, so the number travels with the paragraph.
             store.save_explanation(question_id, f"{filled.number} · {filled.text}", None,
                                    "form", filled.number, explanation_started)
-        store.save_answer(question_id, "answered", picture.answer, picture.text, reply_json, True, None,
+        answer_text = _form_opening(picture.answer, picture.text, filled)
+        store.save_answer(question_id, "answered", picture.answer, answer_text, reply_json, True, None,
                           nucleus_hash=model_module.nucleus_hash(prompt_module.nucleus_text()[0]))
         if explain_call is not False and filled is None:
             store.save_form_miss(question_id, asdict(picture), miss_reason or "no form fits")
             if not forms_module.forms_only():
                 explain_module.start(question_id, question, picture.text, picture.touched, store, explain_call)
-        return finish(Result(question_id, question, "answered", answer=picture.answer, text=picture.text, words=picture.words,
+        return finish(Result(question_id, question, "answered", answer=picture.answer, text=answer_text, words=picture.words,
                              records=picture.records, reading=reading, phrases=phrase_dicts, provider="links", model="painted"))
 
     # 4. the nucleus, whole
@@ -183,19 +204,42 @@ def ask(question: str, store: Store | None = None, surface: str = "cli",
         return finish(Result(question_id, question, "refused", reason=verdict.reason, reading=reading, phrases=phrase_dicts,
                              provider=reply.provider, model=reply.model, bytes_sent=bytes_sent))
 
+    # The middle option is filled by plain code after the gate checked the screen.
+    # Neither a model nor today's hidden links choose a form.
+    filled = None
+    explanation_started = time.time()
+    if verdict.answer == "not_sure" and explain_call is not False:
+        try:
+            screen = forms_middle.from_visible(verdict.answer, verdict.words, verdict.records, verdict.text)
+            filled, _miss_reason = forms_module.pick(screen)
+            if filled is None:
+                store.save_form_miss(question_id, {'answer': verdict.answer, 'words': verdict.words,
+                    'records': verdict.records, 'text': verdict.text, 'missing': []},
+                    _miss_reason or 'no form fits')
+        except forms_module.Refused:
+            pass
+    answer_text = _form_opening(verdict.answer, verdict.text, filled)
+    if filled is not None:
+        form_step = f"5 form {filled.number} chosen"
+        store.start_step(question_id, form_step)
+        store.finish_step(question_id, form_step,
+                          note=json.dumps({"parts": [asdict(part) for part in filled.parts]}, ensure_ascii=False))
+        store.save_explanation(question_id, f"{filled.number} · {filled.text}", None,
+                               "form", filled.number, explanation_started)
+
     # 6. the answer, out and saved
     store.start_step(question_id, STEP_ANSWER)
-    store.save_answer(question_id, "answered", verdict.answer, verdict.text, reply.text, True, None, nucleus_hash=records_hash)
+    store.save_answer(question_id, "answered", verdict.answer, answer_text, reply.text, True, None, nucleus_hash=records_hash)
     if verdict.possibility and repeat is None:
         store.save_candidates(question_id, verdict.possibility)
-    if verdict.answer != "dont_know" and explain_call is not False and not forms_module.forms_only():
+    if filled is None and verdict.answer != "dont_know" and explain_call is not False and not forms_module.forms_only():
         earlier = store.explanation(repeat["question_id"]) if repeat is not None else None
         if earlier and earlier.get("text"):
             store.save_explanation(question_id, earlier["text"], None, earlier.get("provider") or "saved", earlier.get("model") or "saved", time.time())
         else:
             explain_module.start(question_id, question, verdict.text, [w["word"] for w in verdict.words], store, explain_call)
     store.finish_step(question_id, STEP_ANSWER)
-    return finish(Result(question_id, question, "answered", answer=verdict.answer, text=verdict.text,
+    return finish(Result(question_id, question, "answered", answer=verdict.answer, text=answer_text,
                          words=verdict.words, records=verdict.records, possibility=verdict.possibility,
                          reading=reading, phrases=phrase_dicts, provider=reply.provider, model=reply.model, bytes_sent=bytes_sent))
 

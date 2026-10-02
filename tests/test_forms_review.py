@@ -280,6 +280,8 @@ def test_two_servers_are_isolated_and_occupied_port_does_not_open_a_database(rea
     ({'kinds_absent':['rejects']},'The rows leave out “rejects”'),
     ({'missing_links':True},'A word has missing links'),
     ({'missing_links':False},'Every word has links'),
+    ({'missing_why':True},'A why line says what the records do not show'),
+    ({'missing_why':False},'No why line says the records are missing something'),
 ])
 def test_conditions_in_plain_words(condition,wording):
     assert review.fires_when(condition)==wording

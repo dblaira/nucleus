@@ -19,8 +19,8 @@ from .kinds import load_kinds
 
 FORMS_PATH = Path(__file__).resolve().parent.parent / "forms.txt"
 FIELDS = {"number", "when", "sentence", "status", "author", "date"}
-CONDITIONS = {"answer", "kinds_present", "kinds_absent", "record_count", "word_count", "missing_links"}
-BLANKS = {"word", "other_word", "kind", "count", "word_count", "strongest_kind"}
+CONDITIONS = {"answer", "kinds_present", "kinds_absent", "record_count", "word_count", "missing_links", "missing_why"}
+BLANKS = {"word", "other_word", "kind", "count", "word_count", "strongest_kind", "meaning", "record_quote", "missing_why", "missing_word", "absent_kind"}
 ANSWERS = {"aligned", "not_sure", "dont_know"}
 _BLANK = re.compile(r"\{([^{}]*)\}")
 _TOKEN = re.compile(r"\w+(?:[’'\-]\w+)*", re.UNICODE)
@@ -39,11 +39,26 @@ class Row:
 
 
 @dataclass(frozen=True)
+class Meaning:
+    word: str
+    quote: str
+
+
+@dataclass(frozen=True)
+class Why:
+    text: str
+
+
+@dataclass(frozen=True)
 class Screen:
     answer: str
     words: tuple[str, ...]
     rows: tuple[Row, ...]
     missing_links: bool = False
+    meanings: tuple[Meaning, ...] = ()
+    whys: tuple[Why, ...] = ()
+    missing_words: tuple[str, ...] = ()
+    middle_words_complete: bool = True
 
 
 @dataclass(frozen=True)
@@ -131,8 +146,8 @@ def check(form: object, *, kinds: list[str] | None = None) -> str | None:
                 return "repeated middle word"
         if name in ("record_count", "word_count") and not _valid_count(value):
             return "invalid count condition"
-        if name == "missing_links" and type(value) is not bool:
-            return "missing_links must be boolean"
+        if name in ("missing_links", "missing_why") and type(value) is not bool:
+            return name + " must be boolean"
     if set(when.get("kinds_present", [])) & set(when.get("kinds_absent", [])):
         return "middle word both present and absent"
     sentence = form["sentence"]
@@ -152,6 +167,11 @@ def check(form: object, *, kinds: list[str] | None = None) -> str | None:
                 return "quote blank needs its named middle word in kinds_present"
     if blanks & {"kind", "count"} and len(when.get("kinds_present", [])) != 1:
         return "kind and count need exactly one middle word to fire on"
+    from . import forms_middle
+    if forms_middle.is_middle(form):
+        return forms_middle.check(form, kinds)
+    if "missing_why" in when:
+        return "missing_why requires a middle-option form"
     return _paragraph_reason(sentence, [])
 
 
@@ -217,6 +237,16 @@ def _check_screen(screen: Screen, kinds: list[str]) -> None:
         raise Refused("duplicate screen word")
     if not isinstance(screen.rows, tuple):
         raise Refused("invalid screen rows")
+    if not isinstance(screen.meanings, tuple) or any(not isinstance(m, Meaning) or m.word not in screen.words
+            or not isinstance(m.quote, str) or not m.quote.strip() for m in screen.meanings):
+        raise Refused("invalid screen meanings")
+    if not isinstance(screen.whys, tuple) or any(not isinstance(w, Why) or not isinstance(w.text, str)
+            or not w.text.strip() for w in screen.whys):
+        raise Refused("invalid screen why lines")
+    if type(screen.middle_words_complete) is not bool:
+        raise Refused("invalid middle-word completeness")
+    if not isinstance(screen.missing_words, tuple) or any(w not in screen.words for w in screen.missing_words):
+        raise Refused("invalid displayed missing words")
     records = set()
     for row in screen.rows:
         if not isinstance(row, Row) or row.word not in screen.words or not isinstance(row.record, str) or not row.record:
@@ -259,6 +289,8 @@ def _fill(form: dict, screen: Screen, *, kinds: list[str] | None, statuses: set[
         return None
     _check_screen(screen, kinds)
     when = form["when"]
+    from . import forms_middle
+    middle = forms_middle.is_middle(form)
     counts = Counter(row.kind for row in screen.rows if row.kind is not None)
     for name, wanted in when.items():
         if name == "answer" and screen.answer != wanted:
@@ -272,6 +304,8 @@ def _fill(form: dict, screen: Screen, *, kinds: list[str] | None, statuses: set[
         if name == "word_count" and not _count_matches(len(screen.words), wanted):
             return None
         if name == "missing_links" and screen.missing_links != wanted:
+            return None
+        if name == "missing_why" and bool(any(forms_middle.gap_span(w.text) for w in screen.whys)) != wanted:
             return None
 
     template_parts = _parts(form["sentence"])
@@ -309,9 +343,13 @@ def _fill(form: dict, screen: Screen, *, kinds: list[str] | None, statuses: set[
         strongest = max(counts, key=counts.get)  # ties keep first occurrence on screen
         index = next(i for i, row in enumerate(screen.rows) if row.kind == strongest)
         values["strongest_kind"] = Part(screen.rows[index].kind, f"screen.rows[{index}].kind")
-    if blanks - values.keys():
+    if not middle and blanks - values.keys():
         return None
 
+    if middle:
+        values = forms_middle.values(form, screen)
+        if values is None:
+            return None
     parts = []
     for literal, blank in template_parts:
         if literal:
@@ -323,7 +361,7 @@ def _fill(form: dict, screen: Screen, *, kinds: list[str] | None, statuses: set[
     allowed_tokens = {token for part in parts for token in _TOKEN.findall(part.text)}
     if set(_TOKEN.findall(text)) - allowed_tokens:
         raise Refused("kill switch: filling joined pieces into a new word")
-    reason = _paragraph_reason(text, list(screen.words))
+    reason = forms_middle.source_reason(text) if middle else _paragraph_reason(text, list(screen.words))
     if reason:
         raise Refused(reason)
     return Filled(form["number"], text, tuple(parts))

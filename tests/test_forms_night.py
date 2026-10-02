@@ -72,7 +72,10 @@ def painted(store, word='FLOW', kind='depends on', printed_kind=None):
 
 def history(store):
     """Three actual painted answers for two words; no new night trigger events."""
-    return [painted(store, word) for word in ['FLOW', 'LIFT', 'FLOW']]
+    qids = [painted(store, word) for word in ['FLOW', 'LIFT', 'FLOW']]
+    store.connection.execute('UPDATE questions SET question=? WHERE id=?', ('Why does FLOW matter?', qids[-1]))
+    store.connection.commit()
+    return qids
 
 
 def run(store, candidates=None, **kwargs):
@@ -240,7 +243,10 @@ def test_atomic_write_failure_keeps_no_half_proposals_and_does_not_consume(copy,
 
 def test_bootstrap_uses_historical_printed_kind_never_current_links(copy):
     qid = painted(copy)
-    painted(copy, 'LIFT'); painted(copy, 'FLOW')
+    painted(copy, 'LIFT')
+    other = painted(copy, 'FLOW')
+    copy.connection.execute('UPDATE questions SET question=? WHERE id=?', ('Why does FLOW matter?', other))
+    copy.connection.commit()
     copy.connection.execute("INSERT INTO links(word,record,quote,why,source,found_at,kind) VALUES ('FLOW','r1','Quote','','test',1,'supports')")
     copy.connection.commit()
     assert run(copy)['inputs'] == 0

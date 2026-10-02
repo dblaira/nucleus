@@ -25,7 +25,8 @@
               "kinds_absent",
               "record_count",
               "word_count",
-              "missing_links"
+              "missing_links",
+              "missing_why"
             ],
             "properties": {
               "answer": {
@@ -140,6 +141,12 @@
                 ]
               },
               "missing_links": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
+              "missing_why": {
                 "type": [
                   "boolean",
                   "null"

@@ -1,4 +1,4 @@
-"""Slice 4b measures actual painted answers, not sampled examples or trigger rows."""
+"""Measure different fitting questions, not repeat answers or sampled examples."""
 from copy import deepcopy
 import json
 
@@ -33,11 +33,13 @@ def test_maximum_only_is_not_a_minimum_or_range(copy, count):
     {'record_count': {'min': 2, 'max': 8}, 'word_count': {'min': 1, 'max': 3}},
 ])
 def test_minimums_and_ranges_fit_three_answers_for_two_words(copy, counts):
-    qids = {miss(copy, word) for word in ['FLOW', 'FLOW', 'LIFT']}
+    qids = [miss(copy, word) for word in ['FLOW', 'FLOW', 'LIFT']]
+    copy.connection.execute('UPDATE questions SET question=? WHERE id=?', ('Why does FLOW matter?', qids[1]))
+    copy.connection.commit()
     result = run(copy, [candidate(when={**candidate()['when'], **counts})])
     saved = result['results'][0]
     assert (result['proposed'], saved['fit_count'], saved['fit_word_count']) == (1, 3, 2)
-    assert {m['question_id'] for m in night.coverage_for(copy, saved['proposal_id'])} == qids
+    assert {m['question_id'] for m in night.coverage_for(copy, saved['proposal_id'])} == set(qids)
     assert [e['screen']['words'][0] for e in saved['examples']] == ['FLOW', 'LIFT']
     screen = night.screen_from_picture(picture(), KINDS)
     grown = forms.Screen(screen.answer, screen.words, screen.rows + (forms.Row('FLOW', 'r3', 'supports', 'Third quote'),))
@@ -56,7 +58,7 @@ def test_too_few_answers_refused(copy, words):
     row = result['results'][0]
     assert result['proposed'] == 0
     assert row['reason'] == 'fits too few answers'
-    assert row['fit_count'] == len(words)
+    assert row['fit_count'] == len(set(words))
     assert row['fit_word_count'] == len(set(words))
     assert result['meaning_reviews'] == []
     assert copy.form_proposals()[0]['status'] == 'rejected'
@@ -92,7 +94,7 @@ def test_coverage_uses_consumed_history_and_review_checks_every_distinct_fill(co
     for word in ['FLOW', 'FLOW', 'LIFT', 'VALUE', 'WORK']:
         miss(copy, word)
     first = run(copy)
-    assert first['results'][0]['fit_count'] == 5
+    assert first['results'][0]['fit_count'] == 4
     assert len(first['results'][0]['examples']) == 3
     miss(copy, 'MOMENTUM')
     reverse = candidate(sentence='{word} rejects “{quote:rejects}” and depends on “{quote:depends on}”.')
@@ -103,7 +105,7 @@ def test_coverage_uses_consumed_history_and_review_checks_every_distinct_fill(co
         return model_reply([reverse])(prompt, schema=schema)
     result = night.night(copy.path, model_call=call)
     assert result['inputs'] == 1
-    assert result['results'][0]['fit_count'] == 6
+    assert result['results'][0]['fit_count'] == 5
     assert result['results'][0]['fit_word_count'] == 5
 
 
@@ -142,7 +144,7 @@ def test_widened_form_still_refused_when_only_one_word_fits(copy):
     _, original = narrow(copy)
     result = night.night(copy.path, widen=('F-25',), model_call=lambda *a, **kw: pytest.fail('too few words never reaches reviewer'))
     row = result['results'][0]
-    assert (row['fit_count'], row['fit_word_count']) == (5, 1)
+    assert (row['fit_count'], row['fit_word_count']) == (1, 1)
     assert row['reason'] == 'fits too few answers'
     assert row['reason'] != 'duplicate of a previous form'
     assert result['prior_proposals_refused'][0]['reason'] == 'fit one screen only'
@@ -162,8 +164,10 @@ def test_failed_widen_review_preserves_original_until_success(copy):
 
 
 def test_review_lists_largest_fit_first_with_different_words_and_keeps_yes_no(copy):
-    for word in ['FLOW', 'LIFT', 'FLOW']:
+    for index, word in enumerate(['FLOW', 'LIFT', 'FLOW']):
         qid = miss(copy, word)
+        if index == 2:
+            copy.connection.execute('UPDATE questions SET question=? WHERE id=?', ('Why does FLOW matter?', qid))
         value = picture(word); value['records'].append({'link_word': word, 'leaf': 'r3', 'kind': 'supports', 'quote': 'Third quote'})
         copy.save_form_miss(qid, value, 'snapshot')
     for word in ['VALUE', 'WORK']: miss(copy, word)
@@ -176,7 +180,7 @@ def test_review_lists_largest_fit_first_with_different_words_and_keeps_yes_no(co
     assert len(queue[1]['examples']) == 2
     page = serve.forms_page(queue, 'test')
     assert page.index('form-F-2') < page.index('form-F-1')
-    assert 'Fits 5 past answers · 4 words' in page and 'Fits 3 past answers · 2 words' in page
+    assert 'Fits 5 different questions · 4 words' in page and 'Fits 3 different questions · 2 words' in page
     assert page.count('>Yes</button>') == page.count('>No</button>') == 2
     assert forms.load(forms.FORMS_PATH) == []
 
@@ -205,3 +209,68 @@ def test_writer_schema_offers_only_minimum_or_range_counts():
         alternatives = props[name]['anyOf']
         assert {v['type'] for v in alternatives} == {'null', 'object'}
         assert [v['required'] for v in alternatives if v['type'] == 'object'] == [['min'], ['min', 'max']]
+
+
+def test_a_repeated_question_counts_once_even_with_new_answer_ids(copy):
+    for _ in range(43):
+        miss(copy, 'FLOW')
+    miss(copy, 'LIFT')
+    result = run(copy)
+    row = result['results'][0]
+    assert row['fit_count'] == 2 and row['fit_word_count'] == 2
+    assert row['reason'] == 'fits too few answers'
+    assert len(night.coverage_for(copy, row['proposal_id'])) == 44
+
+
+def test_question_normalization_and_different_fills_keep_semantic_audit(copy):
+    qids = [miss(copy, word) for word in ['FLOW', 'LIFT', 'VALUE', 'WORK']]
+    for qid, text in zip(qids[:2], ['  My question? ', 'MY\nQUESTION?']):
+        copy.connection.execute('UPDATE questions SET question=? WHERE id=?', (text, qid))
+    copy.connection.commit()
+    def call(prompt, *, schema):
+        if schema == patterns.REVIEW_SCHEMA:
+            batch = json.loads(prompt.split('\nCandidates:\n', 1)[1])
+            assert len(batch[0]['examples']) == 4  # Different fills survive question dedup.
+        return model_reply([candidate()])(prompt, schema=schema)
+    result = night.night(copy.path, model_call=call)
+    row = result['results'][0]
+    assert row['fit_count'] == 3 and row['fit_word_count'] == 3
+    assert result['proposed'] == 1
+    examples = row['examples']
+    assert len({night.question_key(e) for e in examples}) == len(examples) == 3
+
+
+def test_only_fitting_answers_participate_in_question_dedup(copy):
+    qid = miss(copy, 'FLOW')
+    copy.connection.execute('UPDATE answers SET status=? WHERE question_id=?', ('stopped', qid))
+    history(copy); miss(copy, 'LIFT')
+    result = run(copy)
+    assert result['results'][0]['fit_count'] == 3
+    assert result['proposed'] == 1
+
+
+def test_bound_word_coverage_comes_from_the_filled_source():
+    examples = [
+        {'question_id': str(i), 'question': f'Different question {i}',
+         'screen': {'words': ['FIRST', word]},
+         'parts': [{'source': 'screen.words[1]', 'text': word}]}
+        for i, word in enumerate(['FLOW', 'LIFT', 'FLOW'])
+    ]
+    assert night.fit_counts(examples) == (3, 2)
+    assert [night.bound_word(e) for e in night.diverse_examples(examples)] == ['FLOW', 'LIFT']
+
+
+def test_repeat_of_same_question_with_new_word_cannot_inflate_word_coverage():
+    examples = [
+        {'question_id': str(i), 'question': question, 'screen': {'words': [word]},
+         'parts': [{'source': 'screen.words[0]', 'text': word}]}
+        for i, (question, word) in enumerate([
+            ('Why don’t I trust this app?', 'FLOW'),
+            (" WHY DON'T I TRUST THIS APP? ", 'LIFT'),
+            ('Different question two', 'FLOW'),
+            ('Different question three', 'FLOW'),
+        ])
+    ]
+    assert night.fit_counts(examples) == (3, 1)
+    assert night.coverage_reason(examples) == 'fits too few answers'
+    assert len(night.distinct_fills([{**e, 'text': e['parts'][0]['text']} for e in examples])) == 2

@@ -398,3 +398,54 @@ Live PID 1941 on 8766 is unchanged; no request or database open went to it.
 `NUCLEUS_FORMS_ONLY` stays off. No launchd change, approval, or merge to main.
 The exact request is appended on companion Cowboyai branch
 `codex/forms-slice-4b-ledger`. **Stopped after slice 4b.**
+
+## Forms slice 5 — October 2, 2026 Pacific
+
+Adam requested forms for “the middle option (of the three choices it has now)
+when part of the situation is aligned but not all.” Build from `c660fb1` on
+`codex/forms-slice-5`, in a new worktree, keep the live file/service untouched,
+forms-only off, no approval or merge, and run the night pass once by hand.
+The exact full instruction is preserved in the private Cowboyai ledger.
+
+Implemented on `/Users/adamblair/.codex/worktrees/nucleus-forms-slice-5`, from
+`c660fb15776fcdebaa28401c1c68a854c09367ea`. Middle forms require `not_sure`, copy
+exact visible word/record quotes and name only an explicit missing why, a
+printed word with no links, or a genuinely absent printed middle word.
+Approved middle forms replace only the fixed opening and save their explanation
+with provider `form`; daytime selection is plain code. Zero-approved fallback
+and the original answer generation path remain intact.
+
+Night coverage now counts different normalized questions, once for both question
+and bound-word totals. The minimum is three questions across two words. Every
+separate filled text remains in review. Exact count conditions are refused.
+The page shows different-question fits, biggest first, with up to three examples
+for different questions and words. New model-screen misses reach later night
+passes. The default night pass supports both existing and middle forms;
+`--middle-only` focuses the manual pass on this slice.
+
+**396 tests pass. One hand-run completed: 0 proposed, 1 refused.** Run
+`4914afb5-f557-4ea5-884f-734e61a40890`, 62 inputs / 44 usable, proposed candidate
+F-39 but the meaning reviewer refused its unrelated quote pairing. The full
+refused form and trace are retained. The filler was corrected to require an
+explicit positive screen half and two exact shared content words for model
+quote pairs; unrelated quotes, names and possessive suffixes do not qualify.
+Read-only corrected previews fit three questions across three words. There was
+no second pass because Adam specified “once by hand”. **The real queue is empty;
+new proposals require authorization for another pass.**
+
+Backup `slice-5-before.sqlite3` and both integrity checks pass. All original rows
+remain exact; only two night model calls and the new run/candidate/results/
+coverage were added. There are 39 rejected forms, zero proposed and zero
+approved. `forms.txt` stays empty. Full records remain local.
+
+**Phone link: http://100.111.154.126:8767/forms**. The new worktree's review server
+uses only the existing copy; its manifest/log are `slice-5-server.json` and
+`slice-5-server.log` beside the database. Browser verification shows the real
+empty queue and HTTP 200. Live PID 1941 on 8766 is untouched; no database open or
+request went to it. `NUCLEUS_FORMS_ONLY` remains off, nothing is approved,
+installed in launchd or merged. Companion branch `codex/forms-slice-5-ledger`
+preserves the exact instruction. See [slice details](docs/forms-slice-5.md),
+[night summary](docs/forms-slice-5-night.json) and
+[preservation proof](docs/forms-slice-5-proof.json).
+
+**Implementation complete; stopped at the one-pass boundary.**

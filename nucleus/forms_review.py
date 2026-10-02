@@ -197,4 +197,7 @@ def fires_when(when: dict) -> str:
             phrases.append(f'At most {count["max"]} {noun}' + ('' if count['max'] == 1 else 's'))
     if 'missing_links' in when:
         phrases.append('A word has missing links' if when['missing_links'] else 'Every word has links')
+    if 'missing_why' in when:
+        phrases.append('A why line says what the records do not show' if when['missing_why']
+                       else 'No why line says the records are missing something')
     return ' · '.join(phrases)

@@ -220,7 +220,7 @@ def forms_page(proposals: list[dict], token: str, error: str | None = None) -> s
         disabled = ' disabled' if p['error'] else ''
         cards.append(f'<article class="review-card" aria-labelledby="form-{number}">'
                      f'<h2 id="form-{number}">{number}</h2>'
-                     f'<p class="fit-count">Fits {p["fit_count"]} past answers · {p["fit_word_count"]} words</p>{examples}'
+                     f'<p class="fit-count">Fits {p["fit_count"]} different questions · {p["fit_word_count"]} words</p>{examples}'
                      f'<p class="fires"><b>Fires when</b><br>{escape(condition)}</p>'
                      '<form class="choices" action="/forms/decision" method="post">'
                      f'<input type="hidden" name="proposal_id" value="{escape(p["id"])}">'
