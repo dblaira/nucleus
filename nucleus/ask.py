@@ -133,8 +133,8 @@ def ask(question: str, store: Store | None = None, surface: str = "cli",
     if told is not None and picture is not None and picture.missing:
         # a word reached by his route may have no links yet; his own sentences still answer, so it paints
         picture.missing = []
-    if told is not None and picture is None and told.text:
-        # no dictionary word reached, but his ontology and knowledge graph answered: his middle line, the records told as rows
+    if told is not None and picture is None and told.text and told.judged != "dont_know":
+        # no dictionary word reached, but his knowledge graph holds something for it: his middle line, the records told as rows
         rows = narrative_module.records_told(told, graph)
         picture = links_module.Picture(answer="not_sure", text=gate_module.compose("not_sure", [], rows, []), records=rows)
     if picture is not None and not picture.missing:
@@ -156,8 +156,8 @@ def ask(question: str, store: Store | None = None, surface: str = "cli",
         return finish(Result(question_id, question, "answered", answer=picture.answer, text=picture.text, words=picture.words,
                              records=picture.records, reading=reading, phrases=phrase_dicts, provider="links", model="painted"))
 
-    if no_model():
-        # none of his words were reached. His third answer, at once. The dictionary's own list says what has no meaning yet.
+    if no_model() or told is not None:
+        # judged by his dictionary and his knowledge graph: neither holds anything for it. His third answer, at once.
         for name in (STEP_NUCLEUS, STEP_MODEL, STEP_GATE, STEP_ANSWER):
             store.start_step(question_id, name)
             store.finish_step(question_id, name, note="none of your words reached, no model" if name == STEP_MODEL else "")
@@ -165,7 +165,10 @@ def ask(question: str, store: Store | None = None, surface: str = "cli",
         store.save_answer(question_id, "answered", "dont_know", text,
                           json.dumps({"answer": "dont_know", "words": [], "records": [], "possibility": []}), True, None)
         unknown = told.no_meaning_yet if told is not None else []
-        if unknown:
+        if told is not None and told.text:
+            # what was looked up, in normal sentences: his ontology, his graph, and what neither holds
+            store.save_explanation(question_id, told.text, None, "code", "narrative", time.time() - told.ms / 1000)
+        elif unknown:
             store.save_explanation(question_id, "No meaning added yet: " + ", ".join(unknown) + ".", None, "code", "dictionary", time.time())
         return finish(Result(question_id, question, "answered", answer="dont_know", text=text, reading=reading,
                              phrases=phrase_dicts, provider="code", model="none"))

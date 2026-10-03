@@ -25,6 +25,7 @@ from pathlib import Path
 
 from . import NUCLEUS_FILES
 from . import dictionary as dictionary_module
+from . import english
 from .dictionary import Meaning
 from .gate import unescape_label
 from .graph import Graph, load_graph
@@ -42,6 +43,21 @@ maintenance care science body long term and""".split()}
 WHY_KINDS = {"requires", "depends on", "enables", "supports", "constrains", "limits", "prevents", "inhibits", "causes",
              "contributes to", "mediates", "moderates", "feeds back into", "explains"}
 
+# PROPOSAL: words of his domain definitions too everyday to carry an English definition into a life domain
+LOOSE = {stem(w) for w in """physical development movement drive media dynamic rest recovery training skill work pattern
+meta vision regulation affect project feel feeling felt psychological knowledge""".split()} | {"feeling"}
+# PROPOSAL: and those too wide to follow "is a kind of" into a life domain: every thought is "a kind of cognition"
+WIDE = {stem(w) for w in "cognition knowledge social professional community".split()}
+OPENING = 5                 # PROPOSAL: an English definition names a life domain only in its opening words: "a licensed medical practitioner"
+ASIDE = {"of", "used", "especially", "usually", "often", "as"}        # a definition part that only says where the word applies
+# when and how, not what: no record is about an entry for sharing one of these
+WHEN = {stem(w) for w in """next last month months year years night nights tonight morning mornings afternoon evening
+yesterday tomorrow hour hours minute minutes later soon without within between among through against toward towards upon
+across along around behind beyond until since whether either neither both few several such own rather quite almost already
+always often yet more most best better worse worst able whole part kind sort""".split()}
+NOT_CARRIED = set("""fuck fucking fucked shit damn goddamn hell ass bitch crap please sure thanks thank okay hello hey yeah
+exercise""".split())        # said for force or manners, not for meaning; "exercise control" is not Exercise
+
 MAX_WORDS_TOLD = 2          # PROPOSAL: how many of his words one paragraph speaks about; the rest stay as rows
 MAX_SENTENCES = 4           # PROPOSAL: sentences taken from one meaning
 MAX_WINDOW_WORDS = 46       # PROPOSAL
@@ -49,6 +65,7 @@ MAX_TOLD_WORDS = 125        # PROPOSAL: the whole answer. His words, 2026-10-02:
 SHORT_PHRASE_NEEDS = 3.0    # PROPOSAL: a word reached by a two-word phrase is told only when its sentences fit this well
 SECOND_NEEDS = 0.4          # PROPOSAL: a second word is told only when it fits at least this share as well as the first
 WALK_NEEDS = 3.0            # PROPOSAL: the walk to a neighboring word of his is told only when its sentences fit this well
+MAX_RECORD_WORDS = 36       # PROPOSAL: a record longer than this is not told when no word of his dictionary led to it
 RECORD_NEEDS = 2.0          # PROPOSAL: a record joins the answer only when it fits the question this well
 PHRASE_WORDS = 3            # PROPOSAL: a shared phrase counts from this many words. His words, 2026-09-10: "4 and 5 word phrases of mine"
 # PROPOSAL: words of his that are also everyday English. Typed in capitals they are his word. Typed small, in
@@ -94,12 +111,20 @@ class Reach:
     by: str           # his own words in the question that led there
 
 
+@dataclass(frozen=True)
+class Named:
+    """A life domain of his ontology that his entry names, and how it got there."""
+    domain: str
+    said: str             # the word as he typed it
+    english: str = ""     # the English definition that carried it there; empty when the word is in his own definition
+
+
 @dataclass
 class Part:
     """One piece of the paragraph and exactly where it came from."""
     text: str         # as told, to "you"
     exact: str        # his exact words, untouched
-    source: str       # meaning | walk | record | weeks | pattern | tie | domain
+    source: str       # meaning | walk | record | weeks | pattern | tie | domain | graph | missing
     word: str = ""
     record: str = ""
 
@@ -111,6 +136,7 @@ class Told:
     parts: list[Part] = field(default_factory=list)
     no_meaning_yet: list[str] = field(default_factory=list)
     ms: float = 0.0
+    judged: str = ""     # not_sure | dont_know: his entry judged by his knowledge graph when no dictionary word was told; empty: the rows decide
 
 
 def content(text: str) -> list[str]:
@@ -169,6 +195,20 @@ class Narrator:
         self.phrase_index = PhraseIndex(meanings, graph)
         self.steps = load_pattern(pattern_file)
         self.routes = load_routes(routes_file, set(self.words))
+        # every word his dictionary and his accepted records hold, to say plainly when they hold none of a word of his entry
+        self.written: set[str] = set()
+        self.label_says: dict[str, set[str]] = {}                    # accepted record -> every word its label says, endings folded
+        for meaning in meanings:
+            self.written |= all_forms(meaning.word) | all_forms(meaning.text)
+        for _word, said_as in self.routes:
+            self.written |= all_forms(said_as)
+        for record in graph.records.values():
+            if graph.is_accepted(record):
+                note = NOTE.search(record.block)
+                self.label_says[record.leaf] = all_forms(unescape_label(record.label))
+                self.written |= self.label_says[record.leaf]
+                self.written |= all_forms(unescape_label(note.group(1))) if note else set()
+        self.single_names = {tokens(word)[0] for word in self.words if len(tokens(word)) == 1}
 
     # ------------------------------------------------------------ 1. reach his words from the question
 
@@ -308,9 +348,72 @@ class Narrator:
         return None
 
     def domains_in(self, question: str) -> set[str]:
-        """The life domains his statement names, by the words of his own ontology's definitions."""
-        asked = set(tokens(question))
-        return {domain for domain, cues in self.domain_cues.items() if asked & cues}
+        """The life domains his statement names."""
+        return {named.domain for named in self.domains_named(question)}
+
+    def domains_named(self, question: str) -> list[Named]:
+        """The life domains his entry names, in the order he said them. First by the words of his own ontology's
+        definitions. Then, for a word his dictionary does not hold, through the English dictionary: a doctor is
+        "a licensed medical practitioner", and Medical is his ontology's word for Health."""
+        text = re.sub(r"\bsocial media\b", lambda m: " " * len(m.group(0)), question, flags=re.I)   # names neither Social nor Entertainment
+        typed = [(m.start(), m.group(0), m.group(0).lower().replace("’", "'").strip("'")) for m in re.finditer(r"[A-Za-z’']+", text)]
+        found: dict[str, tuple[int, Named]] = {}
+        for at, word, low in typed:
+            for domain, cues in self.domain_cues.items():
+                if stem(low) in cues and domain not in found:
+                    found[domain] = (at, Named(domain, word))
+        for at, word, low in typed:
+            folded = stem(low)
+            before = text[:at].rstrip()
+            if word[0].isupper() and before and before[-1] not in ".!?" and not (word.isupper() and len(word) > 3):
+                continue                                              # a name: Notion, France, MacBook
+            if (len(low) < 3 or low in NOT_CARRIED or folded in self.single_names or english.bases(low) & (STOP | ASKING)
+                    or folded in ASKING or any(folded in cues for cues in self.domain_cues.values())):
+                continue
+            carried = self.carry(low)
+            if carried and carried[0] not in found:
+                found[carried[0]] = (at, Named(carried[0], word, carried[1]))
+        return [named for _at, named in sorted(found.values(), key=lambda f: f[0])]
+
+    def carry(self, word: str) -> tuple[str, str] | None:
+        """A word his dictionary does not hold, carried by its English definition to a life domain of his ontology:
+        (domain, the English that carried it). None when the English dictionary leads to none of his domains."""
+        sense = english.sense(word)
+        if sense is None:
+            return None
+        first = sense.definition.split(";")[0].strip()
+
+        def domain_of(token: str, wide: bool = True) -> str | None:
+            if token in LOOSE or token in NOT_CARRIED or (not wide and token in WIDE):
+                return None
+            return next((d for d in LIFE_DOMAINS if token == d or token in self.domain_cues[d]), None)
+
+        # 1. the definition opens with a word of his domain's own definition: a doctor is "a licensed medical practitioner"
+        for definition in (sense.definition,) + sense.described:
+            for part in definition.split(";"):
+                opening = [t for t in tokens(part) if t not in STOP]
+                if not opening or part.split()[0].lower().strip("(") in ASIDE:
+                    continue
+                named = [d for d in (domain_of(t) for t in opening[:OPENING]) if d]
+                own = [d for d in named if d in opening[:OPENING]]                    # the domain's own name beats a word of its definition
+                if named:
+                    return (own or named)[0], f"“{part.strip()}”"
+        # 2. it goes by another name that ends in one: a job is a "line of work"
+        for name in sense.also:
+            last = tokens(name)[-1:] or [""]
+            domain = "work" if last[0] == "work" else domain_of(last[0])
+            if domain:
+                return domain, f"“{first}”, also called {name}"
+        # 3. it is a kind of one: a dentist is a kind of medical practitioner
+        for name in sense.kinds:
+            for token in tokens(name):
+                domain = domain_of(token, wide=False)
+                if domain:
+                    return domain, f"“{first}”, a kind of {name}"
+        # 4. the English dictionary shelves it with feelings: worried, mad
+        if sense.feeling:
+            return "affect", f"“{first}”, a feeling"
+        return None
 
     def measured(self, pair: frozenset) -> tuple[str, str, str] | None:
         """What his tracked weeks measured between two life domains, in the record's own words."""
@@ -326,68 +429,116 @@ class Narrator:
         return f"{label}: {measured.group(1)}% of {count} tracked weeks, {span}.", (label + " — " + note).strip(" —"), leaf
 
     def domain_road(self, question: str, told: "Told") -> list[str]:
-        """None of his dictionary words were reached, but his statement names a life domain of his ontology.
-        His knowledge graph still holds something: the accepted records in that domain, and what his tracked
-        weeks measured between that domain and the others."""
-        asked = tokens(re.sub(r"\bsocial media\b", " ", question, flags=re.I))   # "social media" names neither Social nor Entertainment
-        named = [(min(asked.index(c) for c in cues if c in asked), domain)
-                 for domain, cues in self.domain_cues.items() if set(asked) & cues]
-        named = [domain for _at, domain in sorted(named)][:2]
+        """None of his dictionary words were told. His ontology says which life domain the entry sits in, and his
+        knowledge graph says what it holds there. The entry is judged by that (PROPOSAL):
+        not sure when his graph holds accepted records in that life domain, I don't know when it holds none."""
+        named = self.domains_named(question)[:2]
         if not named:
             return []
-        mine = set(content(question))
-        trouble = any(stem(t) in TROUBLE or t in TROUBLE for t in asked)
-        blocks = []
-        for domain in named:
-            said = next((question[m.start():m.end()] for m in re.finditer(r"[A-Za-z’']+", question)
-                         if stem(m.group(0).lower().replace("’", "'").strip("'")) in self.domain_cues[domain]), domain)
-            line = f"You said {said}. Your ontology files that under {domain.capitalize()}"
-            line += f": {self.domain_lines[domain]}" if self.domain_lines.get(domain) else "."
-            told.parts.append(Part(line, self.domain_lines.get(domain, domain), "domain", domain))
+        domains = [n.domain for n in named]
+        direct = {n.domain for n in named if not n.english}
+        said = {n.said: forms(n.said) for n in named}
+        carried = set().union(*[forms(n.said) for n in named if n.english])     # the words that came through English
+        mine = set(content(question)) - WHEN
+        trouble = any(stem(t) in TROUBLE or t in TROUBLE for t in tokens(question))
+        blocks, absent = [], set()
+        for n in named:
+            line = f"You said {n.said}."
+            if n.english:
+                line += f" In English that is {n.english}."
+            line += f" Your ontology files that under {n.domain.capitalize()}"
+            line += f": {self.domain_lines[n.domain]}" if self.domain_lines.get(n.domain) else "."
+            if n.english and not (forms(n.said) & self.written):
+                line += f" Nothing in your dictionary or your records says {n.said}."
+                absent.add(n.said)
+            told.parts.append(Part(line, self.domain_lines.get(n.domain, n.domain), "domain", n.domain))
             blocks.append(line)
-        ranked = []
+        accepted = {domain: 0 for domain in domains}
+        held, about, spoken = [], [], set()
         for record in self.graph.records.values():
-            if not self.graph.is_accepted(record) or record.connection_type in ("observed_pattern", "observed_correlation"):
+            if not self.graph.is_accepted(record):
                 continue
+            sits = set(DOMAIN.findall(record.block)) & set(domains)
+            if not sits:
+                continue
+            for domain in sits:
+                accepted[domain] += 1
             label = unescape_label(record.label)
-            domains = set(DOMAIN.findall(record.block))
-            if LOGGED in label or not (domains & set(named)):
+            says = self.label_says.get(record.leaf, set())
+            spoken |= {typed for typed, folded in said.items() if folded & says}   # an accepted record in this domain says the word he said
+            if record.connection_type in ("observed_pattern", "observed_correlation") or LOGGED in label:
                 continue
-            held = set(content(label))
-            shared = sum(1.5 if self.record_spread.get(t, 1) <= 2 else 1.0 if self.record_spread.get(t, 1) <= 5 else 0.4
-                         for t in held & mine)
-            plain = set(re.findall(r"[a-z]+", label.lower()))
-            if any(domain in plain for domain in named if domain != "work"):
-                shared = max(shared, 1.5)                            # the record names the domain itself: "sleep"
-            answers = len({t for t in tokens(label) if t in ANSWERS_TROUBLE}) if trouble and "affect" in named else 0
-            both = len(domains & set(named)) == 2
-            if len(named) == 2 and not both:
-                continue                                              # two domains named: only a record that sits in both
-            if len(named) == 1 and not (shared >= 1.5 or answers):
-                continue
-            fit = (shared if shared >= 1.0 else 0.0) + 0.8 * min(2, answers)    # a faint overlap does not outrank strength
-            ranked.append((both, round(fit, 2), float(record.strength or 0), record.leaf, label, record))
-        count = sum(len(b.split()) for b in blocks)
-        for _both, _fit, _strength, _leaf, label, record in sorted(ranked, key=lambda r: r[:4], reverse=True)[:1 if len(named) == 2 else 2]:
             line = tell_record(label)
-            if line and count + len(line.split()) <= MAX_TOLD_WORDS - 30:
-                told.parts.append(Part(line, label, "record", "", record.leaf))
-                blocks.append(line)
-                count += len(line.split())
-        pairs = [frozenset(named)] if len(named) == 2 and frozenset(named) in self.weeks else []
-        if not pairs:                                                 # one domain, or two his weeks never measured together
-            for domain in named:
-                pairs += [pair for _strength, pair in self.weeks_by_domain.get(domain, [])[:2] if pair not in pairs]
+            if not line:
+                continue
+            shared = sum(1.5 if self.record_spread.get(t, 1) <= 2 else 1.0 if self.record_spread.get(t, 1) <= 5 else 0.4
+                         for t in set(content(label)) & mine)
+            if carried & says:
+                shared = max(shared, 1.5)                            # the record says the word he said
+            plain = set(re.findall(r"[a-z]+", label.lower()))
+            if any(domain in plain for domain in direct if domain != "work"):
+                shared = max(shared, 1.5)                            # the record names the domain itself: "sleep"
+            answers = len({t for t in tokens(label) if t in ANSWERS_TROUBLE}) if trouble and "affect" in direct else 0
+            both = len(domains) == 2 and len(sits) == 2
+            fit = (shared if shared >= 1.0 else 0.0) + 0.8 * min(2, answers)    # a faint overlap does not outrank strength
+            row = (both, round(fit, 2), float(record.strength or 0), record.leaf, label, line, record)
+            held.append(row)
+            if both or (len(domains) == 1 and (shared >= 1.5 or answers)):
+                about.append(row)
+        count = sum(len(b.split()) for b in blocks)
+        names = " and ".join(domain.capitalize() for domain in domains)
+
+        def tell(rows: list, most: int, lead: str = "") -> None:
+            nonlocal count
+            lines = []
+            for _both, _fit, _strength, _leaf, label, line, record in rows:
+                if len(lines) < most and len(line.split()) <= MAX_RECORD_WORDS and count + len(lead.split()) + len(line.split()) <= MAX_TOLD_WORDS:
+                    told.parts.append(Part(line, label, "record", "", record.leaf))
+                    lines.append(line)
+                    count += len(line.split())
+            if lines and lead:
+                told.parts.append(Part(lead, lead, "graph"))
+                count += len(lead.split())
+                blocks.append(lead + " " + " ".join(lines))
+            else:
+                blocks.extend(lines)
+
+        if about and len(domains) == 2:                               # two life domains named: one record that sits in both
+            tell(sorted(about, key=lambda r: r[:4], reverse=True), 1, f"This accepted record of yours sits in both {names}:")
+        elif about:                                                   # one named: the records closest to what he said
+            tell(sorted(about, key=lambda r: r[:4], reverse=True), 2,
+                 f"Your graph holds {accepted[domains[0]]} accepted {names} record{'' if accepted[domains[0]] == 1 else 's'}. Closest to what you said:")
+        elif held:                                                    # his graph holds records there, none about what he said
+            lead = "Your graph holds " + " and ".join(
+                f"{accepted[d]} accepted {d.capitalize()} record{'' if accepted[d] == 1 else 's'}" for d in domains) + "."
+            unsaid = [typed for typed in said if typed not in absent and typed not in spoken]
+            if len(domains) == 2:
+                lead += " None sits in both."
+                told.parts.append(Part(lead, lead, "graph"))
+                blocks.append(lead)
+                count += len(lead.split())
+            else:
+                if unsaid:
+                    lead += f" None says {unsaid[0]}."
+                tell(sorted(held, key=lambda r: (r[2], r[3]), reverse=True), 2, lead + " The strongest stated:")
+        pairs = [frozenset(domains)] if len(domains) == 2 else []     # two named: only what his weeks measured between those two
+        if len(domains) == 1 and domains[0] in direct:                # one named in his own definition's words: its two strongest
+            pairs = [pair for _strength, pair in self.weeks_by_domain.get(domains[0], [])[:2]]
         lines = []
-        for pair in pairs[:3]:
+        for pair in pairs:
             found = self.measured(pair)
-            if found and count + len(found[0].split()) <= MAX_TOLD_WORDS:
+            if found and count + len(found[0].split()) <= MAX_TOLD_WORDS + 15:
                 told.parts.append(Part(found[0], found[1], "weeks", "", found[2]))
                 lines.append(found[0])
                 count += len(found[0].split())
         if lines:
             blocks.append(" ".join(lines))
-        return blocks if len(blocks) > len(named) else []
+        told.judged = "not_sure" if (held or lines) else "dont_know"
+        if not held:
+            line = f"Your graph holds no accepted {names} record in words."
+            told.parts.append(Part(line, line, "graph"))
+            blocks.insert(len(named), line)
+        return blocks
 
     def weeks_line(self, record, question: str) -> tuple[str, str, str] | None:
         """From a record, through its two life domains, to what his tracked weeks measured between them.
@@ -515,7 +666,14 @@ class Narrator:
                 count += len(line.split())
                 break
         if not blocks:
-            blocks = self.domain_road(question, told)                # no word of his reached: his ontology and graph alone
+            blocks = self.domain_road(question, told)                # no word of his told: his ontology and his graph judge the entry
+            if not blocks and not told.reaches:
+                told.judged = "dont_know"                            # neither his dictionary nor his graph holds anything for it
+                absent = [as_typed(question, w) for w in told.no_meaning_yet if not (forms(w) & self.written)]
+                if absent:
+                    line = "Nothing in your dictionary or your records says " + ", ".join(absent) + "."
+                    told.parts.append(Part(line, line, "missing"))
+                    blocks = [line]
         told.text = "\n\n".join(blocks)
         told.ms = round((time.perf_counter() - started) * 1000, 2)
         return told
@@ -560,6 +718,23 @@ def tie(reach: Reach) -> str:
     return f"{reach.word}:"
 
 
+def forms(word: str) -> set[str]:
+    """A word with its ending folded both ways: the phrase lookup's way and the English dictionary's way."""
+    low = word.lower().replace("’", "'").strip("'")
+    bases = english.bases(low)
+    return {stem(low)} | set(bases) | {stem(base) for base in bases}
+
+
+def all_forms(text: str) -> set[str]:
+    return {form for word in re.findall(r"[a-z’']+", text.lower()) for form in forms(word)}
+
+
+def as_typed(question: str, word: str) -> str:
+    """The word as he typed it in his entry."""
+    found = re.search(r"\b" + re.escape(word) + r"\b", question, re.I)
+    return found.group(0) if found else word.lower()
+
+
 def place_in(question: str, said: str) -> int:
     at = question.lower().find(said.lower())
     return at if at >= 0 else len(question)
@@ -588,7 +763,7 @@ def load_domain_cues(root: Path) -> tuple[dict[str, set[str]], dict[str, str]]:
     cues: dict[str, set[str]] = {}
     lines: dict[str, str] = {}
     for domain in LIFE_DOMAINS:
-        words = {domain}
+        words = {domain, stem(domain)}
         note = root / domain.capitalize() / f"{domain.capitalize()}.md"
         if note.exists():
             lines_ = note.read_text(encoding="utf-8").splitlines()

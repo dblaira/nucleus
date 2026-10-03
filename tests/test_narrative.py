@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from nucleus import NUCLEUS_FILES, ask as ask_module, dictionary, narrative
+from nucleus import NUCLEUS_FILES, ask as ask_module, dictionary, english, narrative
 from nucleus.graph import load_graph
 from nucleus.person import same_words
 from nucleus.store import Store
@@ -97,9 +97,10 @@ def test_an_ending_is_folded_for_his_word_names(narrator, store):
     assert told.text.startswith("Pushed is signal to flip the kill switch.")
 
 
-def test_nothing_reached_says_nothing(narrator, store):
+def test_nothing_of_his_holds_it_so_it_says_plainly_what_is_missing(narrator, store):
     told = narrator.tell("What is the capital of France?", reading(unknown=["CAPITAL", "FRANCE"]), store.links_for)
-    assert told.text == "" and told.no_meaning_yet == ["CAPITAL", "FRANCE"]
+    assert told.judged == "dont_know" and told.no_meaning_yet == ["CAPITAL", "FRANCE"]
+    assert told.text == "Nothing in your dictionary or your records says capital, France."
 
 
 def test_it_takes_milliseconds(narrator, store):
@@ -129,9 +130,9 @@ def test_with_the_switch_on_the_paragraph_is_code_and_no_model_is_called(monkeyp
     assert store.connection.execute("SELECT COUNT(*) FROM model_calls").fetchone()[0] == 0
 
 
-def test_with_no_model_on_nothing_reached_is_his_third_answer_at_once(monkeypatch, store):
+def test_nothing_reached_is_his_third_answer_at_once_and_no_model_is_asked(monkeypatch, store):
     monkeypatch.setenv("NUCLEUS_NARRATIVE", "1")
-    monkeypatch.setenv("NUCLEUS_NO_MODEL", "1")
+    monkeypatch.delenv("NUCLEUS_NO_MODEL", raising=False)
 
     def never(prompt):
         raise AssertionError("the model was asked")
@@ -139,7 +140,7 @@ def test_with_no_model_on_nothing_reached_is_his_third_answer_at_once(monkeypatc
     result = ask_module.ask("What is the capital of France?", store=store, model_call=never,
                             brief=lambda q: reading(unknown=["CAPITAL", "FRANCE"]), explain_call=never)
     assert result.answer == "dont_know" and result.text.startswith("I don't know.")
-    assert store.explanation(result.question_id)["text"] == "No meaning added yet: CAPITAL, FRANCE."
+    assert store.explanation(result.question_id)["text"] == "Nothing in your dictionary or your records says capital, France."
     assert store.connection.execute("SELECT COUNT(*) FROM model_calls").fetchone()[0] == 0
 
 
@@ -170,3 +171,75 @@ def test_the_domain_road_paints_his_middle_line_with_the_records_as_rows(monkeyp
     saved = store.explanation(result.question_id)
     assert saved["provider"] == "code" and "Exercise and Sleep rise together in the same week: 57% of 92 tracked weeks" in saved["text"]
     assert store.connection.execute("SELECT COUNT(*) FROM model_calls").fetchone()[0] == 0
+
+
+DOCTOR = "What are reasons I would avoid going to the doctor?"
+
+
+@pytest.mark.skipif(not english.installed(), reason="the English dictionary is not installed")
+def test_a_word_his_dictionary_does_not_hold_is_carried_by_english_to_his_ontology_and_judged_by_his_graph(narrator, store):
+    # Adam, 2026-10-02: "It did not use the ontology and knowledge graph. ... make sure my entry is judged
+    # according the knowledge graph and dictionary."
+    told = narrator.tell(DOCTOR, reading(unknown=["REASONS", "AVOID", "DOCTOR"]), store.links_for)
+    assert [(n.domain, n.said) for n in narrator.domains_named(DOCTOR)] == [("belief", "reasons"), ("health", "doctor")]
+    assert "You said doctor. In English that is “a licensed medical practitioner”. Your ontology files that under Health: " \
+           "Medical, wellness, body maintenance, and preventive care. Nothing in your dictionary or your records says doctor." in told.text
+    assert "You said reasons. In English that is “a rational motive for a belief or action”. Your ontology files that under Belief: " \
+           "Core beliefs, values, worldview, and personal philosophy." in told.text
+    assert "This accepted record of yours sits in both Belief and Health: Changes only stick for you when they feel innocent " \
+           "and easy — any change that feels effortful will not be adopted." in told.text
+    assert told.judged == "not_sure" and told.ms < 200
+    record = [part for part in told.parts if part.source == "record"]
+    assert len(record) == 1 and same_words(record[0].exact, record[0].text)
+
+
+@pytest.mark.skipif(not english.installed(), reason="the English dictionary is not installed")
+def test_the_doctor_entry_is_his_middle_answer_with_the_record_as_a_row_and_no_model(monkeypatch, store):
+    monkeypatch.setenv("NUCLEUS_NARRATIVE", "1")
+    monkeypatch.delenv("NUCLEUS_NO_MODEL", raising=False)
+
+    def never(prompt):
+        raise AssertionError("the model was asked")
+
+    result = ask_module.ask(DOCTOR, store=store, model_call=never, brief=lambda q: reading(unknown=["REASONS", "AVOID", "DOCTOR"]),
+                            explain_call=never)
+    assert result.answer == "not_sure" and result.text.startswith("Not sure.")
+    assert [row["leaf"] for row in result.records] == ["conn-obs-mined-2026-07-10-easy-innocent-changes-stick"]
+    saved = store.explanation(result.question_id)
+    assert saved["provider"] == "code" and "“a licensed medical practitioner”" in saved["text"]
+    assert store.connection.execute("SELECT COUNT(*) FROM model_calls").fetchone()[0] == 0
+
+
+@pytest.mark.skipif(not english.installed(), reason="the English dictionary is not installed")
+def test_what_english_does_not_carry(narrator):
+    named = lambda entry: [(n.domain, n.said) for n in narrator.domains_named(entry)]
+    assert named("Fuck! Things feel slow.") == [("affect", "feel")]                    # said for force: never Sleep
+    assert named("What did I decide about Notion last Tuesday?") == []                 # a name, not "a vague idea"
+    assert named("What is the capital of France?") == []
+    assert named("I keep getting stuck on the content.") == []                         # "getting" is "get"; content is not a feeling
+    assert named("I am in control of my focus.") == []                                 # "exercise control" is not Exercise
+    assert named("Why am I so mad?") == [("affect", "mad")]                            # the dictionary shelves it with feelings
+
+
+@pytest.mark.skipif(not english.installed(), reason="the English dictionary is not installed")
+def test_a_domain_his_graph_holds_records_in_but_none_about_his_word_says_so(narrator, store):
+    told = narrator.tell("Why am I so tired after I eat?", reading(unknown=["TIRED", "EAT"]), store.links_for)
+    assert "You said eat. In English that is “take in solid food”. Your ontology files that under Nutrition: " \
+           "Diet, food, supplements, and nutritional science. Nothing in your dictionary or your records says eat." in told.text
+    assert "accepted Nutrition records. The strongest stated: " in told.text and told.judged == "not_sure"
+    for part in told.parts:
+        if part.source == "record":
+            assert same_words(part.exact, part.text), part.text
+
+
+def test_without_the_english_dictionary_nothing_else_changes(narrator, store, monkeypatch):
+    monkeypatch.setattr(english, "_wordnet", None)
+    english.sense.cache_clear()
+    english.bases.cache_clear()
+    try:
+        assert narrator.domains_named(DOCTOR) == []
+        told = narrator.tell(SLOW, reading(unknown=["MAD", "SLOW"]), store.links_for)
+        assert "KILL SWITCH: The lack of momentum." in told.text and "Affect and Work rise together in the same week" in told.text
+    finally:
+        english.sense.cache_clear()
+        english.bases.cache_clear()

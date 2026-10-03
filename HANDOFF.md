@@ -34,7 +34,30 @@ Read this file, then `README.md`, then `AGENTS.md` in the Cowboyai repo for the 
 | doors | `nucleus/model.py`: codex (default), zai (`NUCLEUS_DOOR=zai`, his prepaid GLM credits, slower), anthropic/openai (keys absent) | |
 | store | `~/Library/Application Support/nucleus/nucleus.sqlite3` — questions, steps, model_calls, answers, candidates, phrase_hits, grades, links, searched_words | nothing is ever deleted |
 
-Tests: `.venv/bin/python -m pytest` — 48 pass.
+Tests: `.venv/bin/python -m pytest` — 86 pass.
+
+## 2026-10-02 — the meaning in normal sentences, with no model, judged by his knowledge graph and dictionary
+
+Adam, 2026-10-02: "after adding the ontology and the knowledge graph to the dictionary and everything I have, I should
+have more meaning that doesn't require a fucking large language model to help me with, and and it's just the output is
+put in a reasonable state to where I can read it like a normal fucking sentence or statement or narrative". Then, on an
+entry that held none of his dictionary words ("What are reasons I would avoid going to the doctor?"): "It did not use the
+ontology and knowledge graph. We should be in Cowboyai. Not Nucleaus. Add my ontology and knowledge graph, and make sure
+my entry is judged according the knowledge graph and dictionary."
+
+| piece | file | state |
+| --- | --- | --- |
+| the paragraph under the answer, built by code from his own sentences, only the person changed (I → you, Adam → you) | `nucleus/narrative.py`, `nucleus/person.py` | on in the live service: `NUCLEUS_NARRATIVE=1` in `launchd/com.nucleus.serve.plist`; milliseconds; the model is never asked while it is on |
+| an entry with none of his dictionary words: his ontology says which life domain it sits in, his knowledge graph says what it holds there | `Narrator.domains_named`, `Narrator.domain_road` | "You said doctor. In English that is “a licensed medical practitioner”. Your ontology files that under Health: …" then the accepted records, then what his tracked weeks measured |
+| the English dictionary that carries a word to his ontology's own definition words | `nucleus/english.py` (WordNet through `nltk`, read only; data in `~/nltk_data`) | first sense only, in the part of speech English uses most; names, curse words and question words are never carried; not installed → no bridges, nothing else changes |
+| the judgment when no dictionary word is told | `Told.judged`, used in `ask.py` | PROPOSAL: "Not sure" when his graph holds accepted records in the life domain(s) his ontology files the entry under, "I don't know" when neither his dictionary nor his graph holds anything, with one line saying which of his words are in neither |
+
+Every number and word list that decides something in these files is marked PROPOSAL. Nothing was asked of Adam for
+any of it: his words, 2026-10-02, "When you say one thing needs your yes, you are following your logic, not mine".
+Turn it off by removing `NUCLEUS_NARRATIVE` from the installed plist and reloading the service; the path is then
+exactly what it was at `c80d471`.
+
+New machine: `.venv/bin/pip install nltk` then `.venv/bin/python -c "import nltk; nltk.download('wordnet')"`.
 
 ## Measured, not guessed (all on "What is FLOW?", this Mac)
 
