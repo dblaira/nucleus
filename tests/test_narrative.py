@@ -84,8 +84,11 @@ def test_a_shared_phrase_of_three_words_names_where_it_lives(narrator, store):
 
 
 def test_an_everyday_word_typed_small_in_passing_is_not_told(narrator, store):
-    told = narrator.tell("The more I work on Cowboyai the more I see it.", reading(said=["WORK"]), store.links_for)
-    assert told.text == "" and not any(part.source == "meaning" for part in told.parts)
+    told = narrator.tell("The more I work on Cowboyai the more my ambition seem to grow.", reading(said=["WORK"]), store.links_for)
+    # his dictionary meaning of WORK ("Work happens when you have a job.") is not told for a word used in passing
+    assert not any(part.source == "meaning" for part in told.parts) and "Work happens when you have a job" not in told.text
+    # his knowledge graph still answers: the statement names two life domains, and his tracked weeks measured them
+    assert "Ambition and Work rise together in the same week: 53% of 92 tracked weeks" in told.text
 
 
 def test_an_ending_is_folded_for_his_word_names(narrator, store):
