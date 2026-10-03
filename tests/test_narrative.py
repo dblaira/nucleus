@@ -84,8 +84,8 @@ def test_a_shared_phrase_of_three_words_names_where_it_lives(narrator, store):
 
 
 def test_an_everyday_word_typed_small_in_passing_is_not_told(narrator, store):
-    told = narrator.tell("The more I work on Cowboyai the more my ambition seem to grow.", reading(said=["WORK"]), store.links_for)
-    assert told.text == ""
+    told = narrator.tell("The more I work on Cowboyai the more I see it.", reading(said=["WORK"]), store.links_for)
+    assert told.text == "" and not any(part.source == "meaning" for part in told.parts)
 
 
 def test_an_ending_is_folded_for_his_word_names(narrator, store):
@@ -137,4 +137,33 @@ def test_with_no_model_on_nothing_reached_is_his_third_answer_at_once(monkeypatc
                             brief=lambda q: reading(unknown=["CAPITAL", "FRANCE"]), explain_call=never)
     assert result.answer == "dont_know" and result.text.startswith("I don't know.")
     assert store.explanation(result.question_id)["text"] == "No meaning added yet: CAPITAL, FRANCE."
+    assert store.connection.execute("SELECT COUNT(*) FROM model_calls").fetchone()[0] == 0
+
+
+def test_no_dictionary_word_but_a_life_domain_is_named_so_his_graph_answers(narrator, store):
+    told = narrator.tell("I cannot get happy.  I am preoccupied with getting out of a feeling I can’t describe any other way than anxious.",
+                         reading(unknown=["HAPPY", "ANXIOUS"]), store.links_for)
+    assert not any(part.source == "meaning" for part in told.parts)
+    assert told.text.startswith("You said feeling. Your ontology files that under Affect: Emotions, mood, emotional regulation, and psychological state.")
+    assert "Your mood drops hardest when tooling or setup blocks building, and lifts when something ships." in told.text
+    assert "Affect and Learning rise together in the same week: 67% of 92 tracked weeks" in told.text
+
+
+def test_social_media_names_no_life_domain(narrator, store):
+    told = narrator.tell("Peptides are important to me and yet so is social media.", reading(), store.links_for)
+    assert told.text == ""
+
+
+def test_the_domain_road_paints_his_middle_line_with_the_records_as_rows(monkeypatch, store):
+    monkeypatch.setenv("NUCLEUS_NARRATIVE", "1")
+    monkeypatch.setenv("NUCLEUS_NO_MODEL", "1")
+
+    def never(prompt):
+        raise AssertionError("the model was asked")
+
+    result = ask_module.ask("Why do I sleep badly after a late meeting?", store=store, model_call=never,
+                            brief=lambda q: reading(unknown=["SLEEP", "BADLY", "LATE", "MEETING"]), explain_call=never)
+    assert result.answer == "not_sure" and result.text.startswith("Not sure.")
+    saved = store.explanation(result.question_id)
+    assert saved["provider"] == "code" and "Exercise and Sleep rise together in the same week: 57% of 92 tracked weeks" in saved["text"]
     assert store.connection.execute("SELECT COUNT(*) FROM model_calls").fetchone()[0] == 0

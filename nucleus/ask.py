@@ -133,6 +133,10 @@ def ask(question: str, store: Store | None = None, surface: str = "cli",
     if told is not None and picture is not None and picture.missing:
         # a word reached by his route may have no links yet; his own sentences still answer, so it paints
         picture.missing = []
+    if told is not None and picture is None and told.text:
+        # no dictionary word reached, but his ontology and knowledge graph answered: his middle line, the records told as rows
+        rows = narrative_module.records_told(told, graph)
+        picture = links_module.Picture(answer="not_sure", text=gate_module.compose("not_sure", [], rows, []), records=rows)
     if picture is not None and not picture.missing:
         for name in (STEP_NUCLEUS, STEP_MODEL, STEP_GATE, STEP_ANSWER):
             store.start_step(question_id, name)

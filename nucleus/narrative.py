@@ -99,7 +99,7 @@ class Part:
     """One piece of the paragraph and exactly where it came from."""
     text: str         # as told, to "you"
     exact: str        # his exact words, untouched
-    source: str       # meaning | walk | record | weeks | pattern | tie
+    source: str       # meaning | walk | record | weeks | pattern | tie | domain
     word: str = ""
     record: str = ""
 
@@ -158,7 +158,14 @@ class Narrator:
             strength = float(record.strength or 0)
             if len(pair) == 2 and (pair not in self.weeks or strength > self.weeks[pair][0]):
                 self.weeks[pair] = (strength, unescape_label(record.label), unescape_label(note.group(1)) if note else "", record.leaf)
-        self.domain_cues = load_domain_cues(ontology_root)
+        self.domain_cues, self.domain_lines = load_domain_cues(ontology_root)
+        # every pair of life domains his tracked weeks measured, strongest first, by domain
+        self.weeks_by_domain: dict[str, list[tuple[float, frozenset]]] = {}
+        for pair, found in self.weeks.items():
+            for domain in pair:
+                self.weeks_by_domain.setdefault(domain, []).append((found[0], pair))
+        for found in self.weeks_by_domain.values():
+            found.sort(key=lambda f: (-f[0], sorted(f[1])))
         self.phrase_index = PhraseIndex(meanings, graph)
         self.steps = load_pattern(pattern_file)
         self.routes = load_routes(routes_file, set(self.words))
@@ -305,6 +312,78 @@ class Narrator:
         asked = set(tokens(question))
         return {domain for domain, cues in self.domain_cues.items() if asked & cues}
 
+    def measured(self, pair: frozenset) -> tuple[str, str, str] | None:
+        """What his tracked weeks measured between two life domains, in the record's own words."""
+        found = self.weeks.get(pair)
+        if not found:
+            return None
+        _strength, label, note, leaf = found
+        measured = MEASURED.search(note)
+        if not measured:
+            return None                                              # a seed record with no measurement behind it is not told
+        count = measured.group(2) or measured.group(4)
+        span = measured.group(3) or measured.group(5)
+        return f"{label}: {measured.group(1)}% of {count} tracked weeks, {span}.", (label + " — " + note).strip(" —"), leaf
+
+    def domain_road(self, question: str, told: "Told") -> list[str]:
+        """None of his dictionary words were reached, but his statement names a life domain of his ontology.
+        His knowledge graph still holds something: the accepted records in that domain, and what his tracked
+        weeks measured between that domain and the others."""
+        asked = tokens(re.sub(r"\bsocial media\b", " ", question, flags=re.I))   # "social media" names neither Social nor Entertainment
+        named = [(min(asked.index(c) for c in cues if c in asked), domain)
+                 for domain, cues in self.domain_cues.items() if set(asked) & cues]
+        named = [domain for _at, domain in sorted(named)][:2]
+        if not named:
+            return []
+        mine = set(content(question))
+        trouble = any(stem(t) in TROUBLE or t in TROUBLE for t in asked)
+        blocks = []
+        for domain in named:
+            said = next((question[m.start():m.end()] for m in re.finditer(r"[A-Za-z’']+", question)
+                         if stem(m.group(0).lower().replace("’", "'").strip("'")) in self.domain_cues[domain]), domain)
+            line = f"You said {said}. Your ontology files that under {domain.capitalize()}"
+            line += f": {self.domain_lines[domain]}" if self.domain_lines.get(domain) else "."
+            told.parts.append(Part(line, self.domain_lines.get(domain, domain), "domain", domain))
+            blocks.append(line)
+        ranked = []
+        for record in self.graph.records.values():
+            if not self.graph.is_accepted(record) or record.connection_type in ("observed_pattern", "observed_correlation"):
+                continue
+            label = unescape_label(record.label)
+            domains = set(DOMAIN.findall(record.block))
+            if LOGGED in label or not (domains & set(named)):
+                continue
+            held = set(content(label))
+            shared = sum(1.5 if self.record_spread.get(t, 1) <= 2 else 1.0 if self.record_spread.get(t, 1) <= 5 else 0.4
+                         for t in held & mine)
+            if any(held & self.domain_cues[domain] & set(asked) for domain in named):
+                shared = max(shared, 1.0)                            # the record uses the very word that named the domain
+            answers = len({t for t in tokens(label) if t in ANSWERS_TROUBLE}) if trouble and "affect" in named else 0
+            both = len(domains & set(named)) == 2
+            if not (shared >= 1.0 or answers):
+                continue
+            ranked.append((both, round(shared + 0.8 * min(2, answers), 2), float(record.strength or 0), record.leaf, label, record))
+        count = sum(len(b.split()) for b in blocks)
+        for _both, _fit, _strength, _leaf, label, record in sorted(ranked, key=lambda r: r[:4], reverse=True)[:2]:
+            line = tell_record(label)
+            if line and count + len(line.split()) <= MAX_TOLD_WORDS - 30:
+                told.parts.append(Part(line, label, "record", "", record.leaf))
+                blocks.append(line)
+                count += len(line.split())
+        pairs = [frozenset(named)] if len(named) == 2 and frozenset(named) in self.weeks else []
+        for domain in named:
+            pairs += [pair for _strength, pair in self.weeks_by_domain.get(domain, [])[:2] if pair not in pairs]
+        lines = []
+        for pair in pairs[:3]:
+            found = self.measured(pair)
+            if found and count + len(found[0].split()) <= MAX_TOLD_WORDS:
+                told.parts.append(Part(found[0], found[1], "weeks", "", found[2]))
+                lines.append(found[0])
+                count += len(found[0].split())
+        if lines:
+            blocks.append(" ".join(lines))
+        return blocks if len(blocks) > len(named) else []
+
     def weeks_line(self, record, question: str) -> tuple[str, str, str] | None:
         """From a record, through its two life domains, to what his tracked weeks measured between them.
         Told only when his statement names one of the two domains."""
@@ -430,6 +509,8 @@ class Narrator:
                 blocks.append(line)
                 count += len(line.split())
                 break
+        if not blocks:
+            blocks = self.domain_road(question, told)                # no word of his reached: his ontology and graph alone
         told.text = "\n\n".join(blocks)
         told.ms = round((time.perf_counter() - started) * 1000, 2)
         return told
@@ -448,6 +529,20 @@ class Narrator:
         if at + 1 < len(names):
             around.append(f"before {names[at + 1]}")
         return f"In the Adam Pattern it is step {at + 1} of {len(names)}, " + " and ".join(around) + "."
+
+
+def records_told(told: Told, graph: Graph) -> list[dict]:
+    """The accepted records a telling used, in the shape the rows on the screen take."""
+    rows, seen = [], set()
+    for part in told.parts:
+        record = graph.find(part.record) if part.record else None
+        if record is None or record.leaf in seen or not graph.is_accepted(record):
+            continue
+        seen.add(record.leaf)
+        rows.append({"id": record.uri, "leaf": record.leaf, "quote": unescape_label(record.label), "why": "",
+                     "strength": record.strength, "accepted_at": record.accepted_at,
+                     "connection_type": record.connection_type})
+    return rows
 
 
 def tie(reach: Reach) -> str:
@@ -481,19 +576,21 @@ def load_routes(path: Path | None, known: set[str]) -> list[tuple[str, str]]:
     return routes
 
 
-def load_domain_cues(root: Path) -> dict[str, set[str]]:
+def load_domain_cues(root: Path) -> tuple[dict[str, set[str]], dict[str, str]]:
     """His ontology's own definition of each life domain, as the words that name it.
     Affect/Affect.md: "Emotions, mood, emotional regulation, and psychological state."
     upper/bfo-bridge.ttl: "Affect ... records felt qualities or states" - so felt, feel, feeling name Affect."""
     cues: dict[str, set[str]] = {}
+    lines: dict[str, str] = {}
     for domain in LIFE_DOMAINS:
         words = {domain}
         note = root / domain.capitalize() / f"{domain.capitalize()}.md"
         if note.exists():
-            lines = note.read_text(encoding="utf-8").splitlines()
-            for index, line in enumerate(lines):
+            lines_ = note.read_text(encoding="utf-8").splitlines()
+            for index, line in enumerate(lines_):
                 if line.startswith("# "):
-                    definition = next((l for l in lines[index + 1:] if l.strip()), "")
+                    definition = next((l for l in lines_[index + 1:] if l.strip()), "")
+                    lines[domain] = definition.strip()
                     words |= {t for t in tokens(definition) if t not in STOP and t not in PLAIN and len(t) > 2}
                     break
         cues[domain] = words
@@ -502,7 +599,7 @@ def load_domain_cues(root: Path) -> dict[str, set[str]]:
     for words in cues.values():
         for word in words:
             seen[word] = seen.get(word, 0) + 1
-    return {domain: {w for w in words if seen[w] == 1} for domain, words in cues.items()}
+    return {domain: {w for w in words if seen[w] == 1} for domain, words in cues.items()}, lines
 
 
 def tell_record(label: str) -> str | None:
