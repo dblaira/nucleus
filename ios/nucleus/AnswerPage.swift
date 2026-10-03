@@ -13,7 +13,6 @@ struct AnswerPage: View {
     }
 
     var body: some View {
-        ScrollViewReader { proxy in
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
                 SavyBackButton()
@@ -39,16 +38,8 @@ struct AnswerPage: View {
                         .tint(CowboyTheme.red)
                         .padding(SavyLayout.horizontalPadding)
                 }
-                Color.clear.frame(height: 1).id("answer-bottom")
             }
             .padding(.bottom, 40)
-        }
-        .task(id: model.current?.question.id) {
-            // `-bottom` at launch scrolls to the end of the answer; used by the Mac to see what is under the fold
-            if CommandLine.arguments.contains("-bottom"), model.current != nil {
-                try? await Task.sleep(nanoseconds: 1_200_000_000)
-                proxy.scrollTo("answer-bottom", anchor: .bottom)
-            }
         }
         .background(Color.white.ignoresSafeArea())
         .environment(\.colorScheme, .light)
@@ -67,7 +58,6 @@ struct AnswerPage: View {
         .sheet(item: $selectedWords) { words in
             WordsDetail(words: words)
                 .preferredColorScheme(.light)
-        }
         }
     }
 }

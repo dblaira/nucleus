@@ -75,9 +75,6 @@ struct LiveAnswerSection: View {
                             .fixedSize(horizontal: false, vertical: true)
                             .textSelection(.enabled)
                     }
-                    if a.answer == "not_sure" {
-                        moreInformation
-                    }
                 } else {
                     kicker(a.status.replacingOccurrences(of: "_", with: " ").uppercased())
                     Text(a.text ?? a.gate_reason ?? "")
@@ -197,45 +194,6 @@ struct LiveAnswerSection: View {
             .background(CowboyTheme.cream, in: RoundedRectangle(cornerRadius: 18))
             .padding(.horizontal, 18)
             .padding(.top, 24)
-        }
-    }
-
-    /// Adam, 2026-10-03: the middle response "will be followed by requesting more information, which will be logged
-    /// and then analyzed by the LLM during the night run." Same day: "Don't fuck up my app. If you change anything, it
-    /// better look like it did before, with a very, very, very slight difference." So: one quiet line at the end of the
-    /// answer he already has, in the answer's own type. No new box. Nothing else moves.
-    @ViewBuilder
-    private var moreInformation: some View {
-        if let id = current?.question.id {
-            let draft = Binding(get: { model.moreDrafts[id] ?? "" }, set: { model.moreDrafts[id] = $0 })
-            ForEach(current?.more ?? []) { entry in
-                Text(entry.text)
-                    .font(CowboyTheme.readingSerif(22, relativeTo: .body))
-                    .foregroundStyle(.black)
-                    .lineSpacing(5)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .textSelection(.enabled)
-            }
-            HStack(alignment: .firstTextBaseline, spacing: 10) {
-                TextField("More information", text: draft, axis: .vertical)
-                    .lineLimit(1...8)
-                    .font(CowboyTheme.readingSerif(22, relativeTo: .body))
-                    .foregroundStyle(.black)
-                    .accessibilityIdentifier("more-information-text")
-                if !draft.wrappedValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                    Button {
-                        Task { await model.logMore() }
-                    } label: {
-                        Image(systemName: "paperplane")
-                            .font(.system(size: 17, weight: .semibold))
-                    }
-                    .buttonStyle(.borderless)
-                    .tint(CowboyTheme.red)
-                    .disabled(model.loggingMore)
-                    .accessibilityLabel("Log")
-                    .accessibilityIdentifier("log-more-information")
-                }
-            }
         }
     }
 
