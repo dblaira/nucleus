@@ -101,7 +101,14 @@ struct RootView: View {
             }
             // a past answer handed in at launch (`-open "<id>"`) opens at once; used by the Mac to test the app
             if let i = CommandLine.arguments.firstIndex(of: "-open"), i + 1 < CommandLine.arguments.count {
-                path = NavigationPath([Page.answer(CommandLine.arguments[i + 1])])
+                let id = CommandLine.arguments[i + 1]
+                path = NavigationPath([Page.answer(id)])
+                // `-log "<text>"` then logs more information under it, the way the Log button does
+                if let j = CommandLine.arguments.firstIndex(of: "-log"), j + 1 < CommandLine.arguments.count {
+                    await model.open(id)
+                    model.moreDrafts[id] = CommandLine.arguments[j + 1]
+                    await model.logMore()
+                }
             }
         }
         .onChange(of: scenePhase) { _, phase in
