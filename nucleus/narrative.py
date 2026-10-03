@@ -356,23 +356,28 @@ class Narrator:
             held = set(content(label))
             shared = sum(1.5 if self.record_spread.get(t, 1) <= 2 else 1.0 if self.record_spread.get(t, 1) <= 5 else 0.4
                          for t in held & mine)
-            if any(held & self.domain_cues[domain] & set(asked) for domain in named):
-                shared = max(shared, 1.0)                            # the record uses the very word that named the domain
+            plain = set(re.findall(r"[a-z]+", label.lower()))
+            if any(domain in plain for domain in named if domain != "work"):
+                shared = max(shared, 1.5)                            # the record names the domain itself: "sleep"
             answers = len({t for t in tokens(label) if t in ANSWERS_TROUBLE}) if trouble and "affect" in named else 0
             both = len(domains & set(named)) == 2
-            if not (shared >= 1.0 or answers):
+            if len(named) == 2 and not both:
+                continue                                              # two domains named: only a record that sits in both
+            if len(named) == 1 and not (shared >= 1.5 or answers):
                 continue
-            ranked.append((both, round(shared + 0.8 * min(2, answers), 2), float(record.strength or 0), record.leaf, label, record))
+            fit = (shared if shared >= 1.0 else 0.0) + 0.8 * min(2, answers)    # a faint overlap does not outrank strength
+            ranked.append((both, round(fit, 2), float(record.strength or 0), record.leaf, label, record))
         count = sum(len(b.split()) for b in blocks)
-        for _both, _fit, _strength, _leaf, label, record in sorted(ranked, key=lambda r: r[:4], reverse=True)[:2]:
+        for _both, _fit, _strength, _leaf, label, record in sorted(ranked, key=lambda r: r[:4], reverse=True)[:1 if len(named) == 2 else 2]:
             line = tell_record(label)
             if line and count + len(line.split()) <= MAX_TOLD_WORDS - 30:
                 told.parts.append(Part(line, label, "record", "", record.leaf))
                 blocks.append(line)
                 count += len(line.split())
         pairs = [frozenset(named)] if len(named) == 2 and frozenset(named) in self.weeks else []
-        for domain in named:
-            pairs += [pair for _strength, pair in self.weeks_by_domain.get(domain, [])[:2] if pair not in pairs]
+        if not pairs:                                                 # one domain, or two his weeks never measured together
+            for domain in named:
+                pairs += [pair for _strength, pair in self.weeks_by_domain.get(domain, [])[:2] if pair not in pairs]
         lines = []
         for pair in pairs[:3]:
             found = self.measured(pair)
