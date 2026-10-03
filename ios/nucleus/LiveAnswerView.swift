@@ -40,12 +40,9 @@ struct LiveAnswerSection: View {
                 .padding(.bottom, 8)
 
             if answered {
-                // Adam, 2026-10-03: the middle response "will be followed by requesting more information". The exchange
-                // sits right under the answer: the night's options when there are some, then the request.
-                possibility
-                moreInformation
                 wordsCarousel(titled: "HE SAID THE WORD ITSELF", parts.words)
                 recordsCarousel(titled: "HIS ROUTES SENT IT HERE", parts.records)
+                possibility
             }
         }
     }
@@ -77,6 +74,9 @@ struct LiveAnswerSection: View {
                             .lineSpacing(5)
                             .fixedSize(horizontal: false, vertical: true)
                             .textSelection(.enabled)
+                    }
+                    if a.answer == "not_sure" {
+                        moreInformation
                     }
                 } else {
                     kicker(a.status.replacingOccurrences(of: "_", with: " ").uppercased())
@@ -201,44 +201,41 @@ struct LiveAnswerSection: View {
     }
 
     /// Adam, 2026-10-03: the middle response "will be followed by requesting more information, which will be logged
-    /// and then analyzed by the LLM during the night run." What he already gave shows above the field.
+    /// and then analyzed by the LLM during the night run." Same day: "Don't fuck up my app. If you change anything, it
+    /// better look like it did before, with a very, very, very slight difference." So: one quiet line at the end of the
+    /// answer he already has, in the answer's own type. No new box. Nothing else moves.
     @ViewBuilder
     private var moreInformation: some View {
-        if current?.answer?.answer == "not_sure", let id = current?.question.id {
+        if let id = current?.question.id {
             let draft = Binding(get: { model.moreDrafts[id] ?? "" }, set: { model.moreDrafts[id] = $0 })
-            VStack(alignment: .leading, spacing: 14) {
-                kicker("MORE INFORMATION")
-                ForEach(current?.more ?? []) { entry in
-                    Text(entry.text)
-                        .font(CowboyTheme.readingSerif(22, relativeTo: .body))
-                        .foregroundStyle(.black)
-                        .lineSpacing(5)
-                        .fixedSize(horizontal: false, vertical: true)
-                        .textSelection(.enabled)
-                }
-                TextField("More information", text: draft, axis: .vertical)
-                    .lineLimit(2...10)
-                    .font(CowboyTheme.readingSerif(20, relativeTo: .body))
+            ForEach(current?.more ?? []) { entry in
+                Text(entry.text)
+                    .font(CowboyTheme.readingSerif(22, relativeTo: .body))
                     .foregroundStyle(.black)
-                    .padding(12)
-                    .background(Color.white, in: RoundedRectangle(cornerRadius: 12))
-                    .accessibilityIdentifier("more-information-text")
-                Button {
-                    Task { await model.logMore() }
-                } label: {
-                    Label("Log", systemImage: "paperplane")
-                        .font(.system(size: 17, weight: .semibold))
-                }
-                .buttonStyle(.borderless)
-                .tint(CowboyTheme.red)
-                .disabled(draft.wrappedValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || model.loggingMore)
-                .accessibilityIdentifier("log-more-information")
+                    .lineSpacing(5)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .textSelection(.enabled)
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(20)
-            .background(CowboyTheme.cream, in: RoundedRectangle(cornerRadius: 18))
-            .padding(.horizontal, 18)
-            .padding(.top, 24)
+            HStack(alignment: .firstTextBaseline, spacing: 10) {
+                TextField("More information", text: draft, axis: .vertical)
+                    .lineLimit(1...8)
+                    .font(CowboyTheme.readingSerif(22, relativeTo: .body))
+                    .foregroundStyle(.black)
+                    .accessibilityIdentifier("more-information-text")
+                if !draft.wrappedValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                    Button {
+                        Task { await model.logMore() }
+                    } label: {
+                        Image(systemName: "paperplane")
+                            .font(.system(size: 17, weight: .semibold))
+                    }
+                    .buttonStyle(.borderless)
+                    .tint(CowboyTheme.red)
+                    .disabled(model.loggingMore)
+                    .accessibilityLabel("Log")
+                    .accessibilityIdentifier("log-more-information")
+                }
+            }
         }
     }
 
