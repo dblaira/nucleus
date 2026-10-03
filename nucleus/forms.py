@@ -22,6 +22,7 @@ FIELDS = {"number", "when", "sentence", "status", "author", "date"}
 CONDITIONS = {"answer", "kinds_present", "kinds_absent", "record_count", "word_count", "missing_links", "missing_why", "graph_parts"}
 BLANKS = {"word", "other_word", "kind", "count", "word_count", "strongest_kind", "meaning", "record_quote", "missing_why", "missing_word", "absent_kind", "lined_up_part", "open_part"}
 ANSWERS = {"aligned", "not_sure", "dont_know"}
+MAX_WORDS = 25   # one short line; a filled form longer than this does not fire
 _BLANK = re.compile(r"\{([^{}]*)\}")
 _TOKEN = re.compile(r"\w+(?:[’'\-]\w+)*", re.UNICODE)
 
@@ -399,7 +400,11 @@ def _fill(form: dict, screen: Screen, *, kinds: list[str] | None, statuses: set[
         strongest = max(counts, key=counts.get)  # ties keep first occurrence on screen
         index = next(i for i, row in enumerate(screen.rows) if row.kind == strongest)
         values["strongest_kind"] = Part(screen.rows[index].kind, f"screen.rows[{index}].kind")
-    if not middle and blanks - values.keys():
+    if forms_middle.is_word_frame(form):
+        values = forms_middle.word_values(screen)
+        if values is None:
+            return None
+    elif not middle and blanks - values.keys():
         return None
 
     if middle:
@@ -421,6 +426,11 @@ def _fill(form: dict, screen: Screen, *, kinds: list[str] | None, statuses: set[
     # candidates. Keep the original check that a paragraph names this screen.
     if screen.words and not any(word.lower() in text.lower() for word in screen.words):
         raise Refused("does not speak about his words on the screen")
+    # Adam, 2026-10-02: "I am not reviewing ridiculously long answers. I don't speak that
+    # way or read long rows of text." A line longer than this never fires; his words are
+    # never trimmed to fit.
+    if MAX_WORDS is not None and len(_TOKEN.findall(text)) > MAX_WORDS:
+        return None
     return Filled(form["number"], text, tuple(parts))
 
 

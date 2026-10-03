@@ -11,7 +11,21 @@ from .gate import unescape_label
 
 PART_SLOTS = frozenset({'lined_up_part', 'open_part'})
 SLOTS = frozenset({'meaning', 'record_quote', 'missing_why', 'missing_word', 'absent_kind'}) | PART_SLOTS
+# Adam, 2026-10-02, on F-66: "why is f-66 so damn long? ... I don't speak that way or read
+# long rows of text." The old frame pasted his whole meaning paragraph, up to 248 words.
+# His word carries its meaning; the middle line names it and stops.
 PART_FRAME = '“{lined_up_part}” lines up with {word}: “{meaning}”. “{open_part}” is still open.'
+OLD_PART_FRAME = PART_FRAME   # retired 2026-10-02; the day limit on words keeps it from firing
+SHORT_PART_FRAME = '“{lined_up_part}” — that’s {word}. “{open_part}” is still open.'
+PART_FRAMES = (SHORT_PART_FRAME, PART_FRAME)
+# The aligned line: his word and his own shortest meaning, nothing written about him.
+WORD_FRAME = 'That’s {word}: “{meaning}”.'
+WORD_MEANING_MAX = 20   # words in the quoted meaning; a longer meaning is never shown
+TOO_LONG = 'too long to read — Adam, 2026-10-02: “I don’t speak that way or read long rows of text.”'
+# Adam, 2026-10-02, on F-53 and F-58: "makes no sense." Row quotes are lines written about
+# him, such as "Adam moves forward by default...", and the middle words read as verbs.
+NOT_HIS_WORDS = ('quotes lines written about Adam and uses the string tags as verbs — '
+                 'Adam, 2026-10-02: “F-53 makes no sense either.”')
 HEADS = (
     '{word} — “{meaning}” — and “{record_quote}” line up here',
     '{word}: “{meaning}” and “{record_quote}” line up here',
@@ -32,14 +46,40 @@ _ABSENCE = re.compile(
     r'\bthere is no evidence\b)', re.I)
 
 
+def is_word_frame(form: dict) -> bool:
+    """The aligned line that quotes his shortest meaning for one of his words."""
+    return form.get('sentence') == WORD_FRAME and form.get('when', {}).get('answer') == 'aligned'
+
+
 def is_middle(form: dict) -> bool:
     from . import forms
+    if form.get('sentence') == WORD_FRAME:
+        return False
     return any(blank in SLOTS for _, blank in forms._parts(form['sentence']))
+
+
+def word_values(screen):
+    """His word and his own shortest meaning on this screen, 20 words or fewer, or None."""
+    from . import forms
+    if screen.answer != 'aligned':
+        return None
+    choices = []
+    for mi, meaning in enumerate(screen.meanings):
+        if meaning.word in screen.words and not source_reason(meaning.quote):
+            size = len(forms._TOKEN.findall(meaning.quote))
+            if size <= WORD_MEANING_MAX:
+                choices.append((size, len(meaning.quote), mi))
+    if not choices:
+        return None
+    mi = min(choices)[2]
+    meaning = screen.meanings[mi]
+    return {'word': forms.Part(meaning.word, f'screen.words[{screen.words.index(meaning.word)}]'),
+            'meaning': forms.Part(meaning.quote, f'screen.meanings[{mi}].quote')}
 
 
 def is_graph_parts(form: dict) -> bool:
     """Only Adam's exact authorized frame receives the two-sentence exception."""
-    return (form.get('sentence') == PART_FRAME and form.get('when', {}).get('answer') == 'not_sure'
+    return (form.get('sentence') in PART_FRAMES and form.get('when', {}).get('answer') == 'not_sure'
             and form.get('when', {}).get('graph_parts') is True)
 
 
@@ -156,7 +196,7 @@ def check(form: dict, kinds: list[str]) -> str | None:
     if blanks & PART_SLOTS:
         if when.get('graph_parts') is not True:
             return 'graph-part blanks need graph_parts=true'
-        if form['sentence'] != PART_FRAME:
+        if form['sentence'] not in PART_FRAMES:
             return 'graph-part sentence must use the exact lined-up and open frame'
         for name in ('record_count', 'word_count'):
             if name in when:
@@ -323,6 +363,13 @@ def values(form, screen):
                             'meaning': forms.Part(meaning.quote, f'screen.meanings[{mi}].quote'),
                             'open_part': forms.Part(screen.parts[open_index].text, f'screen.parts[{open_index}].text'),
                         }
+                if form['sentence'] == SHORT_PART_FRAME:
+                    # The short frame names his word and stops; no meaning is pasted in.
+                    return {
+                        'lined_up_part': forms.Part(part.text, f'screen.parts[{pi}].text'),
+                        'word': forms.Part(word, f'screen.words[{screen.words.index(word)}]'),
+                        'open_part': forms.Part(screen.parts[open_index].text, f'screen.parts[{open_index}].text'),
+                    }
         return None
     gaps = []
     for i, why in enumerate(screen.whys):

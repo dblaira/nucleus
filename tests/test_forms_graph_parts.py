@@ -7,6 +7,14 @@ import pytest
 from nucleus import forms, forms_middle as middle, forms_patterns as patterns, gate
 from nucleus.model import ModelReply
 
+
+@pytest.fixture(autouse=True)
+def legacy_long_lines(monkeypatch):
+    """The long frame here was retired on 2026-10-02; its mechanics stay tested without the
+    25-word day limit, which test_forms_short.py covers."""
+    monkeypatch.setattr(forms, 'MAX_WORDS', None)
+
+
 KINDS = ['supports', 'rejects', 'depends on']
 
 

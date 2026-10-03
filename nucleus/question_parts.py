@@ -5,7 +5,7 @@ import re
 
 
 _BREAK = re.compile(
-    r'(?P<contrast>\b(?:but|yet|still|though|although)\b)'
+    r'(?P<contrast>\b(?:even\s+though|but|yet|still|though|although)\b)'
     r'|(?P<sentence>[.!?]+["”’\']*(?=\s|$))'
     r'|(?P<line>\r?\n+)',
     re.IGNORECASE,

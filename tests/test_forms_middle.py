@@ -6,6 +6,14 @@ import pytest
 
 from nucleus import forms, forms_middle as middle, forms_night as night, gate
 
+
+@pytest.fixture(autouse=True)
+def legacy_long_lines(monkeypatch):
+    """These fixtures test the exact mechanics of frames Adam retired on 2026-10-02 as
+    too long and not his words. The 25-word day limit is tested in test_forms_short.py."""
+    monkeypatch.setattr(forms, 'MAX_WORDS', None)
+
+
 KINDS = ['supports', 'depends on', 'rejects']
 
 

@@ -197,6 +197,9 @@ FORMS_STYLE = """
 .fit-count{font-size:18px;font-weight:700;margin:0 0 20px}
 .example{font-family:Georgia,serif;font-size:25px;line-height:1.4;margin:0 0 20px;white-space:pre-wrap;overflow-wrap:anywhere}
 .fires,.example-source{font-size:15px;line-height:1.5;color:var(--soft);margin:0 0 18px}
+.example-source{margin:0 0 4px}
+.example-question{font-size:19px;line-height:1.4;margin:0 0 14px;color:var(--ink)}
+.pair{border-top:1px solid #DCD4C4;padding-top:14px;margin-top:6px}
 .choices{display:flex;gap:12px}
 .choices button{flex:1;min-height:50px;border-radius:12px;font:700 19px -apple-system,Helvetica,Arial,sans-serif}
 .choices button:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
@@ -214,10 +217,15 @@ def forms_page(proposals: list[dict], token: str, error: str | None = None) -> s
     cards = []
     for p in proposals:
         number = escape(p['number'] or 'Form')
-        examples = ''.join(('<p class="example-source">Practice question</p>' if e.get('surface') == 'practice'
-                           else '<p class="example-source">Your question</p>')
-                           + '<p class="example">' + escape(e['text']) + '</p>' for e in p['examples']
-                           if isinstance(e, dict) and isinstance(e.get('text'), str))
+        # Adam, 2026-10-02: an answer shown without its question cannot be judged.
+        # Each example is the question he asked, then the one line Cowboy AI says.
+        examples = ''.join(
+            '<div class="pair">'
+            + '<p class="example-source">' + ('Practice question' if e.get('surface') == 'practice' else 'You asked') + '</p>'
+            + '<p class="example-question">' + escape(e.get('question') or '') + '</p>'
+            + '<p class="example-source">Cowboy AI says</p>'
+            + '<p class="example">' + escape(e['text']) + '</p></div>'
+            for e in p['examples'] if isinstance(e, dict) and isinstance(e.get('text'), str))
         condition = forms_review.fires_when(p['form']['when']) if not p['error'] else 'Saved examples need checking.'
         disabled = ' disabled' if p['error'] else ''
         cards.append(f'<article class="review-card" aria-labelledby="form-{number}">'

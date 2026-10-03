@@ -37,7 +37,8 @@ def test_real_and_practice_together_can_pass_and_show_both_counts(copy):
     assert queue[0]['error'] is None
     page = serve.forms_page(queue, 'fixture')
     assert 'fits 1 of your questions · 2 practice questions' in page
-    assert page.count('Practice question') == 2 and page.count('Your question') == 1
+    assert page.count('Practice question') == 2 and page.count('You asked') == 1
+    assert page.count('Cowboy AI says') == 3
     assert page.count('>Yes</button>') == page.count('>No</button>') == 1
     assert forms.pick(night.screen_from_picture(picture(), KINDS))[0] is None
 

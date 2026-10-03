@@ -12,6 +12,14 @@ from nucleus.store import Store
 from test_forms_day import IDS, reading, setup, run, write_forms, forbidden, model_rows, fixture_form
 
 
+@pytest.fixture(autouse=True)
+def legacy_long_lines(monkeypatch):
+    """These fixtures test the exact mechanics of frames Adam retired on 2026-10-02 as
+    too long and not his words. The 25-word day limit is tested in test_forms_short.py."""
+    monkeypatch.setattr(forms, 'MAX_WORDS', None)
+
+
+
 MISSING_WHY = "Your records do not show how the app behaved."
 
 

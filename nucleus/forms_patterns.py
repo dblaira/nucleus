@@ -64,6 +64,8 @@ def pattern_reason(when: dict) -> str | None:
 
 def check(form: dict, kinds: list[str]) -> str | None:
     """Call after forms.check: absences/counts alone do not establish a pattern."""
+    if forms_middle.is_word_frame(form):
+        return count_reason(form['when'])
     if forms_middle.is_middle(form):
         return forms_middle.check(form, kinds) or count_reason(form['when'])
     reason = pattern_reason(form['when'])

@@ -10,6 +10,14 @@ from nucleus.graph import load_graph
 from nucleus.model import ModelReply
 from nucleus.store import Store
 
+
+@pytest.fixture(autouse=True)
+def legacy_long_lines(monkeypatch):
+    """These fixtures test the exact mechanics of frames Adam retired on 2026-10-02 as
+    too long and not his words. The 25-word day limit is tested in test_forms_short.py."""
+    monkeypatch.setattr(forms, 'MAX_WORDS', None)
+
+
 IDS = [
     "conn-obs-fable5-2026-07-10-affect-work-momentum-compass",
     "conn-obs-mined-2026-07-10-external-scaffolding-by-design",
