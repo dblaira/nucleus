@@ -285,8 +285,29 @@ def diverse_examples(matches: list[dict]) -> list[dict]:
 
 
 def distinct_fills(matches: list[dict]) -> list[dict]:
-    """The semantic reviewer still sees every different fill, beyond the three shown."""
-    return list({e['text']: e for e in matches}.values())
+    """Keep every exact question/source/answer context, beyond the three cards.
+
+    Different questions must never disappear merely because they fill the same
+    sentence. Repeated identical contexts need only one semantic review.
+    """
+    unique = {}
+    for example in matches:
+        context = {key: example.get(key) for key in ('question', 'screen', 'text', 'parts')}
+        unique.setdefault(encoded(context), example)
+    return list(unique.values())
+
+
+def reuse_context_reviews(form: dict, matches: list[dict], earlier: list[dict]) -> None:
+    """Copy only current receipts for the same complete measured context."""
+    proofs = {example[forms_patterns.CONTEXT_FIELD]['digest']: example[forms_patterns.CONTEXT_FIELD]
+              for example in earlier if forms_patterns.context_reason(form, example) is None}
+    for example in matches:
+        try:
+            digest = forms_patterns._context_digest(form, example)
+        except (TypeError, ValueError):
+            continue
+        if digest in proofs:
+            example[forms_patterns.CONTEXT_FIELD] = dict(proofs[digest])
 
 
 def coverage_evidence(store: Store, proposal_id: str) -> tuple[list[dict], list[dict]]:
@@ -774,6 +795,8 @@ def _propose(store, run_id, started, bootstrap, forms_path, model_call, widen, m
                 try:
                     matches = matching_answers(p['form'], history, kinds, graph=engine.graph if engine else None)
                     reason = coverage_reason(matches)
+                    if reason is None:
+                        reuse_context_reviews(p['form'], matches, coverage_for(store, p['id']))
                 except forms.Refused as error:
                     reason = str(error)
             pending_checks.append((p['id'], matches, reason))
@@ -855,21 +878,31 @@ def _propose(store, run_id, started, bootstrap, forms_path, model_call, widen, m
                 prepared.append(checked(raw, f"F-{next_number + position - 1}",
                                         'program/recheck-own-words' if recheck and position <= len(replacements) else author,
                                         history, kinds, seen, middle_only=middle_only, graph=engine.graph if engine else None))
-        reviewable = [{"form": f, "examples": distinct_fills(e)} for f, r, e in prepared if r is None]
+        proposed_by_id = {p['id']: p for p in proposals}
+        reviewable = [{"form": proposed_by_id[pid]['form'], "examples": distinct_fills(matches)}
+                      for pid, matches, reason in pending_checks if reason is None and
+                      any(forms_patterns.context_reason(proposed_by_id[pid]['form'], example) for example in matches)]
+        reviewable += [{"form": f, "examples": distinct_fills(e)} for f, r, e in prepared if r is None]
         decisions = forms_patterns.review(store, run_id, reviewable, model_call) if reviewable else {}
+        updated_checks = []
+        for pid, matches, reason in pending_checks:
+            form = proposed_by_id[pid]['form']
+            if reason is None and form['number'] in decisions:
+                reason = forms_patterns.review_reason(form, decisions[form['number']])
+                if reason is None:
+                    for example in matches:
+                        forms_patterns.mark_context_review(form, example)
+            updated_checks.append((pid, matches, reason))
+        pending_checks = updated_checks
         for index, (form, reason, examples) in enumerate(prepared):
             if reason is not None:
                 continue
             decision = decisions[form['number']]
-            if decision['reading_grade'] > 5:
-                reason = f"reading level above fifth grade: {decision['reading_grade']}: {decision['reason']}"
-            elif not decision['one_sentence'] and not forms_middle.is_graph_part(form):
-                reason = f"not one plain sentence: {decision['reason']}"
-            elif decision['verdict'] != 'explains_pattern':
-                category = forms_patterns.RESTATEMENT if decision['verdict'] == 'restates_rows' else 'unsupported pattern meaning'
-                reason = f"{category}: {decision['reason']}"
+            reason = forms_patterns.review_reason(form, decision)
+            if reason is None:
+                for example in examples:
+                    forms_patterns.mark_context_review(form, example)
             prepared[index] = (form, reason, examples)
-        proposed_by_id = {p['id']: p for p in proposals}
         entries = [(('old', pid), proposed_by_id[pid]['form'], matches)
                    for pid, matches, reason in pending_checks if reason is None]
         entries += [(('new', i), form, matches) for i, (form, reason, matches) in enumerate(prepared) if reason is None]

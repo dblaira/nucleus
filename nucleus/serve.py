@@ -195,8 +195,16 @@ FORMS_STYLE = """
 .review-card{background:var(--paper);border-radius:16px;padding:20px;margin:0 0 20px;box-shadow:0 10px 26px rgba(40,30,10,.12)}
 .review-card h2{font-size:18px;letter-spacing:.04em;color:var(--lapis);margin:0 0 12px}
 .fit-count{font-size:18px;font-weight:700;margin:0 0 20px}
+.example-pair{margin:0 0 24px}
+.example-question{font-family:Georgia,serif;font-size:22px;line-height:1.4;margin:0 0 18px;white-space:pre-wrap;overflow-wrap:anywhere}
 .example{font-family:Georgia,serif;font-size:25px;line-height:1.4;margin:0 0 20px;white-space:pre-wrap;overflow-wrap:anywhere}
 .fires,.example-source{font-size:15px;line-height:1.5;color:var(--soft);margin:0 0 18px}
+.example-source{font-weight:600;margin-bottom:6px}
+.approval-scope{font-size:16px;line-height:1.5;margin:0 0 16px}
+.review-details{margin:18px 0 0;color:var(--soft)}
+.review-details summary{cursor:pointer;font-size:15px}
+.review-details summary:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+.review-details .fit-count{font-size:16px;margin:14px 0}
 .choices{display:flex;gap:12px}
 .choices button{flex:1;min-height:50px;border-radius:12px;font:700 19px -apple-system,Helvetica,Arial,sans-serif}
 .choices button:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
@@ -214,25 +222,49 @@ def forms_page(proposals: list[dict], token: str, error: str | None = None) -> s
     cards = []
     for p in proposals:
         number = escape(p['number'] or 'Form')
-        examples = ''.join(('<p class="example-source">Practice question</p>' if e.get('surface') == 'practice'
-                           else '<p class="example-source">Your question</p>')
-                           + '<p class="example">' + escape(e['text']) + '</p>' for e in p['examples']
-                           if isinstance(e, dict) and isinstance(e.get('text'), str))
+        examples, incomplete = [], not p['examples']
+        for index, example in enumerate(p['examples'], 1):
+            question = example.get('question') if isinstance(example, dict) else None
+            answer = example.get('text') if isinstance(example, dict) else None
+            if (not isinstance(question, str) or not question.strip()
+                    or not isinstance(answer, str) or not answer.strip()):
+                incomplete = True
+                continue
+            source = 'Practice question' if example.get('surface') == 'practice' else 'Your question'
+            question_label = f'form-{number}-example-{index}-question'
+            answer_label = f'form-{number}-example-{index}-answer'
+            examples.append('<div class="example-pair">'
+                            f'<h3 class="example-source" id="{question_label}">{source}</h3>'
+                            f'<p class="example-question" aria-labelledby="{question_label}">{escape(question)}</p>'
+                            f'<h3 class="example-source" id="{answer_label}">Proposed answer</h3>'
+                            f'<p class="example" aria-labelledby="{answer_label}">{escape(answer)}</p></div>')
         condition = forms_review.fires_when(p['form']['when']) if not p['error'] else 'Saved examples need checking.'
-        disabled = ' disabled' if p['error'] else ''
+        disabled = ' disabled' if p['error'] or incomplete else ''
+        scope_id = f'form-{number}-approval'
+        problem_id = f'form-{number}-problem'
+        problems = [p['error']] if isinstance(p['error'], str) and p['error'] else []
+        if incomplete:
+            problems.append('An example is missing its question or answer. Yes is unavailable until it can be shown.')
+        problem = (f'<p class="stop" id="{problem_id}" role="alert">'
+                   + '<br>'.join(escape(message) for message in problems) + '</p>' if problems else '')
+        described_by = scope_id + (' ' + problem_id if problems else '')
+        graph_note = ('<p class="fires">These fits are checked with your graph. Your saved answers stay as they were.</p>'
+                      if any(isinstance(e, dict) and e.get('graph_label') for e in p['examples']) else '')
         cards.append(f'<article class="review-card" aria-labelledby="form-{number}">'
                      f'<h2 id="form-{number}">{number}</h2>'
-                     f'<p class="fit-count">fits {p["real_fit_count"]} of your questions · {p["practice_fit_count"]} practice questions</p>{examples}'
-                     f'<p class="fires"><b>Fires when</b><br>{escape(condition)}</p>'
+                     + ''.join(examples) + problem
+                     + f'<p class="approval-scope" id="{scope_id}">Yes allows this way of answering future questions '
+                     'that match this form. No rejects this form and keeps it.</p>'
                      '<form class="choices" action="/forms/decision" method="post">'
                      f'<input type="hidden" name="proposal_id" value="{escape(p["id"])}">'
                      f'<input type="hidden" name="version" value="{escape(p["version"])}">'
                      f'<input type="hidden" name="token" value="{escape(token)}">'
-                     f'<button class="yes" name="choice" value="yes"{disabled}>Yes</button>'
-                     '<button class="no" name="choice" value="no">No</button></form></article>')
+                     f'<button class="yes" name="choice" value="yes" aria-describedby="{described_by}"{disabled}>Yes</button>'
+                     f'<button class="no" name="choice" value="no" aria-describedby="{scope_id}">No</button></form>'
+                     '<details class="review-details"><summary>When this answer would be used</summary>'
+                     f'<p class="fit-count">fits {p["real_fit_count"]} of your questions · {p["practice_fit_count"]} practice questions</p>'
+                     f'<p class="fires"><b>Fires when</b><br>{escape(condition)}</p>{graph_note}</details></article>')
     notice = f'<p class="stop" role="alert">{escape(error)}</p>' if error else ''
-    if any(e.get('graph_label') for p in proposals for e in p['examples']):
-        notice += '<p class="fires">These fits are checked with your graph. Your saved answers stay as they were.</p>'
     body = ''.join(cards) if cards else '<p class="answer">No forms waiting for your yes.</p>'
     return ('<!doctype html><html lang="en"><head><meta charset="utf-8">'
             '<meta name="viewport" content="width=device-width,initial-scale=1">'

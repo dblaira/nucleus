@@ -128,4 +128,4 @@ def test_reviewer_receives_literal_words_for_style_and_full_sources_for_binding(
     result = patterns.review(audit, 'isolated', [original], model_call=call)
     assert result['F-71']['reading_grade'] == 3
     assert 'literal_words' not in original and len(audit.calls) == 1
-    assert patterns.POLICY == 'graph-parts-text-v3'
+    assert patterns.POLICY == 'question-fit-v1'

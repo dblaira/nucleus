@@ -798,3 +798,49 @@ merge, launchd installation or loading.
 See [slice details](docs/forms-slice-7c.md),
 [night summary](docs/forms-slice-7c-night.json) and
 [preservation/timing proof](docs/forms-slice-7c-proof.json). **Stop after slice 7c.**
+
+## Forms review repair — October 2, 2026 Pacific — ready, not deployed
+
+Prepared on `codex/forms-review-fix` from
+`e1d91f7c8e203ae7d700766d37dd5b84ad57093b`, worktree
+`/Users/adamblair/.codex/worktrees/nucleus-forms-review-fix`. Adam assigned the
+other session to finish and restart the review page; this session keeps its
+repair ready for integration. His exact feedback and ownership decision are
+appended on private companion branch `codex/forms-review-fix-ledger`.
+
+The review card now shows the saved question immediately before its proposed
+answer and explains what Yes and No do. Fit counts and conditions sit behind
+“When this answer would be used”. Existing styling, sorting, exact source text,
+and the two buttons remain. Missing context shows its reason and blocks Yes
+both on the page and in the decision handler; No remains available.
+
+Night review now checks whether the filled answer applies to its actual
+question and intended dictionary sense. Different questions producing the same
+sentence no longer disappear from review. Any off-topic match refuses the
+whole form as `does not answer the question: ...`; coverage is never repaired
+by dropping that match. Only the form author's own words receive style and
+reading-level checks. Pending forms with missing or changed relevance evidence
+receive the same bounded night review as new candidates. Approval requires
+current evidence bound to the exact form, question, screen, answer and source
+parts. All packets must pass before that evidence is saved. Existing human
+Yes/No decisions and the approved catalog remain protected.
+
+**658 tests pass.** Added regression coverage includes question/answer order,
+real/practice labels, escaping, missing-context refusal, source-bound evidence,
+stale evidence, distinct question contexts, off-topic refusal, failed packets,
+old pending forms, preserved human decisions and packet bounds. A separate
+static browser preview with made-up examples verified the visible layout,
+closed supporting details, and no horizontal overflow at **480 CSS pixels**.
+It used an ephemeral loopback port, opened no database, and could not approve.
+
+**No actual night pass, model call, copy database write, approval, service
+restart or merge occurred for this repair.** The review copy and service on
+8767, live service/database on 8766, graph files, dictionary and source records
+were untouched. `NUCLEUS_FORMS_ONLY` was not changed. The other session's work
+was not absorbed or overwritten. This branch remains based on slice 7c and
+must be integrated with the other session's newer short-frame implementation
+and retested before deployment. It must not replace that runtime by itself.
+
+See [repair and integration details](docs/forms-review-fix.md). Full private
+questions, filled examples and actual-data screenshots remain outside this
+public repository. **Stop with this fix ready; the other session owns restart.**

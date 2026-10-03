@@ -41,6 +41,9 @@ def check_examples(proposal: dict, examples: list[dict], matches: list[dict]) ->
         raise forms.Refused(reason)
     if not examples or len(examples) > 3:
         raise forms.Refused('Saved examples are missing.')
+    if any(not isinstance(example, dict) or not isinstance(example.get('question'), str)
+           or not example['question'].strip() for example in [*examples, *matches]):
+        raise forms.Refused('The question is missing from a saved example. It needs checking before Yes.')
     reason = forms_night.coverage_reason(matches)
     if reason:
         raise forms.Refused(reason)
@@ -54,6 +57,9 @@ def check_examples(proposal: dict, examples: list[dict], matches: list[dict]) ->
                 raise forms.Refused('Saved example differs from the form or its screen.')
         except (KeyError, TypeError, ValueError) as error:
             raise forms.Refused(f'Saved example cannot be checked: {error}') from error
+        reason = forms_patterns.context_reason(form, example)
+        if reason:
+            raise forms.Refused(reason)
 
 
 def pending(store: Store, forms_path: Path) -> list[dict]:

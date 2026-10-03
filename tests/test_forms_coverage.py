@@ -274,4 +274,6 @@ def test_repeat_of_same_question_with_new_word_cannot_inflate_word_coverage():
     ]
     assert night.fit_counts(examples) == (3, 1)
     assert night.coverage_reason(examples) == 'fits too few answers'
-    assert len(night.distinct_fills([{**e, 'text': e['parts'][0]['text']} for e in examples])) == 2
+    reviewed = night.distinct_fills([{**e, 'text': e['parts'][0]['text']} for e in examples])
+    assert len(reviewed) == 4
+    assert [e['question'] for e in reviewed] == [e['question'] for e in examples]

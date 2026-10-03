@@ -27,7 +27,8 @@
             "enum": [
               "explains_pattern",
               "restates_rows",
-              "unsupported_meaning"
+              "unsupported_meaning",
+              "off_topic"
             ]
           },
           "reason": {
