@@ -19,7 +19,7 @@ You return exactly one JSON object and nothing else. No prose before or after it
 
 Adam's three answers, in his words:
 1. "aligned and why"
-2. "Not sure.  some correlation, but not enough for causation, more data may help."
+2. "There is some relationship, but not enough to justify causation."
 3. "I don't know" there is nothing in your records that points to a conclusion.
 
 The object:

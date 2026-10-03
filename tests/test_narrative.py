@@ -167,7 +167,7 @@ def test_the_domain_road_paints_his_middle_line_with_the_records_as_rows(monkeyp
 
     result = ask_module.ask("Why do I sleep badly after a late meeting?", store=store, model_call=never,
                             brief=lambda q: reading(unknown=["SLEEP", "BADLY", "LATE", "MEETING"]), explain_call=never)
-    assert result.answer == "not_sure" and result.text.startswith("Not sure.")
+    assert result.answer == "not_sure" and result.text.startswith("There is some relationship, but not enough to justify causation.")
     saved = store.explanation(result.question_id)
     assert saved["provider"] == "code" and "Exercise and Sleep rise together in the same week: 57% of 92 tracked weeks" in saved["text"]
 
@@ -210,7 +210,7 @@ def test_the_doctor_entry_is_his_middle_answer_with_the_record_as_a_row_and_no_m
 
     result = ask_module.ask(DOCTOR, store=store, model_call=never, brief=lambda q: reading(unknown=["REASONS", "AVOID", "DOCTOR"]),
                             explain_call=never)
-    assert result.answer == "not_sure" and result.text.startswith("Not sure.")
+    assert result.answer == "not_sure" and result.text.startswith("There is some relationship, but not enough to justify causation.\n")
     assert [row["leaf"] for row in result.records] == ["conn-obs-mined-2026-07-10-easy-innocent-changes-stick"]
     saved = store.explanation(result.question_id)
     assert saved["provider"] == "code" and "“a licensed medical practitioner”" in saved["text"]
@@ -250,3 +250,11 @@ def test_without_the_english_dictionary_nothing_else_changes(narrator, store, mo
     finally:
         english.sense.cache_clear()
         english.bases.cache_clear()
+
+
+def test_the_middle_answer_begins_with_his_words_of_october_2():
+    # Adam, 2026-10-02: "I will need to define the logic for the middle response.  We will begin with this response.
+    # "There is some relationship, but not enough to justify causation.""
+    from nucleus import gate
+    assert gate.FIRST_LINE["not_sure"] == "There is some relationship, but not enough to justify causation."
+    assert gate.compose("not_sure", [], [], []) == "There is some relationship, but not enough to justify causation."

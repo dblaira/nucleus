@@ -5,10 +5,12 @@ Adam, 2026-09-10: "That is the nucleus." "The RDF, Ontology, Dictionary all stay
 ## The three answers, in Adam's words
 
 1. "aligned and why"
-2. "Not sure.  some correlation, but not enough for causation, more data may help."
+2. "There is some relationship, but not enough to justify causation."
 3. "I don't know" there is nothing in your records that points to a conclusion.
 
-Under "Not sure" there is a second box, in his word: **possibility**. "So it's the more data may help that I believe is a perfect opportunity for AI to use its inference to help me. What I mean by that is that's a time for creativity." It is the only place the model may propose anything. What it proposes is saved as a candidate and never enters the graph or the dictionary without his yes.
+Adam, 2026-10-02, on the middle answer: "I will need to define the logic for the middle response.  We will begin with this response. "There is some relationship, but not enough to justify causation."" Then: "The middle response requires a back and forth exchange to answer questions (or options) it will return so a better causation case can be made." The first line is in the code. The exchange is not built, and its logic is his to define. Until 2026-10-02 the middle line read "Not sure.  some correlation, but not enough for causation, more data may help."
+
+Under the middle answer there is a second box, in his word: **possibility**. "So it's the more data may help that I believe is a perfect opportunity for AI to use its inference to help me. What I mean by that is that's a time for creativity." It is the only place the model may propose anything. What it proposes is saved as a candidate and never enters the graph or the dictionary without his yes.
 
 "I don't know from Cowboyai means I know from myself or the user."
 

@@ -1,13 +1,17 @@
 """The gate. Code decides whether a model reply is one of Adam's three answers.
 
-Adam's three answers, in his words (2026-09-10):
+Adam's three answers, in his words (2026-09-10; the middle one as he reworded it 2026-10-02):
   1. "aligned and why"
-  2. "Not sure.  some correlation, but not enough for causation, more data may help."
+  2. "There is some relationship, but not enough to justify causation."
   3. "I don't know" there is nothing in your records that points to a conclusion.
+
+Adam, 2026-10-02: "I will need to define the logic for the middle response.  We will begin with this response.
+"There is some relationship, but not enough to justify causation."" Until then its first line read
+"Not sure.  some correlation, but not enough for causation, more data may help." The key stays not_sure.
 
 The model returns JSON only. The gate checks it. Code composes the text Adam sees.
 The model never writes a paragraph. Its only free text is one sentence per entry,
-plus the possibility box under "Not sure", which is the one place it may propose.
+plus the possibility box under the middle answer, which is the one place it may propose.
 """
 
 from __future__ import annotations
@@ -23,7 +27,7 @@ ANSWERS = ("aligned", "not_sure", "dont_know")
 
 FIRST_LINE = {
     "aligned": "aligned and why",
-    "not_sure": "Not sure.  some correlation, but not enough for causation, more data may help.",
+    "not_sure": "There is some relationship, but not enough to justify causation.",
     "dont_know": "I don't know. There is nothing in your records that points to a conclusion.",
 }
 

@@ -40,7 +40,7 @@ def test_picture_is_painted_from_links_without_a_model(tmp_path: Path):
     store.add_link("FLOW", FLOW_ID, FLOW_QUOTE, "Momentum is the felt side of FLOW.", "links:FLOW", "fake", "fake")
     picture = links.paint("What is FLOW?", reading("FLOW"), [], store, graph, meanings)
     assert picture is not None and picture.answer == "not_sure" and picture.missing == []
-    assert picture.text.startswith("Not sure.") and FLOW_QUOTE in picture.text and "Momentum is the felt side of FLOW." in picture.text
+    assert picture.text.startswith("There is some relationship, but not enough to justify causation.") and FLOW_QUOTE in picture.text and "Momentum is the felt side of FLOW." in picture.text
     store.thumb("FLOW", FLOW_ID, up=False)
     assert links.paint("What is FLOW?", reading("FLOW"), [], store, graph, meanings) is None
 

@@ -59,7 +59,7 @@ enum Category: String, CaseIterable, Identifiable, Hashable {
     var title: String {
         switch self {
         case .aligned: "aligned and why"
-        case .notSure: "Not sure.  some correlation, but not enough for causation, more data may help."
+        case .notSure: "There is some relationship, but not enough to justify causation."
         case .dontKnow: "I don't know. There is nothing in your records that points to a conclusion."
         }
     }
