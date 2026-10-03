@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import sys
 import time
 from dataclasses import asdict, dataclass, field
@@ -14,6 +15,7 @@ from . import gate as gate_module
 from . import explain as explain_module
 from . import links as links_module
 from . import model as model_module
+from . import narrative as narrative_module
 from . import phrases as phrases_module
 from . import prompt as prompt_module
 from .compact import compact_nucleus
@@ -27,6 +29,28 @@ STEP_NUCLEUS = "4 nucleus read whole"
 STEP_MODEL = "5 one model call"
 STEP_GATE = "6 the gate"
 STEP_ANSWER = "7 answer out"
+
+# Adam's switches. Off unless he turns them on; with both off this file behaves exactly as before.
+#   NUCLEUS_NARRATIVE=1  the paragraph under the first line is built by code from his own sentences; no model writes it
+#   NUCLEUS_NO_MODEL=1   a question that reaches none of his words gets his third answer at once; no model is asked
+_narrator: tuple[tuple, narrative_module.Narrator] | None = None
+
+
+def narrative_on() -> bool:
+    return os.environ.get("NUCLEUS_NARRATIVE") == "1"
+
+
+def no_model() -> bool:
+    return os.environ.get("NUCLEUS_NO_MODEL") == "1"
+
+
+def narrator() -> narrative_module.Narrator:
+    """Built once from his files, built again when one of them changes."""
+    global _narrator
+    stamp = tuple(NUCLEUS_FILES[name].stat().st_mtime for name in ("graph", "ledger", "meanings", "routes"))
+    if _narrator is None or _narrator[0] != stamp:
+        _narrator = (stamp, narrative_module.build())
+    return _narrator[1]
 
 
 @dataclass
@@ -103,7 +127,12 @@ def ask(question: str, store: Store | None = None, surface: str = "cli",
 
     # 3b. the picture from saved links. His words, his records, no model. Adam, 2026-09-11:
     #     "we're not trying to answer questions. Trying to paint accurate pictures from the information given."
-    picture = links_module.paint(question, reading, hits, store, graph, meanings)
+    told = narrator().tell(question, reading, store.links_for) if narrative_on() else None
+    also = [reach.word for reach in told.reaches] if told else None
+    picture = links_module.paint(question, reading, hits, store, graph, meanings, also=also)
+    if told is not None and picture is not None and picture.missing:
+        # a word reached by his route may have no links yet; his own sentences still answer, so it paints
+        picture.missing = []
     if picture is not None and not picture.missing:
         for name in (STEP_NUCLEUS, STEP_MODEL, STEP_GATE, STEP_ANSWER):
             store.start_step(question_id, name)
@@ -113,11 +142,29 @@ def ask(question: str, store: Store | None = None, surface: str = "cli",
                                  "possibility": []}, ensure_ascii=False)
         store.save_answer(question_id, "answered", picture.answer, picture.text, reply_json, True, None,
                           nucleus_hash=model_module.nucleus_hash(prompt_module.nucleus_text()[0]))
-        # the rows are on the screen; the explanation arrives under them when the model is done
-        if explain_call is not False:
+        if told is not None:
+            # the meaning, in normal sentences, built by code in milliseconds; the model is not asked
+            if told.text:
+                store.save_explanation(question_id, told.text, None, "code", "narrative", time.time() - told.ms / 1000)
+        elif explain_call is not False:
+            # the rows are on the screen; the explanation arrives under them when the model is done
             explain_module.start(question_id, question, picture.text, picture.touched, store, explain_call)
         return finish(Result(question_id, question, "answered", answer=picture.answer, text=picture.text, words=picture.words,
                              records=picture.records, reading=reading, phrases=phrase_dicts, provider="links", model="painted"))
+
+    if no_model():
+        # none of his words were reached. His third answer, at once. The dictionary's own list says what has no meaning yet.
+        for name in (STEP_NUCLEUS, STEP_MODEL, STEP_GATE, STEP_ANSWER):
+            store.start_step(question_id, name)
+            store.finish_step(question_id, name, note="none of your words reached, no model" if name == STEP_MODEL else "")
+        text = gate_module.FIRST_LINE["dont_know"]
+        store.save_answer(question_id, "answered", "dont_know", text,
+                          json.dumps({"answer": "dont_know", "words": [], "records": [], "possibility": []}), True, None)
+        unknown = told.no_meaning_yet if told is not None else []
+        if unknown:
+            store.save_explanation(question_id, "No meaning added yet: " + ", ".join(unknown) + ".", None, "code", "dictionary", time.time())
+        return finish(Result(question_id, question, "answered", answer="dont_know", text=text, reading=reading,
+                             phrases=phrase_dicts, provider="code", model="none"))
 
     # 4. the nucleus, whole
     store.start_step(question_id, STEP_NUCLEUS)

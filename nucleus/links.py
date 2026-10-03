@@ -83,10 +83,14 @@ def touched_words(reading: dict, hits, known: set[str]) -> list[str]:
     return words
 
 
-def paint(question: str, reading: dict, hits, store: Store, graph: Graph, meanings) -> Picture | None:
-    """The picture from saved links. None when no word of his in the question has links yet."""
+def paint(question: str, reading: dict, hits, store: Store, graph: Graph, meanings, also: list[str] | None = None) -> Picture | None:
+    """The picture from saved links. None when no word of his in the question has links yet.
+    `also`: words of his reached another way (his routes, a folded ending); they are added, nothing is removed."""
     known = {m.word for m in meanings}
     touched = touched_words(reading, hits, known)
+    for word in also or []:
+        if word in known and word not in touched:
+            touched.append(word)
     if not touched:
         return None
     words: list[dict] = []
