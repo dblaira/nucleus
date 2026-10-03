@@ -493,7 +493,7 @@ class Narrator:
             lines = []
             for _both, _fit, _strength, _leaf, label, line, record in rows:
                 if len(lines) < most and len(line.split()) <= MAX_RECORD_WORDS and count + len(lead.split()) + len(line.split()) <= MAX_TOLD_WORDS:
-                    told.parts.append(Part(line, label, "record", "", record.leaf))
+                    told.parts.append(Part(line, his_exact(label), "record", "", record.leaf))
                     lines.append(line)
                     count += len(line.split())
             if lines and lead:
@@ -657,7 +657,7 @@ class Narrator:
                 if not found or not room(found[0]):
                     continue
                 line, exact, record = found
-                told.parts.append(Part(line, exact, "record", reach.word, record.leaf))
+                told.parts.append(Part(line, his_exact(exact), "record", reach.word, record.leaf))
                 weeks = self.weeks_line(record, question)
                 if weeks and room(line + " " + weeks[0]):
                     told.parts.append(Part(weeks[0], weeks[1], "weeks", reach.word, weeks[2]))
@@ -791,6 +791,12 @@ def tell_record(label: str) -> str | None:
         return finished(said) if said and same_words(own.group(1), said) else None
     said = adam_to_you(label)
     return finished(said) if said and same_words(label, said) else None
+
+
+def his_exact(label: str) -> str:
+    """The exact words a told record is checked against: his quote itself when the record is his own words."""
+    own = HIS_WORDS_RECORD.match(label)
+    return own.group(1) if own else label
 
 
 def finished(sentence: str) -> str:

@@ -34,7 +34,7 @@ Read this file, then `README.md`, then `AGENTS.md` in the Cowboyai repo for the 
 | doors | `nucleus/model.py`: codex (default), zai (`NUCLEUS_DOOR=zai`, his prepaid GLM credits, slower), anthropic/openai (keys absent) | |
 | store | `~/Library/Application Support/nucleus/nucleus.sqlite3` — questions, steps, model_calls, answers, candidates, phrase_hits, grades, links, searched_words | nothing is ever deleted |
 
-Tests: `.venv/bin/python -m pytest` — 86 pass.
+Tests: `.venv/bin/python -m pytest` — 87 pass.
 
 ## 2026-10-02 — the meaning in normal sentences, with no model, judged by his knowledge graph and dictionary
 

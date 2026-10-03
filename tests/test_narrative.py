@@ -170,6 +170,13 @@ def test_the_domain_road_paints_his_middle_line_with_the_records_as_rows(monkeyp
     assert result.answer == "not_sure" and result.text.startswith("Not sure.")
     saved = store.explanation(result.question_id)
     assert saved["provider"] == "code" and "Exercise and Sleep rise together in the same week: 57% of 92 tracked weeks" in saved["text"]
+
+
+def test_a_record_that_is_his_own_words_is_checked_against_his_quote(narrator, store):
+    told = narrator.tell("Why do I sleep badly after a late meeting?", reading(unknown=["BADLY", "LATE", "MEETING"]), store.links_for)
+    records = [part for part in told.parts if part.source == "record"]
+    assert records and all(same_words(part.exact, part.text) for part in records)
+    assert any(part.exact.startswith("Better sleep, and concentration is the outcome I'm going for") for part in records)
     assert store.connection.execute("SELECT COUNT(*) FROM model_calls").fetchone()[0] == 0
 
 
