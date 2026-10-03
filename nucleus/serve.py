@@ -156,7 +156,7 @@ function render(data){
   });
   const r = document.getElementById('reveal');
   if (r) r.onclick = () => { document.getElementById('more').classList.add('open'); r.remove(); };
-  answerEl.querySelectorAll('.thumbs button').forEach(b => b.onclick = async () => {
+  answerEl.querySelectorAll('.thumbs:not(#exthumbs) button').forEach(b => b.onclick = async () => {
     const t = b.parentElement, up = b.classList.contains('up');
     await fetch('/thumb', {method:'POST', headers:{'content-type':'application/json'},
       body: JSON.stringify({word: t.dataset.word, record: t.dataset.record, quote: t.dataset.quote, up: up})});

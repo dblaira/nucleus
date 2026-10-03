@@ -144,13 +144,13 @@ def ask(question: str, store: Store | None = None, surface: str = "cli",
         reply_json = json.dumps({"answer": picture.answer, "words": [{"word": w["word"], "why": w["why"]} for w in picture.words],
                                  "records": [{"id": r["leaf"], "quote": r["quote"], "why": r["why"]} for r in picture.records],
                                  "possibility": []}, ensure_ascii=False)
+        if told is not None and told.text:
+            # the meaning, in normal sentences, built by code in milliseconds; the model is not asked.
+            # Saved before the answer: his phone stops looking the moment it sees the answer, so the paragraph is already there.
+            store.save_explanation(question_id, told.text, None, "code", "narrative", time.time() - told.ms / 1000)
         store.save_answer(question_id, "answered", picture.answer, picture.text, reply_json, True, None,
                           nucleus_hash=model_module.nucleus_hash(prompt_module.nucleus_text()[0]))
-        if told is not None:
-            # the meaning, in normal sentences, built by code in milliseconds; the model is not asked
-            if told.text:
-                store.save_explanation(question_id, told.text, None, "code", "narrative", time.time() - told.ms / 1000)
-        elif explain_call is not False:
+        if told is None and explain_call is not False:
             # the rows are on the screen; the explanation arrives under them when the model is done
             explain_module.start(question_id, question, picture.text, picture.touched, store, explain_call)
         return finish(Result(question_id, question, "answered", answer=picture.answer, text=picture.text, words=picture.words,
@@ -162,14 +162,15 @@ def ask(question: str, store: Store | None = None, surface: str = "cli",
             store.start_step(question_id, name)
             store.finish_step(question_id, name, note="none of your words reached, no model" if name == STEP_MODEL else "")
         text = gate_module.FIRST_LINE["dont_know"]
-        store.save_answer(question_id, "answered", "dont_know", text,
-                          json.dumps({"answer": "dont_know", "words": [], "records": [], "possibility": []}), True, None)
         unknown = told.no_meaning_yet if told is not None else []
         if told is not None and told.text:
             # what was looked up, in normal sentences: his ontology, his graph, and what neither holds
             store.save_explanation(question_id, told.text, None, "code", "narrative", time.time() - told.ms / 1000)
         elif unknown:
             store.save_explanation(question_id, "No meaning added yet: " + ", ".join(unknown) + ".", None, "code", "dictionary", time.time())
+        # the line under the answer is saved first, so it is there the moment his phone sees the answer
+        store.save_answer(question_id, "answered", "dont_know", text,
+                          json.dumps({"answer": "dont_know", "words": [], "records": [], "possibility": []}), True, None)
         return finish(Result(question_id, question, "answered", answer="dont_know", text=text, reading=reading,
                              phrases=phrase_dicts, provider="code", model="none"))
 

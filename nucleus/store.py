@@ -1,10 +1,17 @@
-"""One SQLite file. Everything is saved. Nothing is ever deleted."""
+"""One SQLite file. Everything is saved. Nothing is ever deleted.
+
+His phone, the page and the answer being written all reach this one record at the same moment, each on its own
+thread. One connection used by two threads at once failed under load (2026-10-02: "bad parameter or other API
+misuse", and a request dropped with no reply). Every door into the record now opens one at a time.
+"""
 
 from __future__ import annotations
 
+import functools
 import json
 import re
 import sqlite3
+import threading
 import time
 import uuid
 from pathlib import Path
@@ -59,6 +66,7 @@ def normalize_question(question: str) -> str:
 
 class Store:
     def __init__(self, path: Path = STORE_PATH) -> None:
+        self._lock = threading.RLock()
         self.path = path
         path.parent.mkdir(parents=True, exist_ok=True)
         self.connection = sqlite3.connect(path, check_same_thread=False, timeout=60)
@@ -323,3 +331,17 @@ class Store:
     def thumb_explanation(self, question_id: str, up: bool) -> None:
         self.connection.execute("UPDATE explanations SET thumb = ? WHERE question_id = ?", (1 if up else 0, question_id))
         self.connection.commit()
+
+
+def _one_at_a_time(method):
+    """Hold the record for one caller until this call is done."""
+    @functools.wraps(method)
+    def held(self, *args, **kwargs):
+        with self._lock:
+            return method(self, *args, **kwargs)
+    return held
+
+
+for _name, _method in list(vars(Store).items()):
+    if callable(_method) and not _name.startswith("__"):
+        setattr(Store, _name, _one_at_a_time(_method))

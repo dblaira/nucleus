@@ -34,7 +34,7 @@ Read this file, then `README.md`, then `AGENTS.md` in the Cowboyai repo for the 
 | doors | `nucleus/model.py`: codex (default), zai (`NUCLEUS_DOOR=zai`, his prepaid GLM credits, slower), anthropic/openai (keys absent) | |
 | store | `~/Library/Application Support/nucleus/nucleus.sqlite3` — questions, steps, model_calls, answers, candidates, phrase_hits, grades, links, searched_words | nothing is ever deleted |
 
-Tests: `.venv/bin/python -m pytest` — 87 pass.
+Tests: `.venv/bin/python -m pytest` — 90 pass.
 
 ## 2026-10-02 — the meaning in normal sentences, with no model, judged by his knowledge graph and dictionary
 
@@ -51,6 +51,9 @@ my entry is judged according the knowledge graph and dictionary."
 | an entry with none of his dictionary words: his ontology says which life domain it sits in, his knowledge graph says what it holds there | `Narrator.domains_named`, `Narrator.domain_road` | "You said doctor. In English that is “a licensed medical practitioner”. Your ontology files that under Health: …" then the accepted records, then what his tracked weeks measured |
 | the English dictionary that carries a word to his ontology's own definition words | `nucleus/english.py` (WordNet through `nltk`, read only; data in `~/nltk_data`) | first sense only, in the part of speech English uses most; names, curse words and question words are never carried; not installed → no bridges, nothing else changes |
 | the judgment when no dictionary word is told | `Told.judged`, used in `ask.py` | PROPOSAL: "Not sure" when his graph holds accepted records in the life domain(s) his ontology files the entry under, "I don't know" when neither his dictionary nor his graph holds anything, with one line saying which of his words are in neither |
+| one record, many threads: his phone, the page and the answer being written reach it at once | `nucleus/store.py` | every door into the record opens one at a time (one lock around every `Store` method). Before: 80 entries fired at a copy with nothing between them dropped 4 requests, `sqlite3.InterfaceError: bad parameter or other API misuse`. After: 0. In the engine since September; switch on or off |
+| the paragraph is saved before the answer | `nucleus/ask.py` | his phone stops looking the moment it sees the answer, so the paragraph under it is already there |
+| on the page, the thumb under the paragraph | `nucleus/serve.py` | the row thumbs had taken it over and the engine refused it with 400 (his thumb of 2026-10-02 20:04 was not saved); it keeps its own door now, `/thumb-explanation`. The phone app always used that door |
 
 Every number and word list that decides something in these files is marked PROPOSAL. Nothing was asked of Adam for
 any of it: his words, 2026-10-02, "When you say one thing needs your yes, you are following your logic, not mine".
