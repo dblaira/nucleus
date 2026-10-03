@@ -40,10 +40,12 @@ struct LiveAnswerSection: View {
                 .padding(.bottom, 8)
 
             if answered {
-                wordsCarousel(titled: "HE SAID THE WORD ITSELF", parts.words)
-                recordsCarousel(titled: "HIS ROUTES SENT IT HERE", parts.records)
+                // Adam, 2026-10-03: the middle response "will be followed by requesting more information". The exchange
+                // sits right under the answer: the night's options when there are some, then the request.
                 possibility
                 moreInformation
+                wordsCarousel(titled: "HE SAID THE WORD ITSELF", parts.words)
+                recordsCarousel(titled: "HIS ROUTES SENT IT HERE", parts.records)
             }
         }
     }
