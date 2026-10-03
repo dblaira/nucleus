@@ -34,7 +34,30 @@ Read this file, then `README.md`, then `AGENTS.md` in the Cowboyai repo for the 
 | doors | `nucleus/model.py`: codex (default), zai (`NUCLEUS_DOOR=zai`, his prepaid GLM credits, slower), anthropic/openai (keys absent) | |
 | store | `~/Library/Application Support/nucleus/nucleus.sqlite3` — questions, steps, model_calls, answers, candidates, phrase_hits, grades, links, searched_words | nothing is ever deleted |
 
-Tests: `.venv/bin/python -m pytest` — 90 pass.
+Tests: `.venv/bin/python -m pytest` — 107 pass.
+
+## 2026-10-03 — what follows the middle answer: more information, logged, the night run, three options
+
+Adam, 2026-10-03: "The response, "There is some relationship, but not enough to justify causation," will be followed by
+requesting more information, which will be logged and then analyzed by the LLM during the night run.  During the
+overnight run, all middle responses will use AI to generate options that might move the situation further down the
+spectrum from correlation to causation.   Three options are a good starting point.  I will set the criteria for the
+three options later, but they will all align in attitude and speed. But they offer different ways to broaden my
+perspective and create better opportunities for causation. What this means is that thinking bigger is also thinking
+broader because it brings in other relationships that are probably affecting the predictability of a situation."
+
+| piece | file | state |
+| --- | --- | --- |
+| the request for more information, under the middle answer | `ios/nucleus/LiveAnswerView.swift` `moreInformation`, the page in `serve.py` | a field headed MORE INFORMATION and a Log button; what he gave shows above it |
+| the log | `store.more_information`, `POST /more` in `serve.py`, table `more_information` | only after a middle answer; nothing is ever deleted |
+| the night run | `nucleus/night.py`, launchd `com.nucleus.night`, 02:20, log `~/Library/Logs/nucleus-night.log` | one model call for each middle answer of his with no options yet, or with more information logged since its last options |
+| three options | table `options`, `night.check` | each brings in one accepted record or one dictionary word of his that the answer did not use, shown in his own words, then one sentence for what it may be doing and one for the information that would show it. Code refuses anything else. |
+| where he sees them | `night.with_options`, `GET /ask/<id>` | under the middle answer in the box his app already draws, named in his word "possibility". The saved answer is not rewritten. |
+
+The criteria for the three options are his to set: "I will set the criteria for the three options later". The
+contract handed to the model is his sentences above and the engine's standing rules; nothing else was decided.
+Whose middle answers the night run works on is a PROPOSAL in `night.py`: his own entries, not the daily grade,
+from 2026-10-02 on.
 
 ## 2026-10-02 — the meaning in normal sentences, with no model, judged by his knowledge graph and dictionary
 

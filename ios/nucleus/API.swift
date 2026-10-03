@@ -11,6 +11,8 @@ struct AskResponse: Decodable {
         let word: String; let record: String; let quote: String; let kind: String?; let thumb: Int?; let saved: Bool
     }
     struct Explanation: Decodable { let status: String; let text: String?; let thumb: Int? }
+    /// What he gave after a middle response, as the Mac logged it.
+    struct More: Decodable, Identifiable { let id: String; let text: String }
     let question: Question
     let steps: [Step]
     let phrases: [Phrase]
@@ -18,6 +20,7 @@ struct AskResponse: Decodable {
     let asked_before: Int?
     let rows: [Row]?
     let explanation: Explanation?
+    let more: [More]?
 }
 
 struct RecentItem: Decodable, Identifiable {
@@ -64,6 +67,15 @@ enum NucleusAPI {
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "content-type")
         request.httpBody = try JSONSerialization.data(withJSONObject: ["question_id": questionID, "up": up])
+        _ = try await URLSession.shared.data(for: request)
+    }
+
+    /// Adam, 2026-10-03: the middle response "will be followed by requesting more information, which will be logged".
+    static func more(questionID: String, text: String) async throws {
+        var request = URLRequest(url: base.appendingPathComponent("more"))
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "content-type")
+        request.httpBody = try JSONSerialization.data(withJSONObject: ["question_id": questionID, "text": text])
         _ = try await URLSession.shared.data(for: request)
     }
 

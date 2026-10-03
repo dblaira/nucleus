@@ -43,6 +43,7 @@ struct LiveAnswerSection: View {
                 wordsCarousel(titled: "HE SAID THE WORD ITSELF", parts.words)
                 recordsCarousel(titled: "HIS ROUTES SENT IT HERE", parts.records)
                 possibility
+                moreInformation
             }
         }
     }
@@ -188,6 +189,48 @@ struct LiveAnswerSection: View {
                         .fixedSize(horizontal: false, vertical: true)
                         .textSelection(.enabled)
                 }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(20)
+            .background(CowboyTheme.cream, in: RoundedRectangle(cornerRadius: 18))
+            .padding(.horizontal, 18)
+            .padding(.top, 24)
+        }
+    }
+
+    /// Adam, 2026-10-03: the middle response "will be followed by requesting more information, which will be logged
+    /// and then analyzed by the LLM during the night run." What he already gave shows above the field.
+    @ViewBuilder
+    private var moreInformation: some View {
+        if current?.answer?.answer == "not_sure", let id = current?.question.id {
+            let draft = Binding(get: { model.moreDrafts[id] ?? "" }, set: { model.moreDrafts[id] = $0 })
+            VStack(alignment: .leading, spacing: 14) {
+                kicker("MORE INFORMATION")
+                ForEach(current?.more ?? []) { entry in
+                    Text(entry.text)
+                        .font(CowboyTheme.readingSerif(22, relativeTo: .body))
+                        .foregroundStyle(.black)
+                        .lineSpacing(5)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .textSelection(.enabled)
+                }
+                TextField("More information", text: draft, axis: .vertical)
+                    .lineLimit(2...10)
+                    .font(CowboyTheme.readingSerif(20, relativeTo: .body))
+                    .foregroundStyle(.black)
+                    .padding(12)
+                    .background(Color.white, in: RoundedRectangle(cornerRadius: 12))
+                    .accessibilityIdentifier("more-information-text")
+                Button {
+                    Task { await model.logMore() }
+                } label: {
+                    Label("Log", systemImage: "paperplane")
+                        .font(.system(size: 17, weight: .semibold))
+                }
+                .buttonStyle(.borderless)
+                .tint(CowboyTheme.red)
+                .disabled(draft.wrappedValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || model.loggingMore)
+                .accessibilityIdentifier("log-more-information")
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(20)

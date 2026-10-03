@@ -99,6 +99,10 @@ struct RootView: View {
                 path = NavigationPath([Page.answer(nil)])
                 await model.ask()
             }
+            // a past answer handed in at launch (`-open "<id>"`) opens at once; used by the Mac to test the app
+            if let i = CommandLine.arguments.firstIndex(of: "-open"), i + 1 < CommandLine.arguments.count {
+                path = NavigationPath([Page.answer(CommandLine.arguments[i + 1])])
+            }
         }
         .onChange(of: scenePhase) { _, phase in
             guard phase == .active, !model.working else { return }

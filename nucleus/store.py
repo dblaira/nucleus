@@ -52,6 +52,14 @@ CREATE TABLE IF NOT EXISTS explanations (
   question_id TEXT PRIMARY KEY, status TEXT NOT NULL, text TEXT, reason TEXT, provider TEXT, model TEXT,
   started REAL NOT NULL, finished REAL, thumb INTEGER
 );
+CREATE TABLE IF NOT EXISTS more_information (
+  id TEXT PRIMARY KEY, question_id TEXT NOT NULL, text TEXT NOT NULL, created REAL NOT NULL
+);
+CREATE TABLE IF NOT EXISTS options (
+  id TEXT PRIMARY KEY, question_id TEXT NOT NULL, run_at REAL NOT NULL, position INTEGER NOT NULL,
+  brings_in TEXT NOT NULL, shown TEXT NOT NULL, proposed TEXT NOT NULL, would_show TEXT NOT NULL,
+  provider TEXT, model TEXT
+);
 CREATE TABLE IF NOT EXISTS grades (
   run_id TEXT NOT NULL, question_id TEXT, question TEXT NOT NULL, expected TEXT, got TEXT,
   status TEXT, gate_ok INTEGER, seconds REAL, at REAL NOT NULL
@@ -331,6 +339,60 @@ class Store:
     def thumb_explanation(self, question_id: str, up: bool) -> None:
         self.connection.execute("UPDATE explanations SET thumb = ? WHERE question_id = ?", (1 if up else 0, question_id))
         self.connection.commit()
+
+
+    # ---- the middle answer. Adam, 2026-10-03: "followed by requesting more information, which will be logged and then
+    # analyzed by the LLM during the night run. During the overnight run, all middle responses will use AI to generate
+    # options". Every night's options are kept; the newest three are the ones shown.
+
+    def save_more_information(self, question_id: str, text: str) -> dict:
+        entry = {"id": str(uuid.uuid4()), "question_id": question_id, "text": text, "created": time.time()}
+        self.connection.execute("INSERT INTO more_information (id, question_id, text, created) VALUES (?, ?, ?, ?)",
+                                (entry["id"], question_id, text, entry["created"]))
+        self.connection.commit()
+        return entry
+
+    def more_information(self, question_id: str) -> list[dict]:
+        rows = self.connection.execute(
+            "SELECT id, text, created FROM more_information WHERE question_id = ? ORDER BY created", (question_id,)).fetchall()
+        return [{"id": i, "text": t, "created": c} for i, t, c in rows]
+
+    def save_options(self, question_id: str, options: list[dict], provider: str, model: str) -> float:
+        run_at = time.time()
+        for position, option in enumerate(options):
+            self.connection.execute(
+                "INSERT INTO options (id, question_id, run_at, position, brings_in, shown, proposed, would_show, provider, model)"
+                " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (str(uuid.uuid4()), question_id, run_at, position, option["brings_in"], option["shown"], option["proposed"],
+                 option["would_show"], provider, model))
+        self.connection.commit()
+        return run_at
+
+    def options(self, question_id: str) -> list[dict]:
+        """The newest night's options for one middle answer, in order."""
+        rows = self.connection.execute(
+            "SELECT brings_in, shown, proposed, would_show, run_at, provider, model FROM options WHERE question_id = ?"
+            " AND run_at = (SELECT MAX(run_at) FROM options WHERE question_id = ?) ORDER BY position",
+            (question_id, question_id)).fetchall()
+        return [{"brings_in": b, "shown": s, "proposed": p, "would_show": w, "run_at": r, "provider": pr, "model": m}
+                for b, s, p, w, r, pr, m in rows]
+
+    def middle_answers_waiting(self, since: float, not_from: tuple[str, ...] = ()) -> list[dict]:
+        """His middle answers that have no options yet, or more information logged since their last options."""
+        rows = self.connection.execute(
+            "SELECT q.id, q.question, q.asked_at, q.surface, a.text, a.reply_json FROM questions q JOIN answers a"
+            " ON a.question_id = q.id WHERE a.status = 'answered' AND a.answer = 'not_sure' AND q.asked_at >= ? ORDER BY q.asked_at",
+            (since,)).fetchall()
+        waiting = []
+        for question_id, question, asked_at, surface, text, reply_json in rows:
+            if (surface or "") in not_from:
+                continue
+            last_run = self.connection.execute("SELECT MAX(run_at) FROM options WHERE question_id = ?", (question_id,)).fetchone()[0]
+            last_more = self.connection.execute("SELECT MAX(created) FROM more_information WHERE question_id = ?", (question_id,)).fetchone()[0]
+            if last_run is None or (last_more is not None and last_more > last_run):
+                waiting.append({"id": question_id, "question": question, "asked_at": asked_at, "surface": surface,
+                                "text": text, "reply_json": reply_json})
+        return waiting
 
 
 def _one_at_a_time(method):

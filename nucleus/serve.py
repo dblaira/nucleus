@@ -12,6 +12,7 @@ from urllib.parse import urlparse
 
 from . import ask as ask_module
 from . import explain as explain_module
+from . import night as night_module
 from .store import Store
 
 PORT = 8766
@@ -63,6 +64,10 @@ button.ask-btn:disabled{opacity:.5}
 .thumbs button{font-size:20px;line-height:1;background:none;border:1.5px solid #CFC5B0;border-radius:10px;padding:6px 10px;color:#7A6E58}
 .thumbs button.on.up{background:#2AB860;border-color:#2AB860;color:#fff}
 .thumbs button.on.down{background:#B00124;border-color:#B00124;color:#fff}
+.moreinfo{margin-top:20px;white-space:normal}
+.moreinfo label{display:block;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--soft);margin:0 0 8px}
+.moreinfo .logged{background:#fff;border-radius:10px;padding:10px 14px;margin:0 0 8px;font-family:Georgia,"Times New Roman",serif;font-size:19px;white-space:pre-wrap}
+.moreinfo textarea{min-height:84px;font-size:19px}
 #recent{margin-top:30px}
 #recent .first{font-family:Georgia,serif;font-size:22px;color:var(--lapis);margin:0 0 6px}
 #recent a{display:block;padding:12px 0;border-top:1px solid #B9AE96;color:var(--ink);text-decoration:none}
@@ -163,6 +168,16 @@ function render(data){
     t.querySelectorAll('button').forEach(x => x.classList.remove('on'));
     b.classList.add('on');
   });
+  // Adam, 2026-10-03: the middle answer "will be followed by requesting more information, which will be logged"
+  if (a.answer === 'not_sure'){
+    const logged = (data.more||[]).map(m => '<div class="logged">' + esc(m.text) + '</div>').join('');
+    answerEl.insertAdjacentHTML('beforeend', '<div class="moreinfo"><label>more information</label>' + logged + '<textarea id="moretext" placeholder="more information"></textarea><div class="row"><span></span><button class="ask-btn" id="moresend">Log</button></div></div>');
+    document.getElementById('moresend').onclick = async () => {
+      const t = document.getElementById('moretext').value.trim(); if (!t) return;
+      await fetch('/more', {method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify({question_id: current, text: t})});
+      poll();
+    };
+  }
 }
 function esc(s){ return String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
 async function poll(){
@@ -224,17 +239,22 @@ class Handler(BaseHTTPRequestHandler):
                 self._json(404, {"error": "no such question"})
                 return
             answer = self.store.answer(question_id)
+            options = self.store.options(question_id)
+            if answer and answer.get("answer") == "not_sure" and options:
+                # the night's options sit under the middle answer, in the box his app already draws
+                answer = {**answer, "text": night_module.with_options(answer.get("text") or "", options)}
             self._json(200, {"question": question, "steps": self.store.steps(question_id),
                              "phrases": self.store.phrase_hits(question_id), "answer": answer,
                              "asked_before": self.store.times_asked(question["question"], question_id),
                              "rows": self.store.rows_for_answer((answer or {}).get("reply_json")),
-                             "explanation": self.store.explanation(question_id)})
+                             "explanation": self.store.explanation(question_id),
+                             "more": self.store.more_information(question_id), "options": options})
             return
         self._json(404, {"error": "not found"})
 
     def do_POST(self) -> None:  # noqa: N802
         path = urlparse(self.path).path
-        if path not in ("/ask", "/thumb", "/thumb-explanation", "/hello"):
+        if path not in ("/ask", "/thumb", "/thumb-explanation", "/hello", "/more"):
             self._json(404, {"error": "not found"})
             return
         length = int(self.headers.get("content-length", "0"))
@@ -249,6 +269,20 @@ class Handler(BaseHTTPRequestHandler):
             with open(Path.home() / "Library" / "Logs" / "nucleus-hello.log", "a", encoding="utf-8") as f:
                 f.write(line)
             self._json(200, {"ok": True})
+            return
+        if path == "/more":
+            # Adam, 2026-10-03: the middle answer "will be followed by requesting more information, which will be
+            # logged and then analyzed by the LLM during the night run."
+            qid, text = str(payload.get("question_id", "")), str(payload.get("text", "")).strip()
+            if not qid or not text:
+                self._json(400, {"error": "question_id and text"})
+                return
+            answer = self.store.answer(qid)
+            if answer is None or answer.get("answer") != "not_sure":
+                self._json(400, {"error": "more information follows the middle answer only"})
+                return
+            self.store.save_more_information(qid, text)
+            self._json(200, {"more": self.store.more_information(qid)})
             return
         if path == "/thumb-explanation":
             qid = str(payload.get("question_id", ""))

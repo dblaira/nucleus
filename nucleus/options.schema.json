@@ -1,0 +1,1 @@
+{"type": "object", "additionalProperties": false, "required": ["options"], "properties": {"options": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["brings_in", "proposed", "would_show"], "properties": {"brings_in": {"type": "string"}, "proposed": {"type": "string"}, "would_show": {"type": "string"}}}}}}

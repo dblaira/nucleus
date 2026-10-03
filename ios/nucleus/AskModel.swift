@@ -70,6 +70,26 @@ final class AskModel {
 
     var explanationThumb: Int?
 
+    /// Adam, 2026-10-03: the middle response "will be followed by requesting more information, which will be logged
+    /// and then analyzed by the LLM during the night run." What he is typing, kept by question until it is logged.
+    var moreDrafts: [String: String] = [:]
+    var loggingMore = false
+
+    func logMore() async {
+        guard let id = current?.question.id, !loggingMore else { return }
+        let text = (moreDrafts[id] ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !text.isEmpty else { return }
+        loggingMore = true
+        do {
+            try await NucleusAPI.more(questionID: id, text: text)
+            current = try await NucleusAPI.status(id)
+            moreDrafts[id] = nil
+        } catch {
+            problem = "The Mac did not answer. \(error.localizedDescription)"
+        }
+        loggingMore = false
+    }
+
     func thumbExplanation(up: Bool) async {
         guard let id = current?.question.id else { return }
         explanationThumb = up ? 1 : 0
