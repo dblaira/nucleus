@@ -21,8 +21,8 @@ STEP_NAMES = [ask_module.STEP_QUESTION, ask_module.STEP_DICTIONARY, ask_module.S
               ask_module.STEP_MODEL, ask_module.STEP_GATE, ask_module.STEP_ANSWER]
 
 PAGE = """<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="nucleus"><meta name="apple-mobile-web-app-status-bar-style" content="default">
-<title>nucleus</title>
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Cowboyai"><meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>Cowboyai</title>
 <style>
 :root{--sand:#CDB38B;--lapis:#243F86;--gold:#C59237;--reed:#968C60;--brick:#99292B;--paper:#F7F1E6;--ink:#2A2318;--soft:#5E5443}
 body{margin:0;background:var(--sand);color:var(--ink);font-family:-apple-system,Helvetica,Arial,sans-serif;font-size:18px;line-height:1.5}
