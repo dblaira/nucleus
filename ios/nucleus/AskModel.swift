@@ -103,6 +103,10 @@ final class AskModel {
                 try await Task.sleep(nanoseconds: 700_000_000)
             }
             await loadRecent()
+            // Adam, 2026-10-07: "The last answer sits in entry blank for some reason. make sure that doesn't happen
+            // again." What was sent is the Mac's now; the entry page starts blank for the next one.
+            question = ""
+            if let theme { themeAnswers[theme.id] = nil }
         } catch {
             problem = "The Mac did not answer. \(error.localizedDescription)"
         }
@@ -113,7 +117,6 @@ final class AskModel {
         print("nucleus: open(\(id))")
         do {
             current = try await NucleusAPI.status(id)
-            question = current?.question.question ?? question
             thumbs = [:]; explanationThumb = nil
         } catch {
             problem = "The Mac did not answer. \(error.localizedDescription)"
