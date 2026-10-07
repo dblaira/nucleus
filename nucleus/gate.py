@@ -31,6 +31,12 @@ FIRST_LINE = {
     "dont_know": "I don't know. There is nothing in your records that points to a conclusion.",
 }
 
+# Adam, 2026-09-09, defining the middle answer: "#2 is an answer that explains how there may be some connections but
+# it is weak, and maybe the beginning of a new pattern, a sign of growth, or an overly sensitive read of mine (a.i.).
+# If you would like to add go deeper in one area by sharing more of what you believe I could re-access with more
+# input." Asked on 2026-10-07 which of his sentences leads the middle answer, he chose it: "Perfect. Use Sept 9"
+MIDDLE_ASKS = "If you would like to add go deeper in one area by sharing more of what you believe I could re-access with more input."
+
 POSSIBILITY_TITLE = "possibility"
 
 _SENTENCE_BREAK = re.compile(r"[.!?]\s+[A-Z“\"(]")
@@ -190,6 +196,8 @@ def compose(answer: str, words: list[dict], records: list[dict], possibility: li
     lines = [FIRST_LINE[answer]]
     if answer == "dont_know":
         return lines[0]
+    if answer == "not_sure":
+        lines += ["", MIDDLE_ASKS]
     for entry in words:
         lines.append("")
         for meaning in entry["meanings"]:

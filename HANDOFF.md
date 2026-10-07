@@ -34,7 +34,15 @@ Read this file, then `README.md`, then `AGENTS.md` in the Cowboyai repo for the 
 | doors | `nucleus/model.py`: codex (default), zai (`NUCLEUS_DOOR=zai`, his prepaid GLM credits, slower), anthropic/openai (keys absent) | |
 | store | `~/Library/Application Support/nucleus/nucleus.sqlite3` — questions, steps, model_calls, answers, candidates, phrase_hits, grades, links, searched_words | nothing is ever deleted |
 
-Tests: `.venv/bin/python -m pytest` — 107 pass.
+Tests: `.venv/bin/python -m pytest` — 108 pass.
+
+## 2026-10-07 — the middle answer asks in his words of September 9
+
+Asked which of his own sentences leads the middle answer, Adam, 2026-10-07: "Perfect. Use Sept 9". The sentence is the
+end of his own 2026-09-09 definition of the middle answer: "If you would like to add go deeper in one area by sharing
+more of what you believe I could re-access with more input." It is `gate.MIDDLE_ASKS`; `gate.compose` puts it, as its
+own block, right after the first line of every new middle answer. In his app it reads at the end of YOUR ANSWER, in the
+answer's own type, after the meaning paragraph. No screen code changed. Saved answers are not rewritten.
 
 ## 2026-10-03 — what follows the middle answer: more information, logged, the night run, three options
 

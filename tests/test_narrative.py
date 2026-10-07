@@ -257,4 +257,14 @@ def test_the_middle_answer_begins_with_his_words_of_october_2():
     # "There is some relationship, but not enough to justify causation.""
     from nucleus import gate
     assert gate.FIRST_LINE["not_sure"] == "There is some relationship, but not enough to justify causation."
-    assert gate.compose("not_sure", [], [], []) == "There is some relationship, but not enough to justify causation."
+    assert gate.compose("not_sure", [], [], []).split("\n")[0] == "There is some relationship, but not enough to justify causation."
+
+
+def test_the_middle_answer_asks_with_his_words_of_september_9():
+    # Adam, 2026-10-07, choosing the sentence that leads the middle answer: "Perfect. Use Sept 9"
+    from nucleus import gate
+    assert gate.MIDDLE_ASKS == ("If you would like to add go deeper in one area by sharing more of what you believe "
+                                "I could re-access with more input.")
+    assert gate.compose("not_sure", [], [], []) == gate.FIRST_LINE["not_sure"] + "\n\n" + gate.MIDDLE_ASKS
+    assert gate.MIDDLE_ASKS not in gate.compose("aligned", [], [], [])
+    assert gate.compose("dont_know", [], [], []) == gate.FIRST_LINE["dont_know"]
