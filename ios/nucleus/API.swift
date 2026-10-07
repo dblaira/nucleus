@@ -13,6 +13,8 @@ struct AskResponse: Decodable {
     struct Explanation: Decodable { let status: String; let text: String?; let thumb: Int? }
     /// What he gave after a middle response, as the Mac logged it.
     struct More: Decodable, Identifiable { let id: String; let text: String }
+    /// One row of the middle answer's feedback: a SAVY icon, a question, its answer (nucleus/readout.py).
+    struct Readout: Decodable { let symbol: String; let question: String; let answer: String }
     let question: Question
     let steps: [Step]
     let phrases: [Phrase]
@@ -21,6 +23,7 @@ struct AskResponse: Decodable {
     let rows: [Row]?
     let explanation: Explanation?
     let more: [More]?
+    let readout: [Readout]?
 }
 
 struct RecentItem: Decodable, Identifiable {

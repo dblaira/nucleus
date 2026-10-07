@@ -147,7 +147,8 @@ def ask(question: str, store: Store | None = None, surface: str = "cli",
         if told is not None and told.text:
             # the meaning, in normal sentences, built by code in milliseconds; the model is not asked.
             # Saved before the answer: his phone stops looking the moment it sees the answer, so the paragraph is already there.
-            store.save_explanation(question_id, told.text, None, "code", "narrative", time.time() - told.ms / 1000)
+            store.save_explanation(question_id, told.text, None, "code", "narrative", time.time() - told.ms / 1000,
+                                   parts=[asdict(part) for part in told.parts])
         store.save_answer(question_id, "answered", picture.answer, picture.text, reply_json, True, None,
                           nucleus_hash=model_module.nucleus_hash(prompt_module.nucleus_text()[0]))
         if told is None and explain_call is not False:
@@ -165,7 +166,8 @@ def ask(question: str, store: Store | None = None, surface: str = "cli",
         unknown = told.no_meaning_yet if told is not None else []
         if told is not None and told.text:
             # what was looked up, in normal sentences: his ontology, his graph, and what neither holds
-            store.save_explanation(question_id, told.text, None, "code", "narrative", time.time() - told.ms / 1000)
+            store.save_explanation(question_id, told.text, None, "code", "narrative", time.time() - told.ms / 1000,
+                                   parts=[asdict(part) for part in told.parts])
         elif unknown:
             store.save_explanation(question_id, "No meaning added yet: " + ", ".join(unknown) + ".", None, "code", "dictionary", time.time())
         # the line under the answer is saved first, so it is there the moment his phone sees the answer
@@ -224,7 +226,8 @@ def ask(question: str, store: Store | None = None, surface: str = "cli",
     if verdict.answer != "dont_know" and explain_call is not False:
         earlier = store.explanation(repeat["question_id"]) if repeat is not None else None
         if earlier and earlier.get("text"):
-            store.save_explanation(question_id, earlier["text"], None, earlier.get("provider") or "saved", earlier.get("model") or "saved", time.time())
+            store.save_explanation(question_id, earlier["text"], None, earlier.get("provider") or "saved", earlier.get("model") or "saved", time.time(),
+                                   parts=earlier.get("parts"))
         else:
             explain_module.start(question_id, question, verdict.text, [w["word"] for w in verdict.words], store, explain_call)
     store.finish_step(question_id, STEP_ANSWER)

@@ -127,6 +127,8 @@ class Part:
     source: str       # meaning | walk | record | weeks | pattern | tie | domain | graph | missing
     word: str = ""
     record: str = ""
+    said: str = ""    # domain parts: the word as he typed it
+    english: str = "" # domain parts: the English sense that carried it, “quoted”; empty when his own definition names it
 
 
 @dataclass
@@ -451,7 +453,8 @@ class Narrator:
             if n.english and not (forms(n.said) & self.written):
                 line += f" Nothing in your dictionary or your records says {n.said}."
                 absent.add(n.said)
-            told.parts.append(Part(line, self.domain_lines.get(n.domain, n.domain), "domain", n.domain))
+            told.parts.append(Part(line, self.domain_lines.get(n.domain, n.domain), "domain", n.domain,
+                                   said=n.said, english=n.english))
             blocks.append(line)
         accepted = {domain: 0 for domain in domains}
         held, about, spoken = [], [], set()

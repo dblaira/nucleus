@@ -66,8 +66,13 @@ struct LiveAnswerSection: View {
                         .fixedSize(horizontal: false, vertical: true)
                         .textSelection(.enabled)
                         .accessibilityIdentifier("live-answer-text")
-                    explanation
-                    ForEach(Array(parts.other.enumerated()), id: \.offset) { _, block in
+                    if let readout = current?.readout, !readout.isEmpty {
+                        readoutRows(readout)
+                    } else {
+                        explanation
+                    }
+                    ForEach(Array(parts.other.filter { block in !(current?.readout ?? []).contains { $0.question == block } }.enumerated()),
+                            id: \.offset) { _, block in
                         Text(block)
                             .font(CowboyTheme.readingSerif(22, relativeTo: .body))
                             .foregroundStyle(.black)
@@ -90,6 +95,75 @@ struct LiveAnswerSection: View {
             ProgressView("reading your words…")
                 .tint(CowboyTheme.red)
                 .accessibilityIdentifier("live-answer-progress")
+        }
+    }
+
+    /// The middle answer's feedback laid out the way his Decide card in SAVY lays out a theme
+    /// (SAVY-iOS ReminderFormView.postDecideSection): a crimson icon at 16 points in a 24-point column, the question
+    /// with its answer on the line right under it in the body face, black. Adam, 2026-10-07: "I am think a feedback
+    /// readout like I have built in the Themes section of SAVY app will work." The last row is his own question of
+    /// September 9; what he types under it is logged for the night run, as on October 3.
+    @ViewBuilder
+    private func readoutRows(_ readout: [AskResponse.Readout]) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            ForEach(Array(readout.enumerated()), id: \.offset) { index, row in
+                if index > 0 { Divider() }
+                HStack(alignment: .firstTextBaseline, spacing: 10) {
+                    Image(systemName: row.symbol)
+                        .font(.system(size: 16))
+                        .foregroundStyle(CowboyTheme.red)
+                        .frame(width: 24)
+                    VStack(alignment: .leading, spacing: 0) {
+                        Text(row.answer.isEmpty ? row.question : row.question + "\n" + row.answer)
+                            .font(.body)
+                            .foregroundStyle(.black)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .textSelection(.enabled)
+                        if index == readout.count - 1, row.answer.isEmpty {
+                            moreUnderTheQuestion
+                        }
+                    }
+                }
+                .padding(.vertical, 12)
+            }
+        }
+        .accessibilityIdentifier("middle-readout")
+        if let ex = current?.explanation, ex.status == "shown" {
+            Thumbs(state: model.explanationThumb ?? ex.thumb) { up in
+                Task { await model.thumbExplanation(up: up) }
+            }
+        }
+    }
+
+    /// Under his September 9 question, the way a SAVY Decide box takes its answer: what he logged, then room to write.
+    /// Return logs it.
+    @ViewBuilder
+    private var moreUnderTheQuestion: some View {
+        if let id = current?.question.id {
+            ForEach(current?.more ?? []) { entry in
+                Text(entry.text)
+                    .font(.body)
+                    .foregroundStyle(.black)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .textSelection(.enabled)
+            }
+            TextField("", text: Binding(
+                get: { model.moreDrafts[id] ?? "" },
+                set: { value in
+                    if value.contains("\n") {
+                        model.moreDrafts[id] = value.replacingOccurrences(of: "\n", with: "")
+                        Task { await model.logMore() }
+                    } else {
+                        model.moreDrafts[id] = value
+                    }
+                }), axis: .vertical)
+                .lineLimit(3, reservesSpace: true)
+                .font(.body)
+                .foregroundStyle(.black)
+                .tint(CowboyTheme.red)
+                .submitLabel(.send)
+                .disabled(model.loggingMore)
+                .accessibilityIdentifier("middle-readout-more")
         }
     }
 

@@ -88,6 +88,9 @@ class Store:
         columns = {row[1] for row in self.connection.execute("PRAGMA table_info(links)")}
         if columns and "kind" not in columns:
             self.connection.execute("ALTER TABLE links ADD COLUMN kind TEXT")
+        columns = {row[1] for row in self.connection.execute("PRAGMA table_info(explanations)")}
+        if columns and "parts_json" not in columns:
+            self.connection.execute("ALTER TABLE explanations ADD COLUMN parts_json TEXT")
         self.connection.commit()
 
     def new_question(self, question: str, surface: str) -> str:
@@ -320,21 +323,27 @@ class Store:
                                 (question_id, time.time()))
         self.connection.commit()
 
-    def save_explanation(self, question_id: str, text: str | None, reason: str | None, provider: str, model: str, started: float) -> None:
+    def save_explanation(self, question_id: str, text: str | None, reason: str | None, provider: str, model: str, started: float,
+                         parts: list[dict] | None = None) -> None:
         self.connection.execute(
-            "INSERT OR REPLACE INTO explanations (question_id, status, text, reason, provider, model, started, finished, thumb)"
-            " VALUES (?, ?, ?, ?, ?, ?, ?, ?, NULL)",
-            (question_id, "shown" if text else "refused", text, reason, provider, model, started, time.time()))
+            "INSERT OR REPLACE INTO explanations (question_id, status, text, reason, provider, model, started, finished, thumb, parts_json)"
+            " VALUES (?, ?, ?, ?, ?, ?, ?, ?, NULL, ?)",
+            (question_id, "shown" if text else "refused", text, reason, provider, model, started, time.time(),
+             json.dumps(parts, ensure_ascii=False) if parts else None))
         self.connection.commit()
 
     def explanation(self, question_id: str) -> dict | None:
         row = self.connection.execute(
-            "SELECT status, text, reason, provider, model, started, finished, thumb FROM explanations WHERE question_id = ?",
+            "SELECT status, text, reason, provider, model, started, finished, thumb, parts_json FROM explanations WHERE question_id = ?",
             (question_id,)).fetchone()
         if row is None:
             return None
+        try:
+            parts = json.loads(row[8]) if row[8] else None
+        except json.JSONDecodeError:
+            parts = None
         return {"status": row[0], "text": row[1], "reason": row[2], "provider": row[3], "model": row[4],
-                "started": row[5], "finished": row[6], "thumb": row[7]}
+                "started": row[5], "finished": row[6], "thumb": row[7], "parts": parts}
 
     def thumb_explanation(self, question_id: str, up: bool) -> None:
         self.connection.execute("UPDATE explanations SET thumb = ? WHERE question_id = ?", (1 if up else 0, question_id))
