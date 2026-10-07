@@ -57,8 +57,15 @@ Adam wrote it in the artifact "The Middle Answer" (https://claude.ai/artifact/MW
   September 9 sentence he chose that morning. The live engine still ends middle answers with the September 9
   sentence (`gate.MIDDLE_ASKS`, commit ac73004) until this form is built.
 
-Not built. The readout branch `claude/middle-readout` (Claude's labels: Reasons/Health/Belief and Health) is superseded by
-this form; it is kept, not merged.
+Built the same day, commit a4dcc08, live engine restarted 2026-10-07 ~12:00 pm. Adam: "yeah, that's fine. But I will not
+be there to type this shit every time.  What are we going to do to automate this?" So nothing is typed per question:
+`nucleus/middle.py` holds his fixed words (Explanation, Answer, Belief, last question = `gate.MIDDLE_ASKS`); Reasons is
+filled by code with his own quotes the answer reached (at most 5, PROPOSAL); Suggestions is filled by the night run's
+options and appears once that run has made them. GET /ask/<id> sends `middle`; his app (ios, same commit) draws it.
+Real problem found while testing: the night run's advice check (`explain.ADVICE`) refused all three options for one
+answer because one sentence said "when you consider going to the doctor". His Suggestions section and his rule "No
+advice is given.  No next steps are suggested." need his ruling; the check is unchanged.
+The readout branch `claude/middle-readout` (Claude's labels) is superseded; kept, not merged.
 
 ## 2026-10-07 — the middle answer asks in his words of September 9
 
