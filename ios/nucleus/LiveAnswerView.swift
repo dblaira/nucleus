@@ -21,12 +21,44 @@ struct LiveAnswerSection: View {
         VStack(alignment: .leading, spacing: 0) {
             VStack(alignment: .leading, spacing: 12) {
                 kicker("QUESTION")
-                Text(current?.question.question ?? model.question)
-                    .font(CowboyTheme.carouselSerif(23))
-                    .foregroundStyle(.black)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .textSelection(.enabled)
-                    .accessibilityIdentifier("live-answer-question")
+                if let theme = current?.question.theme {
+                    if let bare = theme.question, !bare.isEmpty {
+                        Text(bare)
+                            .font(CowboyTheme.carouselSerif(23))
+                            .foregroundStyle(.black)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .textSelection(.enabled)
+                            .accessibilityIdentifier("live-answer-question")
+                    }
+                    Text(theme.name)
+                        .font(.system(size: 11, weight: .bold))
+                        .tracking(1)
+                        .foregroundStyle(.secondary)
+                    VStack(alignment: .leading, spacing: 0) {
+                        ForEach(Array(theme.fields.filter { !$0.answer.isEmpty }.enumerated()), id: \.offset) { index, field in
+                            if index > 0 { Divider().padding(.leading, 34) }
+                            middleRow(symbol: field.symbol ?? "text.bubble") {
+                                Text(field.prompt)
+                                    .font(.body.weight(.semibold))
+                                    .foregroundStyle(.black)
+                                    .fixedSize(horizontal: false, vertical: true)
+                                Text(field.answer)
+                                    .font(.body)
+                                    .foregroundStyle(.black)
+                                    .fixedSize(horizontal: false, vertical: true)
+                                    .textSelection(.enabled)
+                            }
+                        }
+                    }
+                    .accessibilityIdentifier("theme-fields")
+                } else {
+                    Text(current?.question.question ?? model.question)
+                        .font(CowboyTheme.carouselSerif(23))
+                        .foregroundStyle(.black)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .textSelection(.enabled)
+                        .accessibilityIdentifier("live-answer-question")
+                }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(20)

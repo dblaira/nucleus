@@ -311,7 +311,9 @@ class Handler(BaseHTTPRequestHandler):
         if not question:
             self._json(400, {"error": "write a question"})
             return
-        question_id = self.store.new_question(question, "web")
+        theme = payload.get("theme")
+        theme = theme if isinstance(theme, dict) and isinstance(theme.get("name"), str) and isinstance(theme.get("fields"), list) else None
+        question_id = self.store.new_question(question, "web", theme=theme)
         thread = threading.Thread(target=self._run, args=(question_id, question), daemon=True)
         thread.start()
         self._json(202, {"question_id": question_id})

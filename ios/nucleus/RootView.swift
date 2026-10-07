@@ -94,6 +94,15 @@ struct RootView: View {
             await NucleusAPI.hello()
             await model.loadRecent()
             // a question handed in at launch (`-ask "..."`) is asked at once; used by the Mac to test the app
+            if let i = CommandLine.arguments.firstIndex(of: "-theme"), i + 1 < CommandLine.arguments.count {
+                model.selectTheme(CommandLine.arguments[i + 1])
+                if let j = CommandLine.arguments.firstIndex(of: "-answers"), j + 1 < CommandLine.arguments.count, let theme = model.theme {
+                    for (index, answer) in CommandLine.arguments[j + 1].split(separator: "|", omittingEmptySubsequences: false).enumerated()
+                    where theme.questions.indices.contains(index) {
+                        model.setThemeField(theme.questions[index].prompt + "\n" + answer, at: index)
+                    }
+                }
+            }
             if let i = CommandLine.arguments.firstIndex(of: "-ask"), i + 1 < CommandLine.arguments.count {
                 model.question = CommandLine.arguments[i + 1]
                 path = NavigationPath([Page.answer(nil)])

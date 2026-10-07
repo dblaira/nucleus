@@ -88,13 +88,18 @@ class Store:
         columns = {row[1] for row in self.connection.execute("PRAGMA table_info(links)")}
         if columns and "kind" not in columns:
             self.connection.execute("ALTER TABLE links ADD COLUMN kind TEXT")
+        columns = {row[1] for row in self.connection.execute("PRAGMA table_info(questions)")}
+        if columns and "theme_json" not in columns:
+            self.connection.execute("ALTER TABLE questions ADD COLUMN theme_json TEXT")
         self.connection.commit()
 
-    def new_question(self, question: str, surface: str) -> str:
+    def new_question(self, question: str, surface: str, theme: dict | None = None) -> str:
+        """theme: the form he picked in the app (one of his SAVY themes) and what he filled in, kept as he sent it.
+        Adam, 2026-10-07: "All the themes that I have on the SAVY app, I want added on cowboy AI." """
         question_id = str(uuid.uuid4())
         self.connection.execute(
-            "INSERT INTO questions (id, question, asked_at, surface) VALUES (?, ?, ?, ?)",
-            (question_id, question, time.time(), surface),
+            "INSERT INTO questions (id, question, asked_at, surface, theme_json) VALUES (?, ?, ?, ?, ?)",
+            (question_id, question, time.time(), surface, json.dumps(theme, ensure_ascii=False) if theme else None),
         )
         self.connection.commit()
         return question_id
@@ -219,11 +224,15 @@ class Store:
 
     def question(self, question_id: str) -> dict | None:
         row = self.connection.execute(
-            "SELECT id, question, asked_at, surface FROM questions WHERE id = ?", (question_id,)
+            "SELECT id, question, asked_at, surface, theme_json FROM questions WHERE id = ?", (question_id,)
         ).fetchone()
         if row is None:
             return None
-        return {"id": row[0], "question": row[1], "asked_at": row[2], "surface": row[3]}
+        try:
+            theme = json.loads(row[4]) if row[4] else None
+        except json.JSONDecodeError:
+            theme = None
+        return {"id": row[0], "question": row[1], "asked_at": row[2], "surface": row[3], "theme": theme}
 
     def save_grade(self, run_id: str, question_id: str | None, question: str, expected: str | None, got: str | None,
                    status: str, gate_ok: bool | None, seconds: float) -> None:

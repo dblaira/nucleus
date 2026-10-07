@@ -11,6 +11,71 @@ final class AskModel {
             print("nucleus: question now \(question.count) chars")
         }
     }
+    /// The form he picked, from his SAVY themes (Themes.swift), and what he wrote in it. Kept the moment it is
+    /// typed, like the question. Adam, 2026-10-07: "there can be choices of the questions that I have."
+    var themeID: String? = UserDefaults.standard.string(forKey: "nucleus.theme") {
+        didSet { UserDefaults.standard.set(themeID, forKey: "nucleus.theme") }
+    }
+    var themeAnswers: [String: [String]] = {
+        guard let data = UserDefaults.standard.data(forKey: "nucleus.themeAnswers") else { return [:] }
+        return (try? JSONDecoder().decode([String: [String]].self, from: data)) ?? [:]
+    }() {
+        didSet { UserDefaults.standard.set(try? JSONEncoder().encode(themeAnswers), forKey: "nucleus.themeAnswers") }
+    }
+    var theme: PostTheme? { PostThemeCatalog.theme(id: themeID) }
+
+    func selectTheme(_ id: String?) {
+        themeID = id
+        if let id, themeAnswers[id] == nil, let picked = PostThemeCatalog.theme(id: id) {
+            themeAnswers[id] = picked.prefilledAnswers
+        }
+    }
+
+    /// The fields of the picked theme: the question on the first line, his answer under it (SAVY's Decide boxes).
+    var themeFields: [String] {
+        guard let theme else { return [] }
+        return themeAnswers[theme.id] ?? theme.prefilledAnswers
+    }
+
+    func setThemeField(_ text: String, at index: Int) {
+        guard let theme else { return }
+        var values = themeFields
+        while values.count <= index { values.append("") }
+        values[index] = text
+        themeAnswers[theme.id] = values
+    }
+
+    /// His answers inside the fields, prompts stripped, in field order.
+    var themeAnswerTexts: [String] {
+        guard let theme else { return [] }
+        return themeFields.enumerated().map { index, field in
+            PostTheme.answerText(in: field, originalPrompt: theme.questions.indices.contains(index) ? theme.questions[index].prompt : nil)
+        }
+    }
+
+    /// What the Mac reads: his question, then each field he answered, the prompt on the first line as he saw it.
+    var entryText: String {
+        var parts = [question.trimmingCharacters(in: .whitespacesAndNewlines)].filter { !$0.isEmpty }
+        if let theme {
+            for (index, answer) in themeAnswerTexts.enumerated() where !answer.isEmpty {
+                let prompt = theme.questions.indices.contains(index) ? theme.questions[index].prompt : ""
+                parts.append(prompt.isEmpty ? answer : prompt + "\n" + answer)
+            }
+        }
+        return parts.joined(separator: "\n\n")
+    }
+
+    var canAsk: Bool { !entryText.isEmpty }
+
+    private var themePayload: [String: Any]? {
+        guard let theme else { return nil }
+        let fields: [[String: Any]] = themeAnswerTexts.enumerated().map { index, answer in
+            let q = theme.questions.indices.contains(index) ? theme.questions[index] : nil
+            return ["prompt": q?.prompt ?? "", "symbol": q?.symbol ?? "text.bubble", "answer": answer]
+        }
+        return ["id": theme.id, "name": theme.name, "question": question.trimmingCharacters(in: .whitespacesAndNewlines), "fields": fields]
+    }
+
     var current: AskResponse?
     var recent: [RecentItem] = []
     var working = false
@@ -23,12 +88,13 @@ final class AskModel {
     init() { print("nucleus: model created") }
 
     func ask() async {
-        let text = question.trimmingCharacters(in: .whitespacesAndNewlines)
-        print("nucleus: ask() with \(text.count) chars, working=\(working)")
+        let text = entryText
+        print("nucleus: ask() with \(text.count) chars, theme=\(themeID ?? "none"), working=\(working)")
         guard !text.isEmpty, !working else { return }
         working = true; problem = nil; current = nil; thumbs = [:]; explanationThumb = nil
         do {
-            let id = try await NucleusAPI.ask(text)
+            let payload = themePayload.map { try? JSONSerialization.data(withJSONObject: $0) } ?? nil
+            let id = try await NucleusAPI.ask(text, themeData: payload)
             while true {
                 let status = try await NucleusAPI.status(id)
                 current = status

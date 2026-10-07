@@ -36,6 +36,24 @@ Read this file, then `README.md`, then `AGENTS.md` in the Cowboyai repo for the 
 
 Tests: `.venv/bin/python -m pytest` — 108 pass.
 
+## 2026-10-07 — his SAVY themes in Cowboy AI; every answer in one shape; no "your" in a label
+
+Adam: "All the themes that I have on the SAVY app, I want added on cowboy AI. That way there can be choices of the
+questions that I have. I might be able to add better detail to the questions or figure things out and then they could
+also be used to answer the questions for me and to come up with better solutions to fill in the gaps when needed."
+
+| piece | where | state |
+| --- | --- | --- |
+| his 30 SAVY themes, word for word | `ios/nucleus/Themes.swift` (copied from SAVY-iOS `PostTheme.swift`) | in the Theme menu of the entry page |
+| the middle answer as one more theme | same file, id `some-relationship` | named by his first line; he said "we'll figure out a label for that" — the name is his to set |
+| Theme row + Decide boxes | `ComposerView.swift`, copied from SAVY `ReminderFormView` | question on the first line, his answer under it |
+| the theme rides with the question | `POST /ask` `theme`, `questions.theme_json`, `GET /ask` `question.theme` | kept exactly as sent |
+| what he filled in, on the answer page | `LiveAnswerView` QUESTION panel | rows in SAVY's Decide layout |
+| one shape for all three answers | `nucleus/middle.py form_for`, `GET /ask` `form` | QUESTION · EXPLANATION · ANSWER; headings are his words only |
+
+Not built: the themes' questions answered for him by the engine ("fill in the gaps"). Today the middle form is the one
+the engine fills; the other 30 are his to fill. Test launch: `-theme <id> -answers "a|b|c|d"`.
+
 ## 2026-10-07 — Adam's own form for the middle answer (governs; replaces everything Claude proposed today)
 
 Adam wrote it in the artifact "The Middle Answer" (https://claude.ai/artifact/MWFiR9Je6jCibrhcsMNK12), saved

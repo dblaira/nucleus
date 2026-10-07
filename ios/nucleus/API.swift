@@ -3,7 +3,12 @@ import UIKit
 
 /// The Mac's nucleus service. The phone reaches it over Tailscale.
 struct AskResponse: Decodable {
-    struct Question: Decodable { let id: String; let question: String }
+    /// The form he picked (one of his SAVY themes) and what he filled in, as the Mac kept it.
+    struct Theme: Decodable {
+        struct Field: Decodable { let prompt: String; let symbol: String?; let answer: String }
+        let id: String; let name: String; let question: String?; let fields: [Field]
+    }
+    struct Question: Decodable { let id: String; let question: String; let theme: Theme? }
     struct Step: Decodable { let name: String; let started: Double; let finished: Double?; let note: String? }
     struct Phrase: Decodable { let phrase: String; let name: String; let text: String }
     struct Answer: Decodable { let status: String; let answer: String?; let text: String?; let gate_reason: String? }
@@ -39,11 +44,13 @@ enum NucleusAPI {
         return URL(string: saved) ?? URL(string: "http://100.111.154.126:8766")!
     }
 
-    static func ask(_ question: String) async throws -> String {
+    static func ask(_ question: String, themeData: Data? = nil) async throws -> String {
         var request = URLRequest(url: base.appendingPathComponent("ask"))
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "content-type")
-        request.httpBody = try JSONEncoder().encode(["question": question])
+        var body: [String: Any] = ["question": question]
+        if let themeData, let theme = try? JSONSerialization.jsonObject(with: themeData) { body["theme"] = theme }
+        request.httpBody = try JSONSerialization.data(withJSONObject: body)
         let (data, _) = try await URLSession.shared.data(for: request)
         struct Reply: Decodable { let question_id: String }
         return try JSONDecoder().decode(Reply.self, from: data).question_id
