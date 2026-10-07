@@ -42,10 +42,14 @@ def rows(parts: list[dict] | None) -> list[dict]:
         source, text, exact, word = part.get("source"), part.get("text", ""), part.get("exact", ""), part.get("word", "")
         if source == "domain":
             said, domain = part.get("said") or word, word.capitalize()
-            answer = (_unquote(part["english"]) + "\n" if part.get("english") else "") + f"{domain}: {exact}"
             if _MISSING in text:
-                answer += f"\nNot in the dictionary or the records."
-            out.append(_row(BOOK, said[:1].upper() + said[1:], answer))
+                # Adam, 2026-10-07: "Doctor cannot be a section label." A word that is in neither his dictionary nor
+                # his records does not head a section; the life domain his ontology files it under does.
+                english = f" — {_unquote(part['english'])}" if part.get("english") else ""
+                out.append(_row(BOOK, domain, f"{said}{english}. Not in the dictionary or the records.\n{exact}"))
+            else:
+                answer = (_unquote(part["english"]) + "\n" if part.get("english") else "") + f"{domain}: {exact}"
+                out.append(_row(BOOK, said[:1].upper() + said[1:], answer))
         elif source in ("meaning", "walk"):
             out.append(_row(BOOK, word, exact))
         elif source == "pattern" and out:
