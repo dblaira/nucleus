@@ -35,7 +35,9 @@ FIRST_LINE = {
 # it is weak, and maybe the beginning of a new pattern, a sign of growth, or an overly sensitive read of mine (a.i.).
 # If you would like to add go deeper in one area by sharing more of what you believe I could re-access with more
 # input." Asked on 2026-10-07 which of his sentences leads the middle answer, he chose it: "Perfect. Use Sept 9"
-MIDDLE_ASKS = "If you would like to add go deeper in one area by sharing more of what you believe I could re-access with more input."
+# The same afternoon he wrote the whole middle answer himself (nucleus/middle.py) and ended it with his own question,
+# which replaces the September 9 sentence here.
+MIDDLE_ASKS = "What would you like AI to revisit? Anything come to mind?"
 
 POSSIBILITY_TITLE = "possibility"
 

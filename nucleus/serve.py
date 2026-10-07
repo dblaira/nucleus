@@ -12,6 +12,7 @@ from urllib.parse import urlparse
 
 from . import ask as ask_module
 from . import explain as explain_module
+from . import middle as middle_module
 from . import night as night_module
 from .store import Store
 
@@ -243,7 +244,10 @@ class Handler(BaseHTTPRequestHandler):
             if answer and answer.get("answer") == "not_sure" and options:
                 # the night's options sit under the middle answer, in the box his app already draws
                 answer = {**answer, "text": night_module.with_options(answer.get("text") or "", options)}
-            self._json(200, {"question": question, "steps": self.store.steps(question_id),
+            # his own form for the middle answer (nucleus/middle.py), filled with no typing from him
+            middle = (middle_module.form((answer or {}).get("text") or "", (answer or {}).get("reply_json"), options)
+                      if answer and answer.get("answer") == "not_sure" else None)
+            self._json(200, {"question": question, "steps": self.store.steps(question_id), "middle": middle,
                              "phrases": self.store.phrase_hits(question_id), "answer": answer,
                              "asked_before": self.store.times_asked(question["question"], question_id),
                              "rows": self.store.rows_for_answer((answer or {}).get("reply_json")),

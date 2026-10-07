@@ -13,6 +13,11 @@ struct AskResponse: Decodable {
     struct Explanation: Decodable { let status: String; let text: String?; let thumb: Int? }
     /// What he gave after a middle response, as the Mac logged it.
     struct More: Decodable, Identifiable { let id: String; let text: String }
+    /// Adam's own form for the middle answer, filled by the Mac (nucleus/middle.py).
+    struct Middle: Decodable {
+        struct Section: Decodable { let head: String; let symbol: String; let lines: [String] }
+        let explanation: String; let answer: String; let sections: [Section]; let ask: String
+    }
     let question: Question
     let steps: [Step]
     let phrases: [Phrase]
@@ -21,6 +26,7 @@ struct AskResponse: Decodable {
     let rows: [Row]?
     let explanation: Explanation?
     let more: [More]?
+    let middle: Middle?
 }
 
 struct RecentItem: Decodable, Identifiable {

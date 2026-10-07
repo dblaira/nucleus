@@ -13,11 +13,13 @@ struct LiveAnswerSection: View {
     private var current: AskResponse? { model.current }
     private var parts: AnswerParts { AnswerParts(text: current?.answer?.text, rows: current?.rows ?? []) }
     private var answered: Bool { current?.answer?.status == "answered" }
+    /// His own form, when the answer is the middle one. Adam, 2026-10-07: "My middle answer adjustments are completed."
+    private var middle: AskResponse.Middle? { answered ? current?.middle : nil }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             VStack(alignment: .leading, spacing: 12) {
-                kicker("YOUR QUESTION")
+                kicker(middle == nil ? "YOUR QUESTION" : "QUESTION")
                 Text(current?.question.question ?? model.question)
                     .font(CowboyTheme.carouselSerif(23))
                     .foregroundStyle(.black)
@@ -31,18 +33,22 @@ struct LiveAnswerSection: View {
             .padding(.horizontal, 18)
             .padding(.top, 24)
 
-            answer
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(20)
-                .background(CowboyTheme.cream, in: RoundedRectangle(cornerRadius: 18))
-                .padding(.horizontal, 18)
-                .padding(.top, 24)
-                .padding(.bottom, 8)
+            if let middle {
+                middleForm(middle)
+            } else {
+                answer
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(20)
+                    .background(CowboyTheme.cream, in: RoundedRectangle(cornerRadius: 18))
+                    .padding(.horizontal, 18)
+                    .padding(.top, 24)
+                    .padding(.bottom, 8)
+            }
 
             if answered {
                 wordsCarousel(titled: "HE SAID THE WORD ITSELF", parts.words)
                 recordsCarousel(titled: "HIS ROUTES SENT IT HERE", parts.records)
-                possibility
+                if middle == nil { possibility }
             }
         }
     }
@@ -90,6 +96,115 @@ struct LiveAnswerSection: View {
             ProgressView("reading your words…")
                 .tint(CowboyTheme.red)
                 .accessibilityIdentifier("live-answer-progress")
+        }
+    }
+
+    /// Adam's own form for the middle answer, as he laid it out in "The Middle Answer" on 2026-10-07: EXPLANATION,
+    /// then ANSWER with its sections, then his question with room to write under it. The rows are drawn the way his
+    /// Decide card in SAVY draws a theme (ReminderFormView.postDecideSection): a crimson icon, 16 pt, in a 24 pt column.
+    @ViewBuilder
+    private func middleForm(_ m: AskResponse.Middle) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            kicker("EXPLANATION")
+            Text(m.explanation)
+                .font(CowboyTheme.readingSerif(22, relativeTo: .body))
+                .foregroundStyle(.black)
+                .lineSpacing(5)
+                .fixedSize(horizontal: false, vertical: true)
+                .textSelection(.enabled)
+                .accessibilityIdentifier("middle-explanation")
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(20)
+        .background(CowboyTheme.cream, in: RoundedRectangle(cornerRadius: 18))
+        .padding(.horizontal, 18)
+        .padding(.top, 24)
+
+        VStack(alignment: .leading, spacing: 14) {
+            kicker("ANSWER")
+            Text(m.answer)
+                .font(CowboyTheme.readingSerif(22, relativeTo: .body))
+                .foregroundStyle(.black)
+                .lineSpacing(5)
+                .fixedSize(horizontal: false, vertical: true)
+                .textSelection(.enabled)
+                .accessibilityIdentifier("middle-answer")
+            VStack(alignment: .leading, spacing: 0) {
+                ForEach(Array(m.sections.enumerated()), id: \.offset) { _, section in
+                    Divider()
+                    middleRow(symbol: section.symbol) {
+                        Text(section.head)
+                            .font(.body.weight(.semibold))
+                            .foregroundStyle(.black)
+                            .fixedSize(horizontal: false, vertical: true)
+                        ForEach(Array(section.lines.enumerated()), id: \.offset) { _, line in
+                            Text(line)
+                                .font(.body)
+                                .foregroundStyle(.black)
+                                .fixedSize(horizontal: false, vertical: true)
+                                .textSelection(.enabled)
+                        }
+                    }
+                }
+                Divider()
+                middleRow(symbol: "arrow.turn.down.right") {
+                    Text(m.ask)
+                        .font(.body.weight(.semibold))
+                        .foregroundStyle(.black)
+                        .fixedSize(horizontal: false, vertical: true)
+                    moreUnderTheQuestion
+                }
+            }
+            .accessibilityIdentifier("middle-sections")
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(20)
+        .background(CowboyTheme.cream, in: RoundedRectangle(cornerRadius: 18))
+        .padding(.horizontal, 18)
+        .padding(.top, 24)
+        .padding(.bottom, 8)
+    }
+
+    private func middleRow<Content: View>(symbol: String, @ViewBuilder content: () -> Content) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 10) {
+            Image(systemName: symbol)
+                .font(.system(size: 16))
+                .foregroundStyle(CowboyTheme.red)
+                .frame(width: 24)
+            VStack(alignment: .leading, spacing: 6) { content() }
+        }
+        .padding(.vertical, 12)
+    }
+
+    /// Under his last question, the way a SAVY Decide box takes its answer: what he logged, then room to write.
+    /// Return logs it for the night run (POST /more), as on October 3.
+    @ViewBuilder
+    private var moreUnderTheQuestion: some View {
+        if let id = current?.question.id {
+            ForEach(current?.more ?? []) { entry in
+                Text(entry.text)
+                    .font(.body)
+                    .foregroundStyle(.black)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .textSelection(.enabled)
+            }
+            TextField("", text: Binding(
+                get: { model.moreDrafts[id] ?? "" },
+                set: { value in
+                    if value.contains("\n") {
+                        model.moreDrafts[id] = value.replacingOccurrences(of: "\n", with: "")
+                        Task { await model.logMore() }
+                    } else {
+                        model.moreDrafts[id] = value
+                    }
+                }), axis: .vertical)
+                .lineLimit(3, reservesSpace: true)
+                .font(.body)
+                .foregroundStyle(.black)
+                .tint(CowboyTheme.red)
+                .submitLabel(.send)
+                .disabled(model.loggingMore)
+                .accessibilityIdentifier("middle-more")
         }
     }
 
