@@ -36,6 +36,30 @@ Read this file, then `README.md`, then `AGENTS.md` in the Cowboyai repo for the 
 
 Tests: `.venv/bin/python -m pytest` — 108 pass.
 
+## 2026-10-07 — Adam's own form for the middle answer (governs; replaces everything Claude proposed today)
+
+Adam wrote it in the artifact "The Middle Answer" (https://claude.ai/artifact/MWFiR9Je6jCibrhcsMNK12), saved
+2026-10-07 11:19 am, and said: "My middle answer adjustments are completed." Verbatim, field by field:
+
+- QUESTION: What are reasons I avoid going to the doctor?
+- EXPLANATION: "Some relationships, but not enough to justify is an opportunity for growth.  This is a chance to
+  transform potential into a new skill that can compound into something more and more valuable."
+- ANSWER: "There is some relationship, but not enough to justify causation."
+- Section "Reasons": "This should contain quotes of mine that have some relationship.  Not a bland fucking explanation
+  of nothing."
+- Section "Suggestions to move the relationships into a more predictable category": "Going the doctor is not something
+  you have a history of, so it is difficult to use your aptitude for discernment. One suggestion is to take this
+  context and ask AI to relate it to the your predictable patterns and find simple steps to gather data that leads to
+  better discernment."
+- Section "Belief": "Speed. Discernment. Curiosity.  Confidence.  These are important to you.  Do any of them apply more
+  or less when moving this issue further towards a predictable outcome?"
+- Last section, his question to himself: "What would you like AI to revisit? Anything come to mind?" — it replaces the
+  September 9 sentence he chose that morning. The live engine still ends middle answers with the September 9
+  sentence (`gate.MIDDLE_ASKS`, commit ac73004) until this form is built.
+
+Not built. The readout branch `claude/middle-readout` (Claude's labels: Reasons/Health/Belief and Health) is superseded by
+this form; it is kept, not merged.
+
 ## 2026-10-07 — the middle answer asks in his words of September 9
 
 Asked which of his own sentences leads the middle answer, Adam, 2026-10-07: "Perfect. Use Sept 9". The sentence is the
