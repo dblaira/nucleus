@@ -130,6 +130,12 @@ final class AskModel {
 
     func loadRecent() async {
         recent = (try? await NucleusAPI.recent()) ?? []
+        // A draft that is word for word a question already in his Earlier list is not unsent writing; it is the
+        // last question, left in the entry by the build before 430b30a. Adam, 2026-10-07: "It's still there."
+        let draft = question.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !draft.isEmpty, recent.contains(where: { $0.question.trimmingCharacters(in: .whitespacesAndNewlines) == draft }) {
+            question = ""
+        }
     }
 
     func thumb(_ row: AskResponse.Row, up: Bool) async {
