@@ -5,7 +5,9 @@ import UIKit
 struct AskResponse: Decodable {
     /// The form he picked (one of his SAVY themes) and what he filled in, as the Mac kept it.
     struct Theme: Decodable {
-        struct Field: Decodable { let prompt: String; let symbol: String?; let answer: String }
+        /// What the night run put under a box he left blank: one of his records or words, quoted, and what it says.
+        struct Night: Decodable { let brings_in: String; let quote: String; let answer: String }
+        struct Field: Decodable { let prompt: String; let symbol: String?; let answer: String; let night: Night? }
         let id: String; let name: String; let question: String?; let fields: [Field]
     }
     struct Question: Decodable { let id: String; let question: String; let theme: Theme? }

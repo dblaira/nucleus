@@ -234,6 +234,12 @@ class Store:
             theme = None
         return {"id": row[0], "question": row[1], "asked_at": row[2], "surface": row[3], "theme": theme}
 
+    def set_theme(self, question_id: str, theme: dict) -> None:
+        """The form with what was put under its boxes. His own answers are never changed by this."""
+        self.connection.execute("UPDATE questions SET theme_json = ? WHERE id = ?",
+                                (json.dumps(theme, ensure_ascii=False), question_id))
+        self.connection.commit()
+
     def save_grade(self, run_id: str, question_id: str | None, question: str, expected: str | None, got: str | None,
                    status: str, gate_ok: bool | None, seconds: float) -> None:
         self.connection.execute(

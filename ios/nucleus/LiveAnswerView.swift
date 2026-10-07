@@ -35,18 +35,38 @@ struct LiveAnswerSection: View {
                         .tracking(1)
                         .foregroundStyle(.secondary)
                     VStack(alignment: .leading, spacing: 0) {
-                        ForEach(Array(theme.fields.filter { !$0.answer.isEmpty }.enumerated()), id: \.offset) { index, field in
+                        ForEach(Array(theme.fields.filter { !$0.answer.isEmpty || $0.night != nil }.enumerated()), id: \.offset) { index, field in
                             if index > 0 { Divider().padding(.leading, 34) }
                             middleRow(symbol: field.symbol ?? "text.bubble") {
                                 Text(field.prompt)
                                     .font(.body.weight(.semibold))
                                     .foregroundStyle(.black)
                                     .fixedSize(horizontal: false, vertical: true)
-                                Text(field.answer)
-                                    .font(.body)
-                                    .foregroundStyle(.black)
-                                    .fixedSize(horizontal: false, vertical: true)
-                                    .textSelection(.enabled)
+                                if !field.answer.isEmpty {
+                                    Text(field.answer)
+                                        .font(.body)
+                                        .foregroundStyle(.black)
+                                        .fixedSize(horizontal: false, vertical: true)
+                                        .textSelection(.enabled)
+                                }
+                                if let night = field.night {
+                                    // a box he left blank, filled by the night run under his word for the model's box
+                                    Text("POSSIBILITY")
+                                        .font(.system(size: 11, weight: .bold))
+                                        .tracking(1)
+                                        .foregroundStyle(.secondary)
+                                        .padding(.top, 6)
+                                    Text("\(night.brings_in) — “\(night.quote)”")
+                                        .font(.body)
+                                        .foregroundStyle(.black)
+                                        .fixedSize(horizontal: false, vertical: true)
+                                        .textSelection(.enabled)
+                                    Text(night.answer)
+                                        .font(.body)
+                                        .foregroundStyle(.black)
+                                        .fixedSize(horizontal: false, vertical: true)
+                                        .textSelection(.enabled)
+                                }
                             }
                         }
                     }

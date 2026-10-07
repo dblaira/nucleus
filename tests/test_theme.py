@@ -15,3 +15,33 @@ def test_the_theme_he_picked_is_kept_with_the_question(tmp_path: Path):
     assert store.question(qid)["theme"] == theme
     plain = store.new_question("What is FLOW?", "web")
     assert store.question(plain)["theme"] is None
+
+
+def test_a_blank_box_is_filled_only_with_his_own_words(tmp_path: Path):
+    from nucleus import boxes
+    from nucleus.dictionary import Meaning
+
+    class Record:
+        label = "Done is a confident, clear internal framework of what matters vs what doesn't"
+        note = ""
+        block = ""
+        leaf = "r-done"
+
+    class G:
+        def find(self, key): return Record() if key == "r-done" else None
+        def is_accepted(self, record): return True
+
+    meanings = [Meaning("FLOW", "6, 12, 15, 23", 1, "FLOW is the act of using all of my awareness and energy into one activity.")]
+    theme = {"id": "how-to", "name": "How-To", "question": "I want a plan.",
+             "fields": [{"prompt": "What's the outcome?", "symbol": "flag", "answer": ""},
+                        {"prompt": "What are the steps?", "symbol": "list", "answer": "Open the app."}]}
+    payload = {"boxes": [
+        {"prompt": "What's the outcome?", "brings_in": "r-done", "quote": "a confident, clear internal framework of what matters",
+         "answer": "Your record names the outcome: a clear frame of what matters."},
+        {"prompt": "What are the steps?", "brings_in": "FLOW", "quote": "one activity", "answer": "Already filled by him; ignored."},
+        {"prompt": "What's the outcome?", "brings_in": "FLOW", "quote": "words he never wrote", "answer": "Dropped."}]}
+    fills, reason = boxes.check(payload, theme, G(), meanings)
+    assert reason is None and list(fills) == ["What's the outcome?"]
+    assert fills["What's the outcome?"]["brings_in"] == "r-done"
+    advice = {"boxes": [{"prompt": "What's the outcome?", "brings_in": "r-done", "quote": "what matters", "answer": "You should decide what matters."}]}
+    assert boxes.check(advice, theme, G(), meanings) == ({}, "every box failed the checks")

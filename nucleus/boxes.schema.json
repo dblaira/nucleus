@@ -1,0 +1,1 @@
+{"type": "object", "additionalProperties": false, "required": ["boxes"], "properties": {"boxes": {"type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["prompt", "brings_in", "quote", "answer"], "properties": {"prompt": {"type": "string"}, "brings_in": {"type": "string"}, "quote": {"type": "string"}, "answer": {"type": "string"}}}}}}
