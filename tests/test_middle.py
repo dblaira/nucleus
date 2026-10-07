@@ -42,4 +42,12 @@ def test_the_night_runs_options_fill_the_suggestions():
                 "would_show": "The feelings that arise between considering a doctor visit and attending it indicate whether anticipatory stress is involved."}]
     filled = middle.form("There is some relationship, but not enough to justify causation.", None, options)
     assert [section["head"] for section in filled["sections"]] == [middle.SUGGESTIONS, "Belief"]
-    assert filled["sections"][0]["lines"][0].startswith("ANTICIPATORY ANXIETY — “Anticipatory anxiety lies.”\nStress that builds")
+    assert filled["sections"][0]["lines"][0] == ("ANTICIPATORY ANXIETY — “Anticipatory anxiety lies.”\nThe feelings that arise between "
+                                                 "considering a doctor visit and attending it indicate whether anticipatory stress is involved.")
+
+
+def test_the_night_run_refuses_only_what_is_told_to_him():
+    from nucleus import night
+    assert not night.TOLD_TO.search("The feelings present when you consider going to the doctor would identify whether emotional data is missing.")
+    assert night.TOLD_TO.search("Consider going to the doctor this week.")
+    assert night.TOLD_TO.search("You should consider the stress first.")

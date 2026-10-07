@@ -58,12 +58,14 @@ def quotes(answer_text: str, reply_json: str | None) -> list[str]:
 def suggestions(options: list[dict]) -> list[str]:
     """The night run's options: the pattern of his it brings in, in his words, then what it may be doing and the
     information that would show it."""
+    # Adam, 2026-10-02: "I don't speak that way or read long rows of text." 2026-10-07: "find simple steps to gather
+    # data that leads to better discernment." So each option is two lines: his pattern in his words, then the data.
     out = []
     for option in options or []:
         word = option.get("brings_in") or ""
         shown = _plain(option.get("shown") or "")
         head = f"{word} — “{shown}”" if word.isupper() and shown else (f"“{shown}”" if shown else word)
-        out.append(head + "\n" + " ".join(part for part in (option.get("proposed"), option.get("would_show")) if part))
+        out.append(head + "\n" + (option.get("would_show") or option.get("proposed") or ""))
     return out
 
 

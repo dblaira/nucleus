@@ -21,6 +21,7 @@ below is a PROPOSAL, not a rule of record (adams-authority).
 from __future__ import annotations
 
 import json
+import re
 import sys
 import time
 from datetime import datetime
@@ -32,6 +33,11 @@ from . import gate as gate_module
 from . import model as model_module
 from .compact import compact_records
 from .explain import ADVICE
+
+# ADVICE catches the word "consider" anywhere. On 2026-10-07 it threw away all three options for one answer
+# because one sentence said "when you consider going to the doctor", which tells him nothing to do. Here the
+# word counts as advice only when it is told to him: at the start of a sentence, or after "you should".
+TOLD_TO = re.compile(r"(?:^|[.!?]\s+)(consider|try)\b|\b(you should|try to|next step|recommend|it would help|make sure|you need to|you must|you could)\b", re.I)
 from .gate import one_sentence, unescape_label
 from .graph import Graph, load_graph
 from .narrative import finished, tell_record
@@ -143,7 +149,7 @@ def check(payload: object, graph: Graph, meanings, used: set[str]) -> tuple[list
             would_show = one_sentence(item.get("would_show"), "an option's would_show sentence")
         except gate_module.Refused as error:
             return [], str(error)
-        if ADVICE.search(proposed) or ADVICE.search(would_show):
+        if TOLD_TO.search(proposed) or TOLD_TO.search(would_show):
             return [], "advice"
         if "would show" in would_show.lower():
             return [], "would_show repeats its own label"

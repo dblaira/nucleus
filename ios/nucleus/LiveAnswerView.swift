@@ -130,23 +130,25 @@ struct LiveAnswerSection: View {
                 .textSelection(.enabled)
                 .accessibilityIdentifier("middle-answer")
             VStack(alignment: .leading, spacing: 0) {
-                ForEach(Array(m.sections.enumerated()), id: \.offset) { _, section in
-                    Divider()
+                ForEach(Array(m.sections.enumerated()), id: \.offset) { index, section in
+                    if index > 0 { Divider().padding(.leading, 34) }
                     middleRow(symbol: section.symbol) {
                         Text(section.head)
                             .font(.body.weight(.semibold))
                             .foregroundStyle(.black)
                             .fixedSize(horizontal: false, vertical: true)
-                        ForEach(Array(section.lines.enumerated()), id: \.offset) { _, line in
-                            Text(line)
-                                .font(.body)
-                                .foregroundStyle(.black)
-                                .fixedSize(horizontal: false, vertical: true)
-                                .textSelection(.enabled)
+                        VStack(alignment: .leading, spacing: 10) {
+                            ForEach(Array(section.lines.enumerated()), id: \.offset) { _, line in
+                                Text(line)
+                                    .font(.body)
+                                    .foregroundStyle(.black)
+                                    .fixedSize(horizontal: false, vertical: true)
+                                    .textSelection(.enabled)
+                            }
                         }
                     }
                 }
-                Divider()
+                Divider().padding(.leading, 34)
                 middleRow(symbol: "arrow.turn.down.right") {
                     Text(m.ask)
                         .font(.body.weight(.semibold))
@@ -171,9 +173,10 @@ struct LiveAnswerSection: View {
                 .font(.system(size: 16))
                 .foregroundStyle(CowboyTheme.red)
                 .frame(width: 24)
-            VStack(alignment: .leading, spacing: 6) { content() }
+            VStack(alignment: .leading, spacing: 0) { content() }
+                .frame(minHeight: UIFont.preferredFont(forTextStyle: .body).lineHeight * 3, alignment: .top)
         }
-        .padding(.vertical, 12)
+        .padding(.vertical, 11)
     }
 
     /// Under his last question, the way a SAVY Decide box takes its answer: what he logged, then room to write.
