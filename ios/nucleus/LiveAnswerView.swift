@@ -13,13 +13,14 @@ struct LiveAnswerSection: View {
     private var current: AskResponse? { model.current }
     private var parts: AnswerParts { AnswerParts(text: current?.answer?.text, rows: current?.rows ?? []) }
     private var answered: Bool { current?.answer?.status == "answered" }
-    /// His own form, when the answer is the middle one. Adam, 2026-10-07: "My middle answer adjustments are completed."
-    private var middle: AskResponse.Middle? { answered ? current?.middle : nil }
+    /// One form for every answer. Adam, 2026-10-07: "The aligned and why needs better formatting, just like the middle
+    /// answer does, and so does the I don't know." and "the word your should be taken out of every goddamn label."
+    private var form: AskResponse.Form? { answered ? current?.form : nil }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             VStack(alignment: .leading, spacing: 12) {
-                kicker(middle == nil ? "YOUR QUESTION" : "QUESTION")
+                kicker("QUESTION")
                 Text(current?.question.question ?? model.question)
                     .font(CowboyTheme.carouselSerif(23))
                     .foregroundStyle(.black)
@@ -33,8 +34,8 @@ struct LiveAnswerSection: View {
             .padding(.horizontal, 18)
             .padding(.top, 24)
 
-            if let middle {
-                middleForm(middle)
+            if let form {
+                answerForm(form)
             } else {
                 answer
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -48,7 +49,7 @@ struct LiveAnswerSection: View {
             if answered {
                 wordsCarousel(titled: "HE SAID THE WORD ITSELF", parts.words)
                 recordsCarousel(titled: "HIS ROUTES SENT IT HERE", parts.records)
-                if middle == nil { possibility }
+                if form == nil { possibility }
             }
         }
     }
@@ -58,7 +59,7 @@ struct LiveAnswerSection: View {
         if let a = current?.answer {
             VStack(alignment: .leading, spacing: 14) {
                 if a.status == "answered" {
-                    kicker("YOUR ANSWER")
+                    kicker("ANSWER")
                     if let n = current?.asked_before, n > 0 {
                         Text("asked before · \(n) \(n == 1 ? "time" : "times")")
                             .font(.system(size: 11, weight: .bold))
@@ -103,25 +104,38 @@ struct LiveAnswerSection: View {
     /// then ANSWER with its sections, then his question with room to write under it. The rows are drawn the way his
     /// Decide card in SAVY draws a theme (ReminderFormView.postDecideSection): a crimson icon, 16 pt, in a 24 pt column.
     @ViewBuilder
-    private func middleForm(_ m: AskResponse.Middle) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            kicker("EXPLANATION")
-            Text(m.explanation)
-                .font(CowboyTheme.readingSerif(22, relativeTo: .body))
-                .foregroundStyle(.black)
-                .lineSpacing(5)
-                .fixedSize(horizontal: false, vertical: true)
-                .textSelection(.enabled)
-                .accessibilityIdentifier("middle-explanation")
+    private func answerForm(_ m: AskResponse.Form) -> some View {
+        if let explanation = m.explanation {
+            VStack(alignment: .leading, spacing: 12) {
+                kicker("EXPLANATION")
+                Text(explanation)
+                    .font(CowboyTheme.readingSerif(22, relativeTo: .body))
+                    .foregroundStyle(.black)
+                    .lineSpacing(5)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .textSelection(.enabled)
+                    .accessibilityIdentifier("form-explanation")
+                if let ex = current?.explanation, ex.status == "shown", m.ask == nil {
+                    Thumbs(state: model.explanationThumb ?? ex.thumb) { up in
+                        Task { await model.thumbExplanation(up: up) }
+                    }
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(20)
+            .background(CowboyTheme.cream, in: RoundedRectangle(cornerRadius: 18))
+            .padding(.horizontal, 18)
+            .padding(.top, 24)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(20)
-        .background(CowboyTheme.cream, in: RoundedRectangle(cornerRadius: 18))
-        .padding(.horizontal, 18)
-        .padding(.top, 24)
 
         VStack(alignment: .leading, spacing: 14) {
             kicker("ANSWER")
+            if let n = current?.asked_before, n > 0 {
+                Text("asked before · \(n) \(n == 1 ? "time" : "times")")
+                    .font(.system(size: 11, weight: .bold))
+                    .tracking(1)
+                    .foregroundStyle(.secondary)
+            }
             Text(m.answer)
                 .font(CowboyTheme.readingSerif(22, relativeTo: .body))
                 .foregroundStyle(.black)
@@ -148,16 +162,18 @@ struct LiveAnswerSection: View {
                         }
                     }
                 }
-                Divider().padding(.leading, 34)
-                middleRow(symbol: "arrow.turn.down.right") {
-                    Text(m.ask)
-                        .font(.body.weight(.semibold))
-                        .foregroundStyle(.black)
-                        .fixedSize(horizontal: false, vertical: true)
-                    moreUnderTheQuestion
+                if let ask = m.ask {
+                    Divider().padding(.leading, 34)
+                    middleRow(symbol: "arrow.turn.down.right") {
+                        Text(ask)
+                            .font(.body.weight(.semibold))
+                            .foregroundStyle(.black)
+                            .fixedSize(horizontal: false, vertical: true)
+                        moreUnderTheQuestion
+                    }
                 }
             }
-            .accessibilityIdentifier("middle-sections")
+            .accessibilityIdentifier("form-sections")
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(20)

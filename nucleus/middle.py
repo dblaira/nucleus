@@ -80,3 +80,38 @@ def form(answer_text: str, reply_json: str | None, options: list[dict]) -> dict:
         sections.append({"head": SUGGESTIONS, "symbol": "book", "lines": suggested})
     sections.append({"head": BELIEF, "symbol": "link", "lines": [BELIEF_TEXT]})
     return {"explanation": EXPLANATION, "answer": FIRST_LINE["not_sure"], "sections": sections, "ask": ASK}
+
+
+_MEANING_LINE = re.compile(r"^([A-Z][A-Z0-9 '’&-]*) — “(.+)”$")
+
+
+def word_meanings(answer_text: str) -> dict[str, list[str]]:
+    """His dictionary words the answer showed, each with its meanings, in the order the answer gave them."""
+    out: dict[str, list[str]] = {}
+    for line in (answer_text or "").split("\n"):
+        found = _MEANING_LINE.match(line.strip())
+        if found:
+            out.setdefault(found.group(1), []).append(_plain(found.group(2)))
+    return out
+
+
+def form_for(answer: dict | None, rows: list[dict], explanation: dict | None, options: list[dict]) -> dict | None:
+    """The same shape for all three of his answers. Adam, 2026-10-07: "The aligned and why needs better formatting,
+    just like the middle answer does, and so does the I don't know." Every heading is a word of his: his dictionary
+    word, or his word with the middle word from his list. No label is invented."""
+    if not answer or answer.get("status") != "answered":
+        return None
+    kind, text, reply = answer.get("answer"), answer.get("text") or "", answer.get("reply_json")
+    if kind == "not_sure":
+        return form(text, reply, options)
+    paragraph = (explanation or {}).get("text") if (explanation or {}).get("status") == "shown" else None
+    if kind == "dont_know":
+        return {"explanation": paragraph, "answer": FIRST_LINE["dont_know"], "sections": [], "ask": None}
+    sections = [{"head": word, "symbol": "book", "lines": [f"“{m}”" for m in meanings]}
+                for word, meanings in word_meanings(text).items()]
+    for row in (rows or [])[:MOST_QUOTES]:
+        head = " ".join(part for part in (row.get("word"), row.get("kind")) if part)
+        quote = _plain(row.get("quote") or "")
+        if head and quote:
+            sections.append({"head": head, "symbol": "link", "lines": [f"“{quote}”"]})
+    return {"explanation": paragraph, "answer": FIRST_LINE["aligned"], "sections": sections, "ask": None}

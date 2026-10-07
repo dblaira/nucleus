@@ -51,3 +51,17 @@ def test_the_night_run_refuses_only_what_is_told_to_him():
     assert not night.TOLD_TO.search("The feelings present when you consider going to the doctor would identify whether emotional data is missing.")
     assert night.TOLD_TO.search("Consider going to the doctor this week.")
     assert night.TOLD_TO.search("You should consider the stress first.")
+
+
+def test_every_answer_takes_the_same_shape_with_only_his_words_as_headings():
+    text = "aligned and why\n\nWORK — “Work happens when you have a job.”\nyou said WORK\n\n1.00 · 2026-07-10 — WORK is different from “AGENT PROPOSAL: do the work”"
+    answer = {"status": "answered", "answer": "aligned", "text": text, "reply_json": "{}"}
+    rows = [{"word": "WORK", "kind": "is different from", "quote": "AGENT PROPOSAL: do the work", "record": "r1", "thumb": None, "saved": True}]
+    filled = middle.form_for(answer, rows, {"status": "shown", "text": "The meaning, in sentences."}, [])
+    assert filled["explanation"] == "The meaning, in sentences." and filled["answer"] == "aligned and why" and filled["ask"] is None
+    assert [(s["head"], s["lines"]) for s in filled["sections"]] == [
+        ("WORK", ["“Work happens when you have a job.”"]), ("WORK is different from", ["“AGENT PROPOSAL: do the work”"])]
+    nothing = middle.form_for({"status": "answered", "answer": "dont_know", "text": gate.FIRST_LINE["dont_know"], "reply_json": None},
+                              [], {"status": "shown", "text": "Nothing in the dictionary says X."}, [])
+    assert nothing == {"explanation": "Nothing in the dictionary says X.", "answer": gate.FIRST_LINE["dont_know"], "sections": [], "ask": None}
+    assert middle.form_for({"status": "stopped", "answer": None}, [], None, []) is None
