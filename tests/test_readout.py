@@ -23,7 +23,7 @@ def test_the_doctor_entry_reads_as_questions_and_answers(monkeypatch, store):  #
     assert result.answer == "not_sure"
     rows = readout.middle(store.explanation(result.question_id)["parts"])
     assert [row["question"] for row in rows] == [
-        "What is reasons?", "What is doctor?", "What sits in both Belief and Health?", gate.MIDDLE_ASKS]
+        "Reasons", "Doctor", "Belief and Health", gate.MIDDLE_ASKS]          # Adam: "This should read, "Reasons"."
     assert rows[0]["answer"] == "a rational motive for a belief or action\n" \
                                 "Belief: Core beliefs, values, worldview, and personal philosophy."
     assert rows[1]["answer"].endswith("Not in the dictionary or the records.")

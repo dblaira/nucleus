@@ -114,11 +114,18 @@ struct LiveAnswerSection: View {
                         .foregroundStyle(CowboyTheme.red)
                         .frame(width: 24)
                     VStack(alignment: .leading, spacing: 0) {
-                        Text(row.answer.isEmpty ? row.question : row.question + "\n" + row.answer)
-                            .font(.body)
+                        Text(row.question)
+                            .font(.body.weight(.semibold))
                             .foregroundStyle(.black)
                             .fixedSize(horizontal: false, vertical: true)
                             .textSelection(.enabled)
+                        if !row.answer.isEmpty {
+                            Text(row.answer)
+                                .font(.body)
+                                .foregroundStyle(.black)
+                                .fixedSize(horizontal: false, vertical: true)
+                                .textSelection(.enabled)
+                        }
                         if index == readout.count - 1, row.answer.isEmpty {
                             moreUnderTheQuestion
                         }
