@@ -71,6 +71,7 @@ def test_the_night_run_fills_only_forms_with_a_blank_box_and_never_touches_his_a
         label = "x"; note = ""; block = ""; leaf = "x"
 
     class G:
+        records = {}
         def find(self, key): return None
         def is_accepted(self, record): return True
 
