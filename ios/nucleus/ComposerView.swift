@@ -8,6 +8,7 @@ struct ComposerView: View {
     @Environment(\.dismiss) private var dismiss
     @Bindable var model: AskModel
     let onAsk: () -> Void
+    @State private var examplesExpanded = false
 
     private var isEmpty: Bool { !model.canAsk }
 
@@ -34,6 +35,8 @@ struct ComposerView: View {
                         .accessibilityIdentifier("new-question-text")
                 }
                 .listRowBackground(CowboyTheme.cream)
+
+                examplesSection
 
                 Section {
                     Button(action: onAsk) {
@@ -72,6 +75,53 @@ struct ComposerView: View {
             .toolbarColorScheme(.light, for: .navigationBar)
         }
         .preferredColorScheme(.light)
+    }
+
+    private var examplesSection: some View {
+        Section {
+            DisclosureGroup(isExpanded: $examplesExpanded) {
+                ForEach(QuestionExampleCatalog.examples) { example in
+                    Button {
+                        model.selectExample(example.id)
+                        examplesExpanded = false
+                    } label: {
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text(example.title)
+                                .font(.headline)
+                                .foregroundStyle(.black)
+                            Text(example.question)
+                                .foregroundStyle(.black)
+                                .fixedSize(horizontal: false, vertical: true)
+                            if let theme = example.theme {
+                                Text(theme.name)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                            Text(model.question.isEmpty ? "Use this question" : "Add below my question")
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundStyle(CowboyTheme.red)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.vertical, 6)
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(model.working)
+                    .accessibilityIdentifier("question-example-\(example.id)")
+                    .accessibilityLabel("\(model.question.isEmpty ? "Use this question" : "Add below my question"): \(example.question)")
+                    .accessibilityHint("You can edit it before tapping Ask.")
+                }
+            } label: {
+                Label("Example questions", systemImage: "lightbulb")
+                    .foregroundStyle(.black)
+            }
+            .accessibilityIdentifier("question-examples")
+        } footer: {
+            Text(model.question.isEmpty
+                 ? "Explore patterns in your records. Choose a question, edit it, then tap Ask."
+                 : "Your writing stays. An example is added below it; your Theme and Decide answers stay too.")
+        }
+        .listRowBackground(CowboyTheme.cream)
     }
 
     // MARK: - Theme + Decide, as SAVY draws them
