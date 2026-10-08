@@ -24,7 +24,10 @@ three saved keys. The injectable preferences store exists to test that behavior 
 ## Verification on October 8, 2026
 
 Base: `f9e326dcfcf996c959f9ec65d169d0c246690696` on `main`.
-Environment: Linux x86_64, Swift 6.0.3, Python 3.12.14.
+Local environment: Linux x86_64, Swift 6.0.3, Python 3.12.14.
+Apple build environment: GitHub macOS runner, Xcode 26.3, Apple Swift 6.2.4.
+[Verified Mac run](https://github.com/dblaira/nucleus/actions/runs/37858758851)
+checks commit `be961be1c3d320e54036f630545fbb80aff4b528`.
 
 | Check | Exact result |
 | --- | --- |
@@ -35,12 +38,20 @@ Environment: Linux x86_64, Swift 6.0.3, Python 3.12.14.
 | `git diff --check` | Passed; exit 0 |
 | `.venv/bin/python -m pytest tests/test_theme.py -q` | 3 passed, 0 failed; exit 0 |
 | Full Python suite on unchanged base and after this change | Both: 66 passed, 23 failed, 22 errors, 5 skipped; exit 1 |
-| Complete Xcode/iOS build, simulator UI, physical iPhone | Not run; no Xcode, iOS SDK, simulator, or physical device in this workspace |
+| Same composer regressions on macOS / Swift 6.2.4 | 12 passed, 0 failed; exit 0 |
+| Complete checked-in Xcode project, iOS Simulator Debug | BUILD SUCCEEDED; exit 0 |
+| Complete checked-in Xcode project, physical-iOS Debug, signing disabled | BUILD SUCCEEDED; exit 0; unsigned, not an installable release |
+| Simulator UI interaction, physical iPhone installation and interaction | Not run |
 
 The full Python suite depends on Mac-resident ontology and dictionary files, including
 `/Users/adamblair/Documents/Main/Ontology/accepted/accepted-graph.ttl`, which are absent
 here. Its non-passing baseline is not claimed as a green check. No Python engine,
 night job, or morning-review code is changed.
+
+The workflow `.github/workflows/ios-composer.yml` repeats the composer tests and both
+complete app builds for iOS changes. Build warnings concern the existing CowboyHat image
+asset, absent AppIntents dependency, and device interface orientations; none are treated
+as build errors.
 
 ## Example sources
 
@@ -66,8 +77,9 @@ No dictionary, ledger, or Notion content is changed by this feature.
 
 ## What still needs an Apple platform
 
-These are model tests, not rendered UI tests. A Mac with Xcode and an iOS 26 SDK is
-needed to build the complete SwiftUI app and check the interface on a simulator or iPhone.
+These are model tests and complete app builds, not rendered UI tests. A Mac with Xcode
+and an iOS 26 SDK is still needed for interactive simulator checks and a signed iPhone
+installation.
 The composer should be checked with an empty question, a persisted multiline draft,
 edited Decide prompts and answers, large Dynamic Type, and VoiceOver. Selecting an
 example should collapse the list, leave the complete question editable, retain the theme
