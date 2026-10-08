@@ -4,34 +4,25 @@ import Observation
 @MainActor
 @Observable
 final class AskModel {
-    private let defaults: UserDefaults
-
-    var question = "" {
+    var question = UserDefaults.standard.string(forKey: "nucleus.draft") ?? "" {
         didSet {
             // the draft is kept the moment it is typed, so nothing he wrote is ever lost to a reload
-            defaults.set(question, forKey: "nucleus.draft")
+            UserDefaults.standard.set(question, forKey: "nucleus.draft")
             print("nucleus: question now \(question.count) chars")
         }
     }
     /// The form he picked, from his SAVY themes (Themes.swift), and what he wrote in it. Kept the moment it is
     /// typed, like the question. Adam, 2026-10-07: "there can be choices of the questions that I have."
-    var themeID: String? = nil {
-        didSet { defaults.set(themeID, forKey: "nucleus.theme") }
+    var themeID: String? = UserDefaults.standard.string(forKey: "nucleus.theme") {
+        didSet { UserDefaults.standard.set(themeID, forKey: "nucleus.theme") }
     }
-    var themeAnswers: [String: [String]] = [:] {
-        didSet { defaults.set(try? JSONEncoder().encode(themeAnswers), forKey: "nucleus.themeAnswers") }
+    var themeAnswers: [String: [String]] = {
+        guard let data = UserDefaults.standard.data(forKey: "nucleus.themeAnswers") else { return [:] }
+        return (try? JSONDecoder().decode([String: [String]].self, from: data)) ?? [:]
+    }() {
+        didSet { UserDefaults.standard.set(try? JSONEncoder().encode(themeAnswers), forKey: "nucleus.themeAnswers") }
     }
     var theme: PostTheme? { PostThemeCatalog.theme(id: themeID) }
-
-    /// Examples only edit the saved Question field. Existing writing stays character for character,
-    /// and neither the theme nor its Decide answers changes. Asking remains a separate action.
-    @discardableResult
-    func selectExample(_ id: String) -> Bool {
-        guard !working, let example = QuestionExampleCatalog.example(id: id) else { return false }
-        guard question != example.question, !question.hasSuffix("\n\n" + example.question) else { return false }
-        question = question.isEmpty ? example.question : question + "\n\n" + example.question
-        return true
-    }
 
     func selectTheme(_ id: String?) {
         themeID = id
@@ -94,15 +85,7 @@ final class AskModel {
     static let stepNames = ["1 question in", "2 dictionary reads it", "3 your phrases found", "4 nucleus read whole",
                             "5 one model call", "6 the gate", "7 answer out"]
 
-    init(defaults: UserDefaults = .standard) {
-        self.defaults = defaults
-        question = defaults.string(forKey: "nucleus.draft") ?? ""
-        themeID = defaults.string(forKey: "nucleus.theme")
-        if let data = defaults.data(forKey: "nucleus.themeAnswers") {
-            themeAnswers = (try? JSONDecoder().decode([String: [String]].self, from: data)) ?? [:]
-        }
-        print("nucleus: model created")
-    }
+    init() { print("nucleus: model created") }
 
     func ask() async {
         let text = entryText
