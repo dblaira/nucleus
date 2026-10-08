@@ -36,6 +36,20 @@ Read this file, then `README.md`, then `AGENTS.md` in the Cowboyai repo for the 
 
 Tests: `.venv/bin/python -m pytest` — 108 pass.
 
+## 2026-10-07 — what Cowboy AI is for, in his words (governs the day lane, the night lane, and the morning)
+
+Adam, verbatim: "Cowboyai should return a response immediately. The idea is that it improves over night.  Then offers more
+insight or review the next morning.  Ultimately all of the important lessons I am reminded of (beliefs, axioms, truths,
+motivations, preferences, clearly defined actions that reap compound results) will become second nature through
+repetition and conscious alignment."
+
+| his sentence | today |
+| --- | --- |
+| "return a response immediately" | the painted answer and his forms: no model in the moment of use |
+| "it improves over night" | 02:00 links pass; 02:20 night run: three options under middle answers, blank boxes filled |
+| "offers more insight or review the next morning" | **not built** — nothing brings last night's work to him in the morning; he finds it only by reopening an entry |
+| "second nature through repetition and conscious alignment" | the aim; the morning review is the repetition |
+
 ## 2026-10-07 — his SAVY themes in Cowboy AI; every answer in one shape; no "your" in a label
 
 Adam: "All the themes that I have on the SAVY app, I want added on cowboy AI. That way there can be choices of the
