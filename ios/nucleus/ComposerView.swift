@@ -15,14 +15,6 @@ struct ComposerView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section {
-                    Text("Your writing saves automatically on this iPhone.")
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                        .accessibilityIdentifier("question-draft-status")
-                }
-                .listRowBackground(Color.white)
-
                 themeSection
 
                 if model.theme != nil {
@@ -85,22 +77,25 @@ struct ComposerView: View {
                         model.selectExample(example.id)
                         examplesExpanded = false
                     } label: {
-                        VStack(alignment: .leading, spacing: 6) {
-                            Text(example.title)
-                                .font(.headline)
-                                .foregroundStyle(.black)
-                            Text(example.question)
-                                .foregroundStyle(.black)
-                                .fixedSize(horizontal: false, vertical: true)
-                            if let theme = example.theme {
-                                Text(theme.name)
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                            }
-                            Text(model.question.isEmpty ? "Use this question" : "Add below my question")
-                                .font(.subheadline.weight(.semibold))
+                        HStack(alignment: .firstTextBaseline, spacing: 10) {
+                            Image(systemName: example.theme?.questions.first?.symbol ?? "lightbulb")
+                                .symbolVariant(.none)
                                 .foregroundStyle(CowboyTheme.red)
+                                .frame(width: 24)
+                                .accessibilityHidden(true)
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text(example.title)
+                                Text(example.question)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                            .font(.body.weight(.regular))
+                            .foregroundStyle(.black)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            Image(systemName: "plus")
+                                .foregroundStyle(CowboyTheme.red)
+                                .accessibilityHidden(true)
                         }
+                        .font(.body.weight(.regular))
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.vertical, 6)
                         .contentShape(Rectangle())
@@ -109,17 +104,17 @@ struct ComposerView: View {
                     .disabled(model.working)
                     .accessibilityIdentifier("question-example-\(example.id)")
                     .accessibilityLabel("\(model.question.isEmpty ? "Use this question" : "Add below my question"): \(example.question)")
-                    .accessibilityHint("You can edit it before tapping Ask.")
+                    .accessibilityHint(model.question.isEmpty
+                        ? "Fills the Question field. You can edit it before tapping Ask."
+                        : "Adds below your writing and keeps your Theme and Decide answers. You can edit it before tapping Ask.")
                 }
             } label: {
                 Label("Example questions", systemImage: "lightbulb")
+                    .symbolVariant(.none)
+                    .font(.body.weight(.regular))
                     .foregroundStyle(.black)
             }
             .accessibilityIdentifier("question-examples")
-        } footer: {
-            Text(model.question.isEmpty
-                 ? "Explore patterns in your records. Choose a question, edit it, then tap Ask."
-                 : "Your writing stays. An example is added below it; your Theme and Decide answers stay too.")
         }
         .listRowBackground(CowboyTheme.cream)
     }
@@ -148,7 +143,7 @@ struct ComposerView: View {
                         Text("Theme")
                     }
                     Image(systemName: "chevron.up.chevron.down")
-                        .font(.system(size: 13, weight: .semibold))
+                        .font(.body.weight(.regular))
                 }
                 .foregroundStyle(CowboyTheme.red)
             }
@@ -163,7 +158,7 @@ struct ComposerView: View {
                 let question = model.theme?.questions.indices.contains(index) == true ? model.theme?.questions[index] : nil
                 HStack(alignment: .firstTextBaseline, spacing: 10) {
                     Image(systemName: question?.symbol ?? "text.bubble")
-                        .font(.system(size: 16))
+                        .font(.body.weight(.regular))
                         .foregroundStyle(CowboyTheme.red)
                         .frame(width: 24)
                     TextField("", text: Binding(
@@ -182,7 +177,7 @@ struct ComposerView: View {
 
     private func sectionHeader(_ title: String) -> some View {
         Text(title)
-            .font(.system(size: 15, weight: .semibold))
+            .font(.body.weight(.regular))
             .foregroundStyle(CowboyTheme.navy.opacity(0.72))
     }
 }
