@@ -1,5 +1,6 @@
-"""The boxes he left blank in a form, filled at night from his records. Not on a schedule: his ruling on whether
-the night may write into every form's blank boxes is open (HANDOFF 2026-10-07). Run by hand, on a copy.
+"""The boxes he left blank in a form, filled at night from his records. Every night at 02:20, as part of the night
+run (nucleus/night.py), on every form he left a box blank in. Adam, 2026-10-07, asked "Run this every night on every
+form you leave blank: yes or no?": "yes".
 
 Adam, 2026-10-07: "they could also be used to answer the questions for me and to come up with better solutions to
 fill in the gaps when needed." Adam, 2026-10-01: "allow AI to be used on a nightly basis, rather than in the actual
@@ -135,11 +136,30 @@ def fill(question_id: str, store: Store, graph: Graph | None = None, meanings=No
     return len(fills), reason
 
 
+SINCE = time.mktime((2026, 10, 7, 0, 0, 0, 0, 0, -1))      # the forms reached his app on 2026-10-07
+
+
+def run(store: Store | None = None, model_call=None, only: str | None = None) -> list[tuple[str, int, str | None]]:
+    """Every entry of his with a form and a blank box: one call each. A box already filled is never touched."""
+    store = store or Store()
+    graph = load_graph(NUCLEUS_FILES["graph"], NUCLEUS_FILES["ledger"])
+    meanings = dictionary_module.load_meanings(NUCLEUS_FILES["meanings"])
+    done = []
+    for entry in store.entries_with_forms(SINCE):
+        if only and entry["id"] != only:
+            continue
+        if not blank_boxes(entry["theme"]):
+            continue
+        count, reason = fill(entry["id"], store, graph, meanings, model_call)
+        done.append((entry["question"], count, reason))
+    return done
+
+
 def main(argv: list[str]) -> int:
     store = Store(Path(argv[argv.index("--store") + 1])) if "--store" in argv else Store()
-    question_id = argv[argv.index("--question") + 1]
-    count, reason = fill(question_id, store)
-    print(f"{time.strftime('%Y-%m-%d %H:%M:%S')} {count} boxes filled | {reason or 'saved'} | {question_id}")
+    only = argv[argv.index("--question") + 1] if "--question" in argv else None
+    for question, count, reason in run(store, only=only):
+        print(f"{time.strftime('%Y-%m-%d %H:%M:%S')} {count} boxes filled | {reason or 'saved'} | {question[:90]}")
     return 0
 
 

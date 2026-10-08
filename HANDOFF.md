@@ -55,10 +55,10 @@ also be used to answer the questions for me and to come up with better solutions
 checked by code (brings_in is his record or word; the quote is inside it character for character; two sentences at
 most; nothing told to him). Fills ride on the question as `fields[].night`; his app shows them under the box under his
 word POSSIBILITY. Finding: only 5 of his 127 form questions contain one of his dictionary words, so code alone cannot
-fill a box by its question; the night run is the lane. **Not scheduled.** His ruling is open: may the night write into
-every form's blank boxes, or only the middle form's ("No advice is given.  No next steps are suggested." vs "better
-solutions to fill in the gaps when needed"). Run by hand on a copy for his How-To entry 2026-10-07: 4 of 4 boxes
-filled (FLOW, CIRCLE, THE ADAM PATTERN, PUSHED). Test launch: `-theme <id> -answers "a|b|c|d"`.
+fill a box by its question; the night run is the lane. Asked "Run this every night on every form you leave blank: yes
+or no?", Adam: "yes" (2026-10-07). So `boxes.run` is part of the 02:20 night run (`night.main`), on every entry of his
+with a form and a blank box, from 2026-10-07 on; a filled box is never touched again. Shown first on his How-To entry
+on a copy: 4 of 4 boxes filled (FLOW, CIRCLE, THE ADAM PATTERN, PUSHED). Test launch: `-theme <id> -answers "a|b|c|d"`.
 
 ## 2026-10-07 — Adam's own form for the middle answer (governs; replaces everything Claude proposed today)
 

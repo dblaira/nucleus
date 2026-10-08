@@ -45,3 +45,41 @@ def test_a_blank_box_is_filled_only_with_his_own_words(tmp_path: Path):
     assert fills["What's the outcome?"]["brings_in"] == "r-done"
     advice = {"boxes": [{"prompt": "What's the outcome?", "brings_in": "r-done", "quote": "what matters", "answer": "You should decide what matters."}]}
     assert boxes.check(advice, theme, G(), meanings) == ({}, "every box failed the checks")
+
+
+def test_the_night_run_fills_only_forms_with_a_blank_box_and_never_touches_his_answers(tmp_path: Path, monkeypatch):
+    from nucleus import boxes
+    store = Store(tmp_path / "t.sqlite3")
+    blank = {"id": "how-to", "name": "How-To", "question": "I want a plan.",
+             "fields": [{"prompt": "What's the outcome?", "symbol": "flag", "answer": ""},
+                        {"prompt": "What are the steps?", "symbol": "list", "answer": "Open the app."}]}
+    full = {"id": "story-arc", "name": "Story Arc", "question": "", "fields": [{"prompt": "Where does it start?", "symbol": "location", "answer": "At the gym."}]}
+    a = store.new_question("I want a plan.", "web", theme=blank)
+    store.new_question("Where does it start?\nAt the gym.", "web", theme=full)
+    store.new_question("What is FLOW?", "web")
+    calls = []
+
+    class Reply:
+        provider, model = "test", "test"
+        text = '{"boxes": [{"prompt": "What\'s the outcome?", "brings_in": "FLOW", "quote": "all of my awareness", "answer": "The outcome is all of your awareness on one thing."}]}'
+
+    def fake(prompt):
+        calls.append(prompt)
+        return Reply()
+
+    class Record:
+        label = "x"; note = ""; block = ""; leaf = "x"
+
+    class G:
+        def find(self, key): return None
+        def is_accepted(self, record): return True
+
+    from nucleus.dictionary import Meaning
+    meanings = [Meaning("FLOW", "6, 12, 15, 23", 1, "FLOW is the act of using all of my awareness and energy into one activity.")]
+    monkeypatch.setattr(boxes, "load_graph", lambda *a, **k: G())
+    monkeypatch.setattr(boxes.dictionary_module, "load_meanings", lambda *a, **k: meanings)
+    done = boxes.run(store, model_call=fake)
+    assert [(q, n) for q, n, _ in done] == [("I want a plan.", 1)] and len(calls) == 1      # the full form and the plain question are left alone
+    theme = store.question(a)["theme"]
+    assert theme["fields"][0]["night"]["brings_in"] == "FLOW" and theme["fields"][1]["answer"] == "Open the app." and "night" not in theme["fields"][1]
+    assert boxes.run(store, model_call=fake) == [] and len(calls) == 1                     # filled once; not asked again

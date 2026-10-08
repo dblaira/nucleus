@@ -217,6 +217,13 @@ def main(argv: list[str]) -> int:
     for question, count, reason in done:
         print(f"{time.strftime('%Y-%m-%d %H:%M:%S')} {count} options | {reason or 'saved'} | {question[:90]}")
     print(f"{time.strftime('%Y-%m-%d %H:%M:%S')} middle answers worked on: {len(done)}, in {round(time.time() - started, 1)} s")
+    # the boxes he left blank in his forms. Adam, 2026-10-07, asked to run this every night on every form: "yes"
+    from . import boxes as boxes_module
+    started = time.time()
+    filled = boxes_module.run(store, only=only)
+    for question, count, reason in filled:
+        print(f"{time.strftime('%Y-%m-%d %H:%M:%S')} {count} boxes filled | {reason or 'saved'} | {question[:90]}")
+    print(f"{time.strftime('%Y-%m-%d %H:%M:%S')} forms with blank boxes worked on: {len(filled)}, in {round(time.time() - started, 1)} s")
     return 0
 
 

@@ -234,6 +234,19 @@ class Store:
             theme = None
         return {"id": row[0], "question": row[1], "asked_at": row[2], "surface": row[3], "theme": theme}
 
+    def entries_with_forms(self, since: float) -> list[dict]:
+        """His entries that carry a form, newest first, from his own surfaces only."""
+        rows = self.connection.execute(
+            "SELECT id, question, theme_json FROM questions WHERE theme_json IS NOT NULL AND asked_at >= ?"
+            " AND surface IN (?, ?) ORDER BY asked_at DESC", (since, *self.HIS_SURFACES)).fetchall()
+        out = []
+        for qid, question, theme_json in rows:
+            try:
+                out.append({"id": qid, "question": question, "theme": json.loads(theme_json)})
+            except json.JSONDecodeError:
+                continue
+        return out
+
     def set_theme(self, question_id: str, theme: dict) -> None:
         """The form with what was put under its boxes. His own answers are never changed by this."""
         self.connection.execute("UPDATE questions SET theme_json = ? WHERE id = ?",
