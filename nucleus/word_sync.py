@@ -6,6 +6,7 @@ import fcntl
 import hashlib
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -16,7 +17,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from .graph import CONNECTION_PREFIX, load_graph, unescape
-from .word_sources import Collector, digest
+from .word_sources import Collector, app_generated, digest
 
 AUTHORITY = "My words do not need approval.  They are my words which means they went though an approval process before they were spoken.  Approve all candidates that use only my words."
 U = "https://understood.app/ontology#"
@@ -92,6 +93,33 @@ def entry_block(entry, at):
     return "\n<" + uri + "> a understood:SourceEntry ;\n" + "".join("  " + p + " " + v + " ;\n" for p, v in props) + "  .\n"
 
 
+def generated_records(graph):
+    """Recheck our retained originals after a transport-filter correction.
+
+Earlier records and decisions remain intact. Only verified app envelopes can
+receive a new non-acceptance decision; user wording is never edited.
+"""
+    snapshots = {}
+    result = []
+    for record in graph.records.values():
+        if record.record_class != "SourceEntry" or not graph.is_accepted(record):
+            continue
+        match = re.search(r'understood:sourceSnapshot "((?:[^"\\]|\\.)*)" ;', record.block)
+        if not match:
+            raise ValueError("Source entry has no retained source snapshot: " + record.leaf)
+        path = unescape(match.group(1))
+        if path not in snapshots:
+            snapshots[path] = {e["record_id"]: e for e in json.loads(Path(path).read_text())["entries"]}
+        original = snapshots[path].get(record.leaf)
+        if not original or original["text"] != unescape(record.exact_words):
+            raise ValueError("Published source entry changed independently; retained source disagrees: " + record.leaf)
+        if app_generated(original["source_text"]):
+            if digest(original["source_text"]) != original["source_sha256"]:
+                raise ValueError("Generated source snapshot failed integrity check")
+            result.append(original)
+    return result
+
+
 def prepare(config, state, entries, cursors, coverage, exceptions, batch):
     graph_path, ledger_path = Path(config["graph"]), Path(config["ledger"])
     old_graph = graph_path.read_text(encoding="utf-8")
@@ -108,6 +136,17 @@ def prepare(config, state, entries, cursors, coverage, exceptions, batch):
     archive = Path(config["archive_root"]) / batch_id
     new_ledger = list(old_ledger)
     new_graph = old_graph
+    quarantined = generated_records(graph)
+    for e in quarantined:
+        new_ledger.append({"ledger_id": "SOURCE-CORRECTION-" + e["record_id"],
+                           "claim_id": e["record_id"], "claim": e["label"], "decision": "rejected",
+                           "at": at, "actor": "cowboyai-word-sync", "approval_basis": "source-authorship-correction",
+                           "reason": "Verified Codex Page/image attachment envelope; not Adam-authored prose",
+                           "source_identity": e["identity"], "source_snapshot": e["source_snapshot"],
+                           "source_sha256": e["source_sha256"]})
+        uri = "<" + CONNECTION_PREFIX + e["record_id"] + ">"
+        new_graph += "\n" + uri + ' understood:sourceAttribution "generated_app_metadata" ;\n'
+        new_graph += '  <http://www.w3.org/ns/prov#invalidatedAtTime> ' + literal(at) + "^^xsd:dateTime .\n"
     for original in sorted(entries, key=lambda e: (e["modified_at"], e["identity"])):
         e = dict(original)
         if e["source_text"][e["char_start"]:e["char_end"]] != e["text"] or digest(e["text"]) != e["text_sha256"]:
@@ -154,15 +193,16 @@ def prepare(config, state, entries, cursors, coverage, exceptions, batch):
         selected.append(e)
     updated["cursors"] = cursors
     updated["last_success"] = at
-    updated["backup_pending"] = bool(selected) or state.get("backup_pending", False)
+    updated["backup_pending"] = bool(selected or quarantined) or state.get("backup_pending", False)
     summary = {"batch_id": batch_id, "at": at, "new_entries": len(selected) - revisions,
                "revisions": revisions, "duplicates_skipped": repeats, "coverage": coverage,
                "collection_exceptions": len([e for e in exceptions if e["reasons"] != ["empty"]]),
-               "entries": selected, "exceptions": exceptions, "authority": AUTHORITY,
+               "entries": selected, "quarantined": quarantined, "quarantined_generated_entries": len(quarantined),
+               "exceptions": exceptions, "authority": AUTHORITY,
                "LLM_calls": 0, "full_sources_kept": True}
     batch.mkdir(parents=True, exist_ok=False)
     os.chmod(batch, 0o700)
-    if selected:
+    if selected or quarantined:
         atomic(batch / "before-graph.ttl", old_graph)
         atomic(batch / "before-ledger.json", ledger_path.read_bytes())
         atomic(batch / "graph.ttl", new_graph)
@@ -175,6 +215,7 @@ def prepare(config, state, entries, cursors, coverage, exceptions, batch):
 
 def docker_validate(config, batch):
     validator = Path(__file__).with_name("word_sync_validator.py").resolve()
+    sources = Path(__file__).with_name("word_sources.py").resolve()
     if config.get("start_docker_when_needed", True):
         probe = subprocess.run([config["docker"], "info", "--format", "{{.ServerVersion}}"],
                                capture_output=True, text=True, timeout=10)
@@ -197,6 +238,7 @@ def docker_validate(config, batch):
                "--cap-drop", "ALL", "--security-opt", "no-new-privileges", "--memory", "512m",
                "--cpus", "1",
                "-v", str(batch.resolve()) + ":/batch:ro", "-v", str(validator) + ":/validator.py:ro",
+               "-v", str(sources) + ":/word_sources.py:ro",
                config["validator_image"], "/validator.py"]
     p = subprocess.run(command, capture_output=True, text=True, timeout=90)
     if p.returncode:
@@ -217,7 +259,13 @@ def verify(config, batch):
             raise ValueError("Live reader exact-word verification failed: " + e["record_id"])
         if record.source_created_at != e["created_at"]:
             raise ValueError("Original source date changed: " + e["record_id"])
-    return {"accepted_exact_entries_read_back": len(source["entries"]), "graph_sha256": file_hash(config["graph"]),
+    for e in source.get("quarantined", []):
+        record = graph.find(e["record_id"])
+        if not record or graph.is_accepted(record) or unescape(record.exact_words) != e["text"]:
+            raise ValueError("Generated source quarantine readback failed: " + e["record_id"])
+    return {"accepted_exact_entries_read_back": len(source["entries"]),
+            "generated_entries_no_longer_accepted": len(source.get("quarantined", [])),
+            "graph_sha256": file_hash(config["graph"]),
             "ledger_sha256": file_hash(config["ledger"])}
 
 
@@ -259,7 +307,7 @@ def publish(config, state_dir, batch, summary, after_write=None):
         if file_hash(item["destination"]) != item["old_sha256"]:
             raise ValueError("Live files changed after staging; preserved the staged and live versions")
     journal = {"batch": str(batch), "files": files,
-               "summary": {k: v for k, v in summary.items() if k not in ("entries", "exceptions", "authority")}}
+               "summary": {k: v for k, v in summary.items() if k not in ("entries", "quarantined", "exceptions", "authority")}}
     atomic(state_dir / "pending.json", dumps(journal))
     for index, item in enumerate(files):
         atomic(item["destination"], Path(item["staged"]).read_bytes())
@@ -302,8 +350,8 @@ def run(config, dry_run=False, validator=docker_validate):
                     raise ValueError("Source collection failed; source cursors have not advanced")
                 batch = state_dir / "batches" / (datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S") + "-" + uuid.uuid4().hex[:8])
                 summary, updated = prepare(config, state, entries, cursors, coverage, exceptions, batch)
-                result.update({k: v for k, v in summary.items() if k not in ("entries", "exceptions", "authority")})
-                changed = bool(summary["entries"])
+                result.update({k: v for k, v in summary.items() if k not in ("entries", "quarantined", "exceptions", "authority")})
+                changed = bool(summary["entries"] or summary["quarantined"])
                 if changed:
                     result["validation"] = validator(config, batch)
                     if not dry_run:

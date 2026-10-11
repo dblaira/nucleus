@@ -34,6 +34,12 @@ GENERATED = (
 )
 FIXTURE = re.compile(r"(?:SAVY SYNC PROBE|SAVY sync check — remove after verification|"
                      r"^SYNC TEST|^TEST FIXTURE|^SYNTHETIC TEST|^SMOKE TEST)", re.I)
+APP_METADATA = re.compile(r"^\s*</?(?:external_codex_apps_[\w-]+|image)\b", re.I)
+
+
+def app_generated(text: str) -> bool:
+    """Codex's Page/image attachment envelopes are transport, not typed prose."""
+    return bool(APP_METADATA.match(text))
 
 
 def own_spans(text: str) -> tuple[list[tuple[int, int]], list[str]]:
@@ -47,8 +53,10 @@ therefore collection exceptions, never requests for Adam to approve his words.
         return [], ["empty"]
     if FIXTURE.search(text):
         return [], ["test-fixture"]
-    if any(marker in text for marker in GENERATED):
+    if app_generated(text) or any(marker in text for marker in GENERATED):
         return [], ["generated-wrapper"]
+    if re.match(r"^\s*</?[A-Za-z][\w:-]*(?=[\s/>])", text):
+        return [], ["pasted-document-authorship-unresolved"]
     if text.lstrip().startswith(("# ", "## ", "{\"", "<?xml", "<!DOCTYPE", "<INSTRUCTIONS>")):
         return [], ["pasted-document-authorship-unresolved"]
     excluded: list[tuple[int, int]] = []

@@ -119,7 +119,9 @@ def main():
         history = SHARE / "installation-history"
         history.mkdir(exist_ok=True)
         shutil.copy2(plist, history / (previous["commit"] + ".plist"))
-        subprocess.run(["/bin/launchctl", "bootout", domain + "/" + LABEL], check=True, capture_output=True)
+        loaded = subprocess.run(["/bin/launchctl", "print", domain + "/" + LABEL], capture_output=True).returncode == 0
+        if loaded:
+            subprocess.run(["/bin/launchctl", "bootout", domain + "/" + LABEL], check=True, capture_output=True)
     plist.write_bytes(plistlib.dumps(agent))
     found = subprocess.run(["/bin/launchctl", "print", domain + "/" + LABEL], capture_output=True).returncode == 0
     if not found:

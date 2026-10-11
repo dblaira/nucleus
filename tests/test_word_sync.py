@@ -5,7 +5,7 @@ import pytest
 
 from nucleus.graph import load_graph, unescape
 from nucleus.narrative import Narrator, Told, records_told
-from nucleus.word_sources import Collector, own_spans
+from nucleus.word_sources import Collector, digest, own_spans
 from nucleus import word_sync as sync
 
 AT = "2026-10-11T12:00:00+00:00"
@@ -213,6 +213,58 @@ def test_codex_reads_root_human_submissions_but_not_assistant_or_exec(config, tm
     p.write_text(p.read_text().replace('"vscode"', '"exec"'))
     automated = Collector(config, {})
     assert automated.transcript(p, "codex") == 0 and automated.entries == []
+
+
+def test_codex_page_and_image_envelopes_are_context_even_in_a_user_turn(config, tmp_path):
+    p = tmp_path / "interactive-attachments.jsonl"
+    def record(kind, payload):
+        return json.dumps({"type": kind, "timestamp": AT, "payload": payload}) + "\n"
+    envelopes = ['<external_codex_apps_open_page>{"page":null}</external_codex_apps_open_page>',
+                 '<image name=[Image #1] path="/fixture/screenshot.png">', '</image>',
+                 '<future_attachment kind="generated">metadata</future_attachment>']
+    p.write_text(record("session_meta", {"id": "root", "source": "vscode"}) +
+                 record("turn_context", {}) + record("response_item", {
+                     "type": "message", "role": "user", "content":
+                     [{"type": "input_text", "text": text} for text in envelopes] +
+                     [{"type": "input_image", "image_url": "isolated-fixture"},
+                      {"type": "input_text", "text": "I feel lighter.  "}]}))
+    collector = Collector(config, {})
+    collector.transcript(p, "codex")
+    assert [e["text"] for e in collector.entries] == ["I feel lighter.  "]
+    assert [e["source_text"] for e in collector.exceptions] == envelopes
+
+
+def test_previously_admitted_app_metadata_is_quarantined_without_erasing_history(config):
+    savy(config, "I feel lighter.")
+    c = Collector(config, {})
+    entries, cursors, coverage, exceptions = c.collect()
+    # Reproduce an old collector's false admission, only in an isolated vault.
+    raw = '<external_codex_apps_open_page>{"page":null}</external_codex_apps_open_page>'
+    fragment = '<external_codex_apps_open_page>{'
+    old = dict(entries[0], identity="codex:isolated-envelope:user_prompt:span:0", adapter="codex",
+               text=fragment, text_sha256=digest(fragment), source_text=raw, source_sha256=digest(raw),
+               char_start=0, char_end=len(fragment))
+    state_dir = Path(config["state_dir"])
+    batch = state_dir / "batches/old-wrapper-fixture"
+    summary, _ = sync.prepare(config, {}, entries + [old], cursors, coverage, exceptions, batch)
+    validator(config, batch)
+    sync.publish(config, state_dir, batch, summary)
+    before = load_graph(Path(config["graph"]), Path(config["ledger"]))
+    assert len(before.source_entries()) == 2
+    code, status = sync.run(config, validator=validator)
+    assert code == 0 and status["quarantined_generated_entries"] == 1
+    graph = load_graph(Path(config["graph"]), Path(config["ledger"]))
+    assert [e["text"] for e in graph.source_entries()] == ["I feel lighter."]
+    assert graph.ledger[:len(before.ledger)] == before.ledger
+    assert graph.raw_graph.startswith(before.raw_graph)
+    assert len(graph.records) == len(before.records) == 2
+    assert graph.ledger[-1]["actor"] == "cowboyai-word-sync"
+    assert status["readback"]["generated_entries_no_longer_accepted"] == 1
+    unchanged = snapshot(config)
+    mtimes = [Path(config[k]).stat().st_mtime_ns for k in ("graph", "ledger")]
+    assert sync.run(config, validator=validator)[1]["quarantined_generated_entries"] == 0
+    assert snapshot(config) == unchanged
+    assert [Path(config[k]).stat().st_mtime_ns for k in ("graph", "ledger")] == mtimes
 
 
 def test_partial_transcript_line_is_read_on_next_run(config, tmp_path):
