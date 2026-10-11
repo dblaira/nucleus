@@ -34,12 +34,26 @@ GENERATED = (
 )
 FIXTURE = re.compile(r"(?:SAVY SYNC PROBE|SAVY sync check — remove after verification|"
                      r"^SYNC TEST|^TEST FIXTURE|^SYNTHETIC TEST|^SMOKE TEST)", re.I)
-APP_METADATA = re.compile(r"^\s*</?(?:external_codex_apps_[\w-]+|image)\b", re.I)
+APP_METADATA = re.compile(r"^\s*</?(?:external_codex_apps_[\w-]+|image|send_user_message_question_reply)\b", re.I)
 
 
 def app_generated(text: str) -> bool:
-    """Codex's Page/image attachment envelopes are transport, not typed prose."""
+    """Codex's Page/image/reply envelopes are transport, not typed prose."""
     return bool(APP_METADATA.match(text))
+
+
+def question_replies(text: str) -> list[dict] | None:
+    opening, closing = '<send_user_message_question_reply>', '</send_user_message_question_reply>'
+    wrapper = text.strip()
+    if not wrapper.startswith(opening):
+        return None
+    if not wrapper.endswith(closing):
+        raise ValueError("Structured human reply has no closing envelope")
+    replies = json.loads(wrapper[len(opening):-len(closing)])
+    if not isinstance(replies, list) or any(not isinstance(r, dict) or not isinstance(r.get('answer'), str)
+                                           or not isinstance(r.get('questionItemId'), str) for r in replies):
+        raise ValueError("Structured human reply does not identify its original answer")
+    return replies
 
 
 def own_spans(text: str) -> tuple[list[tuple[int, int]], list[str]]:
@@ -306,6 +320,19 @@ class Collector:
                     for index, block in enumerate(p.get("content", [])):
                         if block.get("type") != "input_text":
                             continue
+                        replies = question_replies(block["text"])
+                        if replies is not None:
+                            for reply_index, reply in enumerate(replies):
+                                self.emit(kind, f"{new['session_id']}:{new['line']}:{index}:reply:{reply_index}",
+                                          "answer", reply["answer"], item["timestamp"], context={
+                                              "path": key, "line": new["line"], "block": index,
+                                              "session_id": new["session_id"], "message_id": p.get("id"),
+                                              "question_item_id": reply["questionItemId"], "reply_index": reply_index,
+                                              "complete_reply_envelope": block["text"],
+                                              "reply_envelope_sha256": digest(block["text"]),
+                                              "origin": "original human answer field; envelope and question are metadata"})
+                            count += len(replies)
+                            continue
                         self.emit(kind, f"{new['session_id']}:{new['line']}:{index}", "user_prompt", block["text"], item["timestamp"],
                                   context={"path": key, "line": new["line"], "block": index, "session_id": new["session_id"],
                                            "message_id": p.get("id"), "origin": "root human submission; exec/subagent sessions excluded"})
@@ -331,6 +358,14 @@ class Collector:
         root = Path(root)
         if not root.is_dir():
             raise FileNotFoundError(root)
+        if self.cursors.get("codex_reply_schema") != 1:
+            # One source-schema backfill admits historical human reply fields,
+            # preserving old identities and versions without a new approval.
+            files = self.cursors.get("files", {})
+            for path in list(files):
+                if Path(path).is_relative_to(root):
+                    files[path] = {"offset": 0, "line": 0}
+            self.cursors["codex_reply_schema"] = 1
         # Date directories discover new sessions; known files include still-active older sessions.
         since = datetime.fromisoformat(self.cursors.get("codex_scan_day", self.since)).date()
         today = datetime.now(timezone.utc).date()

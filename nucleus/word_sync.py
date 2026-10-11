@@ -141,7 +141,7 @@ def prepare(config, state, entries, cursors, coverage, exceptions, batch):
         new_ledger.append({"ledger_id": "SOURCE-CORRECTION-" + e["record_id"],
                            "claim_id": e["record_id"], "claim": e["label"], "decision": "rejected",
                            "at": at, "actor": "cowboyai-word-sync", "approval_basis": "source-authorship-correction",
-                           "reason": "Verified Codex Page/image attachment envelope; not Adam-authored prose",
+                           "reason": "Verified Codex transport envelope; admitted fragment is generated metadata",
                            "source_identity": e["identity"], "source_snapshot": e["source_snapshot"],
                            "source_sha256": e["source_sha256"]})
         uri = "<" + CONNECTION_PREFIX + e["record_id"] + ">"

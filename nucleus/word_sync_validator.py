@@ -7,7 +7,7 @@ import pyshacl
 import rdflib
 from rdflib import Graph, Literal, Namespace, URIRef
 from rdflib.namespace import RDF
-from word_sources import app_generated
+from word_sources import app_generated, question_replies
 
 B = Path("/batch")
 U = Namespace("https://understood.app/ontology#")
@@ -47,6 +47,13 @@ for e in manifest["entries"]:
     assert decision["approval_basis"] == "standing-exact-words-2026-10-10"
     if e["context"].get("complete_field") is not None:
         assert e["source_text"] in e["context"]["complete_field"]
+    if e["context"].get("complete_reply_envelope") is not None:
+        envelope = e["context"]["complete_reply_envelope"]
+        assert sha(envelope) == e["context"]["reply_envelope_sha256"]
+        replies = question_replies(envelope)
+        reply = replies[e["context"]["reply_index"]]
+        assert reply['answer'] == e['source_text']
+        assert reply['questionItemId'] == e['context']['question_item_id']
 
 shapes = Graph().parse(B / "shape.ttl", format="turtle")
 source_shapes = Graph().parse(data='''

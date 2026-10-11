@@ -234,6 +234,46 @@ def test_codex_page_and_image_envelopes_are_context_even_in_a_user_turn(config, 
     assert [e["source_text"] for e in collector.exceptions] == envelopes
 
 
+def test_structured_reply_preserves_only_the_exact_human_answer(config, tmp_path):
+    p = tmp_path / "reply.jsonl"
+    answer = 'I feel lighter.\n  😀 My path is C:\\original.'
+    envelope = '<send_user_message_question_reply>\n' + json.dumps([
+        {'questionItemId': 'isolated-question-1', 'question': 'Generated question?', 'answer': answer}
+    ]) + '\n</send_user_message_question_reply>'
+    records = [('session_meta', {'id': 'root', 'source': 'vscode'}), ('turn_context', {}),
+               ('response_item', {'type': 'message', 'role': 'user', 'content': [
+                   {'type': 'input_text', 'text': envelope}]})]
+    p.write_text(''.join(json.dumps({'type': kind, 'timestamp': AT, 'payload': payload}) + '\n'
+                         for kind, payload in records))
+    c = Collector(config, {})
+    c.transcript(p, 'codex')
+    assert [e['text'] for e in c.entries] == [answer]
+    assert c.entries[0]['field'] == 'answer'
+    assert c.entries[0]['context']['complete_reply_envelope'] == envelope
+    assert c.entries[0]['context']['reply_envelope_sha256'] == digest(envelope)
+
+
+def test_source_schema_backfill_reads_a_prior_reply_once(config, tmp_path):
+    from datetime import datetime, timezone
+    root = tmp_path / 'sessions'
+    day = root / datetime.now(timezone.utc).strftime('%Y/%m/%d')
+    day.mkdir(parents=True)
+    p = day / 'reply.jsonl'
+    envelope = '<send_user_message_question_reply>' + json.dumps([
+        {'questionItemId': 'isolated-question-1', 'answer': 'I feel lighter.'}
+    ]) + '</send_user_message_question_reply>'
+    records = [('session_meta', {'id': 'root', 'source': 'vscode'}), ('turn_context', {}),
+               ('response_item', {'type': 'message', 'role': 'user', 'content': [
+                   {'type': 'input_text', 'text': envelope}]})]
+    p.write_text(''.join(json.dumps({'type': kind, 'timestamp': AT, 'payload': payload}) + '\n'
+                         for kind, payload in records))
+    c = Collector(config, {'files': {str(p): {'offset': p.stat().st_size, 'line': 3}}})
+    c.codex(root)
+    assert [e['text'] for e in c.entries] == ['I feel lighter.']
+    repeated = Collector(config, c.cursors)
+    assert repeated.codex(root)['human_messages_read'] == 0 and repeated.entries == []
+
+
 def test_previously_admitted_app_metadata_is_quarantined_without_erasing_history(config):
     savy(config, "I feel lighter.")
     c = Collector(config, {})
