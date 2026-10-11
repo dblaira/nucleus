@@ -24,6 +24,8 @@ _ACCEPTED_AT = re.compile(r'understood:acceptedAt "([^"]*)"')
 _EXACT_WORDS = re.compile(r'understood:exactWords "((?:[^"\\]|\\.)*)" ;', re.S)
 _SOURCE_ROLE = re.compile(r'understood:sourceRole "([^"]*)"')
 _SOURCE_CREATED = re.compile(r'<http://purl.org/dc/terms/created> "([^"]*)"')
+_SOURCE_MODIFIED = re.compile(r'<http://purl.org/dc/terms/modified> "([^"]*)"')
+_SOURCE_IDENTITY = re.compile(r'understood:sourceIdentity "((?:[^"\\]|\\.)*)" ;', re.S)
 _REVISION_OF = re.compile(r'<http://www.w3.org/ns/prov#wasRevisionOf> <' + re.escape(CONNECTION_PREFIX) + r'([^>]+)>')
 
 
@@ -54,6 +56,8 @@ class Record:
     source_role: str = ""
     source_created_at: str = ""
     previous_record: str = ""
+    source_identity: str = ""
+    source_modified_at: str = ""
 
 
 @dataclass
@@ -96,9 +100,15 @@ class Graph:
         """Literal retrieval of accepted originals. No domain or relationship inference."""
         admitted = [r for r in self.records.values() if r.record_class == "SourceEntry" and self.is_accepted(r)]
         superseded = {r.previous_record for r in admitted if r.previous_record}
+        current = {}
+        for record in admitted:
+            key = record.source_identity or record.leaf
+            before = current.get(key)
+            if before is None or (record.source_modified_at, record.accepted_at, record.leaf) > (before.source_modified_at, before.accepted_at, before.leaf):
+                current[key] = record
         terms = set(re.findall(r"[\w’']+", query.casefold()))
         rows = []
-        for r in admitted:
+        for r in current.values():
             if r.leaf in superseded or (not include_questions and r.source_role == "question"):
                 continue
             text = unescape(r.exact_words)
@@ -135,6 +145,8 @@ def parse_graph(text: str) -> dict[str, Record]:
         source_role = _SOURCE_ROLE.search(block)
         source_created = _SOURCE_CREATED.search(block)
         previous = _REVISION_OF.search(block)
+        source_identity = _SOURCE_IDENTITY.search(block)
+        source_modified = _SOURCE_MODIFIED.search(block)
         records[uri] = Record(
             uri=uri,
             leaf=uri[len(CONNECTION_PREFIX) :],
@@ -148,6 +160,8 @@ def parse_graph(text: str) -> dict[str, Record]:
             source_role=source_role.group(1) if source_role else "",
             source_created_at=source_created.group(1) if source_created else "",
             previous_record=previous.group(1) if previous else "",
+            source_identity=source_identity.group(1) if source_identity else "",
+            source_modified_at=source_modified.group(1) if source_modified else "",
         )
     return records
 

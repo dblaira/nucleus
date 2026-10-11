@@ -108,24 +108,31 @@ def prepare(config, state, entries, cursors, coverage, exceptions, batch):
     archive = Path(config["archive_root"]) / batch_id
     new_ledger = list(old_ledger)
     new_graph = old_graph
-    for original in entries:
+    for original in sorted(entries, key=lambda e: (e["modified_at"], e["identity"])):
         e = dict(original)
         if e["source_text"][e["char_start"]:e["char_end"]] != e["text"] or digest(e["text"]) != e["text_sha256"]:
             raise ValueError("Exact-source check failed: " + e["identity"])
         prior = seen.get(e["identity"])
-        if prior and prior["text_sha256"] == e["text_sha256"]:
-            record = graph.find(prior["record_id"])
+        version_key = digest(e["text_sha256"] + ":" + e["modified_at"])
+        known_id = (prior or {}).get("versions", {}).get(version_key)
+        if prior and (prior["text_sha256"] == e["text_sha256"] or known_id):
+            repeat_id = known_id or prior["record_id"]
+            record = graph.find(repeat_id)
             # A repeated identity inside this collection may refer to a just-staged record.
-            if record is None and not any(x["record_id"] == prior["record_id"] for x in selected):
-                raise ValueError("Previously published source entry is missing: " + prior["record_id"])
+            if record is None and not any(x["record_id"] == repeat_id for x in selected):
+                raise ValueError("Previously published source entry is missing: " + repeat_id)
             if record and (not graph.is_accepted(record) or unescape(record.exact_words) != e["text"]):
                 raise ValueError("Published source entry changed independently: " + prior["record_id"])
+            prior["versions"] = prior.get("versions", {}) | {version_key: repeat_id}
+            if prior["text_sha256"] == e["text_sha256"]:
+                prior["modified_at"] = max(prior.get("modified_at", ""), e["modified_at"])
             repeats += 1
             continue
         revision = prior["revision"] + 1 if prior else 1
         e["revision"] = revision
         e["record_id"] = "source-" + digest(e["identity"] + ":" + str(revision) + ":" + e["text_sha256"])[:32]
-        e["previous_record"] = prior["record_id"] if prior else None
+        historical = prior is not None and e["modified_at"] < prior.get("modified_at", "")
+        e["previous_record"] = prior["record_id"] if prior and not historical else None
         if graph.find(e["record_id"]):
             raise ValueError("Uncheckpointed source ID already exists; recover the pending journal first")
         e["label"] = "“" + e["text"] + "” — his words · " + e["record_id"]
@@ -137,7 +144,12 @@ def prepare(config, state, entries, cursors, coverage, exceptions, batch):
                            "authority": AUTHORITY, "source_identity": e["identity"],
                            "source_created_at": e["created_at"], "source_modified_at": e["modified_at"],
                            "source_snapshot": e["source_snapshot"], "text_sha256": e["text_sha256"]})
-        seen[e["identity"]] = {"text_sha256": e["text_sha256"], "revision": revision, "record_id": e["record_id"]}
+        if historical:
+            seen[e["identity"]] = prior | {"revision": revision, "versions": prior.get("versions", {}) | {version_key: e["record_id"]}}
+        else:
+            seen[e["identity"]] = {"text_sha256": e["text_sha256"], "revision": revision,
+                                   "record_id": e["record_id"], "modified_at": e["modified_at"]}
+            seen[e["identity"]]["versions"] = (prior or {}).get("versions", {}) | {version_key: e["record_id"]}
         revisions += int(prior is not None)
         selected.append(e)
     updated["cursors"] = cursors

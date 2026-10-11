@@ -24,6 +24,7 @@ def call(args):
 
 
 def main():
+    previous_install = json.loads((SHARE / "installed.json").read_text()) if (SHARE / "installed.json").exists() else {}
     commit = call(["/usr/bin/git", "-C", str(ROOT), "rev-parse", "HEAD"])
     names = ("__init__.py", "graph.py", "word_sources.py", "word_sync.py", "word_sync_validator.py")
     for name in names:
@@ -66,15 +67,39 @@ def main():
     config_path = SHARE / "config.json"
     if config_path.exists():
         existing = json.loads(config_path.read_text())
+        installed = json.loads((SHARE / "installed.json").read_text())
+        if hashlib.sha256(config_path.read_bytes()).hexdigest() != installed["config_sha256"]:
+            raise ValueError("Sync configuration was independently edited; both versions are preserved")
         # Preserve user changes, but refuse a mismatched safety boundary.
         for key in ("graph", "ledger", "vault_lock", "state_dir"):
             if existing[key] != config[key]:
                 raise ValueError("Existing sync configuration conflicts: " + key)
         config = existing | {"validator_image": image_id}
+    # LaunchAgents cannot open SAVY's private app container. One authorized
+    # setup snapshot plus the app's existing per-save native intake stream
+    # preserves current words and future edits without a new OS permission.
+    if "savy" in config["sources"]:
+        source = Path(config["sources"]["savy"])
+        snapshot_dir = SHARE / "source-bootstrap"
+        snapshot_dir.mkdir(parents=True, exist_ok=True)
+        snapshot_dir.chmod(0o700)
+        snapshot = snapshot_dir / "savy-original-fields.json"
+        if not snapshot.exists():
+            before = source.stat()
+            raw = source.read_bytes()
+            after = source.stat()
+            if (before.st_size, before.st_mtime_ns) != (after.st_size, after.st_mtime_ns):
+                raise ValueError("SAVY file changed during initial capture; retry installation")
+            json.loads(raw)
+            snapshot.write_bytes(raw)
+            snapshot.chmod(0o600)
+        config["sources"].pop("savy")
+        config["sources"]["savy_bootstrap"] = str(snapshot)
+        config["savy_bootstrap_sha256"] = hashlib.sha256(snapshot.read_bytes()).hexdigest()
+        config["savy_bootstrap_original_path"] = str(source)
     config_path.write_text(json.dumps(config, ensure_ascii=False, indent=2) + "\n")
     config_path.chmod(0o600)
     manifest["config_sha256"] = hashlib.sha256(config_path.read_bytes()).hexdigest()
-    (SHARE / "installed.json").write_text(json.dumps(manifest, indent=2) + "\n")
     logs = ADAM / "Library/Logs"
     agent = {"Label": LABEL,
              "ProgramArguments": [str(PYTHON), "-m", "nucleus.word_sync", "--config", str(config_path)],
@@ -83,15 +108,25 @@ def main():
              "StandardErrorPath": str(logs / "cowboyai-word-sync-error.log"),
              "EnvironmentVariables": {"PATH": "/Users/adamblair/.local/bin:/usr/bin:/bin"}}
     plist = ADAM / "Library/LaunchAgents" / (LABEL + ".plist")
-    if plist.exists() and plistlib.loads(plist.read_bytes()) != agent:
-        raise ValueError("Existing launch agent differs; preserve it before updating")
-    plist.write_bytes(plistlib.dumps(agent))
     domain = "gui/" + str(os.getuid())
+    if plist.exists() and plistlib.loads(plist.read_bytes()) != agent:
+        old_agent = plistlib.loads(plist.read_bytes())
+        previous = previous_install
+        old_release = SHARE / "releases" / previous.get("commit", "")
+        # A release created by this installer may be upgraded in this authorized task.
+        if old_agent.get("Label") != LABEL or old_agent.get("WorkingDirectory") != str(old_release):
+            raise ValueError("Existing launch agent was independently edited")
+        history = SHARE / "installation-history"
+        history.mkdir(exist_ok=True)
+        shutil.copy2(plist, history / (previous["commit"] + ".plist"))
+        subprocess.run(["/bin/launchctl", "bootout", domain + "/" + LABEL], check=True, capture_output=True)
+    plist.write_bytes(plistlib.dumps(agent))
     found = subprocess.run(["/bin/launchctl", "print", domain + "/" + LABEL], capture_output=True).returncode == 0
     if not found:
         call(["/bin/launchctl", "bootstrap", domain, str(plist)])
     else:
         call(["/bin/launchctl", "kickstart", domain + "/" + LABEL])
+    (SHARE / "installed.json").write_text(json.dumps(manifest, indent=2) + "\n")
     print(json.dumps({"label": LABEL, "interval_seconds": 900, "commit": commit,
                       "release": str(release), "config": str(config_path), "validator_image": image_id}))
 

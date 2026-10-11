@@ -262,3 +262,32 @@ def test_user_text_before_a_template_is_preserved_as_its_own_exact_span(config):
     assert code == 0 and status["new_entries"] == 2
     texts = {r["text"] for r in load_graph(Path(config["graph"]), Path(config["ledger"])).source_entries()}
     assert texts == {"My observation..", "\nI feel lighter."}
+
+
+def test_late_earlier_revision_keeps_latest_text_and_does_not_duplicate(config):
+    savy(config, "I feel awake.", AT.replace("12:00", "12:02"))
+    assert sync.run(config, validator=validator)[0] == 0
+    savy(config, "I feel lighter.", AT)
+    assert sync.run(config, validator=validator)[1]["revisions"] == 1
+    graph = load_graph(Path(config["graph"]), Path(config["ledger"]))
+    assert len(graph.records) == 2 and graph.source_entries()[0]["text"] == "I feel awake."
+    assert sync.run(config, validator=validator)[1]["new_entries"] == 0
+    assert len(load_graph(Path(config["graph"]), Path(config["ledger"])).records) == 2
+
+
+def test_savy_gateway_preserves_form_answers_notes_and_only_new_receipts(config, monkeypatch):
+    import io
+    import nucleus.word_sources as sources
+    item = {"receipt": {"received_at": AT}, "payload": {"source_app_surface": "savy_ios", "request_id": "request-1",
+            "capture_id": "capture-1", "reminder_id": "reminder-1", "created_at": AT,
+            "exact_words": {"want": "I feel lighter.", "when_i_am": "", "done_looks_like": ""},
+            "metadata": {"notes": "I feel awake.", "postAnswersContainQuestions": True,
+                         "postAnswers": ["What happened?\n\nI feel aware.  "], "night": "AI fill"}}}
+    monkeypatch.setattr(sources, "urlopen", lambda *a, **kw: io.StringIO(json.dumps({"intakes": [item]})))
+    collector = Collector(config, {})
+    status = collector.gateway("http://127.0.0.1/fixture")
+    assert status["new_intakes_read"] == 1 and status["original_form_answers_and_notes_included"]
+    assert {e["text"] for e in collector.entries} == {"I feel lighter.", "I feel awake.", "\nI feel aware.  "}
+    assert all("AI fill" not in e["text"] for e in collector.entries)
+    repeated = Collector(config, collector.cursors)
+    assert repeated.gateway("http://127.0.0.1/fixture")["new_intakes_read"] == 0 and repeated.entries == []

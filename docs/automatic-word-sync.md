@@ -20,8 +20,8 @@ The first run catches up from October 10, 2026, midnight Pacific, overlapping th
 
 - All Entries: original `user_prompt` records from known apps; index hash and canonical Markdown must agree. Screen captures and saved mixed-author documents are excluded.
 - Cowboy AI: original questions, original theme answers, and original more-information entries. Grading/CLI lanes, template prompts and `night` model output are excluded.
-- SAVY: original stored fields and the answer substring after a verified theme prompt. Placeholder titles and known test probes are excluded. Full original fields and prompt context are retained.
-- SAVY gateway intakes: immutable native `exact_words`; transport receipts remain unchanged.
+- SAVY: a dated, hash-verified initial snapshot of original stored fields, captured during authorized setup. A LaunchAgent cannot open its private app container. The app already enqueues a complete native capture on each save (`ReminderStore.swift:176`), including notes and original form answers; future updates are collected through that existing intake stream. No new OS permission is required. Placeholder titles and known test probes are excluded; template boundaries and any user text before a template are preserved separately.
+- SAVY gateway intakes: immutable native `exact_words`, notes, form answers and original typed metadata; transport receipts remain unchanged. Request IDs form an incremental cursor. Capture event dates are distinguished from the initial stored-record dates. Late-delivered earlier versions are preserved without replacing the newest version.
 - Codex: root interactive session submissions after turn context; assistant/tool turns and exec/subagent sessions are excluded. An incremental tail reader handles active older sessions and missed date directories after sleep.
 - Claude: root human prompts; sidechains, compacted summaries, meta/tool turns and subagent files are excluded.
 

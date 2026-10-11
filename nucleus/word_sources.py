@@ -207,19 +207,65 @@ class Collector:
                                                        "theme_id": r.get("postThemeID")})
         return {"reminders_read": len(data), "AI_fields_imported": 0}
 
+    def savy_bootstrap(self, path):
+        """A verified initial copy; future saves arrive through SAVY's native intake transport."""
+        if self.cursors.get("savy_bootstrap_imported"):
+            return {"snapshot_imported_previously": True, "future_updates": "native SAVY gateway intakes"}
+        raw = Path(path).read_text(encoding="utf-8")
+        if digest(raw) != self.config["savy_bootstrap_sha256"]:
+            raise ValueError("SAVY bootstrap snapshot changed independently")
+        result = self.savy(path)
+        self.cursors["savy_bootstrap_imported"] = True
+        return result | {"one_time_snapshot": True, "future_updates": "native SAVY gateway intakes"}
+
     def gateway(self, url):
         with urlopen(url, timeout=15) as response:
             data = json.load(response)
         intakes = data["intakes"]
-        for item in intakes:
+        seen = set(self.cursors.get("gateway_requests", []))
+        new_count = 0
+        for item in sorted(intakes, key=lambda x: x["payload"]["created_at"]):
             p = item["payload"]
             if p.get("source_app_surface") != "savy_ios":
                 continue
+            if p["request_id"] in seen:
+                continue
+            seen.add(p["request_id"])
+            new_count += 1
+            context = {"reminder_id": p.get("reminder_id"), "capture_id": p.get("capture_id"),
+                       "request_id": p["request_id"], "receipt": item.get("receipt"),
+                       "source_app_surface": p["source_app_surface"], "complete_native_payload": p,
+                       "timestamp_kind": "native save/capture event"}
             for field, text in p["exact_words"].items():
-                self.emit("savy_intake", p["request_id"], field, text, p["created_at"], role="reflection",
-                          context={"reminder_id": p.get("reminder_id"), "capture_id": p.get("capture_id"),
-                                   "receipt": item.get("receipt"), "source_app_surface": p["source_app_surface"]})
-        return {"intakes_read": len(intakes), "transport_receipts_changed": False}
+                self.emit("savy_intake", p["reminder_id"], field, text, p["created_at"], role="reflection", context=context)
+            metadata = p.get("metadata", {})
+            for field in ("notes", "waitingOn", "location", "url"):
+                self.emit("savy_intake", p["reminder_id"], field, metadata.get(field, ""), p["created_at"],
+                          role="reflection" if field == "notes" else "input", context=context)
+            for index, step in enumerate(metadata.get("steps", [])):
+                self.emit("savy_intake", p["reminder_id"], f"steps:{index}", step, p["created_at"], role="input", context=context)
+            for index, field in enumerate(metadata.get("postAnswers", []) or []):
+                if metadata.get("postAnswersContainQuestions"):
+                    if "\n" not in field:
+                        raise ValueError("SAVY intake has no template boundary: " + p["request_id"])
+                    prompt, answer = field.split("\n", 1)
+                    matches = [q for q in self.config.get("savy_prompts", []) if prompt.endswith(q)]
+                    if prompt.strip() not in self.config.get("savy_prompts", []) and not matches:
+                        self.exceptions.append({"source_identity": f"savy_intake:{p['request_id']}:postAnswers:{index}",
+                                                "reasons": ["template-boundary-unresolved"], "source_text": field,
+                                                "context": context})
+                        continue
+                    canonical = prompt.strip() if prompt.strip() in self.config.get("savy_prompts", []) else max(matches, key=len)
+                    if prompt.endswith(canonical) and prompt != canonical:
+                        self.emit("savy_intake", p["reminder_id"], f"postAnswers:{index}:prompt_prefix", prompt[:-len(canonical)],
+                                  p["created_at"], role="reflection", context=context | {"complete_field": field})
+                else:
+                    prompt, answer = None, field
+                self.emit("savy_intake", p["reminder_id"], f"postAnswers:{index}", answer, p["created_at"],
+                          role="reflection", context=context | {"prompt": prompt, "complete_field": field})
+        self.cursors["gateway_requests"] = sorted(seen)
+        return {"intakes_read": len(intakes), "new_intakes_read": new_count, "transport_receipts_changed": False,
+                "original_form_answers_and_notes_included": True}
 
     def transcript(self, path, kind):
         key = str(path)
