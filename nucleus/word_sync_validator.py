@@ -7,7 +7,7 @@ import pyshacl
 import rdflib
 from rdflib import Graph, Literal, Namespace, URIRef
 from rdflib.namespace import RDF
-from word_sources import app_generated, question_replies
+from word_sources import attribution_excluded, question_replies
 
 B = Path("/batch")
 U = Namespace("https://understood.app/ontology#")
@@ -23,12 +23,12 @@ assert new_ledger[:len(old_ledger)] == old_ledger, "Earlier decisions changed"
 manifest = read("sources.json")
 assert len(new_ledger) - len(old_ledger) == len(manifest["entries"]) + len(manifest.get("quarantined", []))
 for e in manifest.get("quarantined", []):
-    assert app_generated(e["source_text"]), "Quarantine is not verified app metadata"
+    assert attribution_excluded(e["source_text"]), "Quarantine lacks a deterministic source exclusion"
     assert sha(e["source_text"]) == e["source_sha256"]
     assert e["source_text"][e["char_start"]:e["char_end"]] == e["text"]
     s = URIRef(P + e["record_id"])
     assert (s, U.exactWords, Literal(e["text"])) in old
-    assert (s, U.sourceAttribution, Literal("generated_app_metadata")) in new
+    assert (s, U.sourceAttribution, Literal("excluded_source_context")) in new
     decision = next(x for x in new_ledger[len(old_ledger):] if x["claim_id"] == e["record_id"])
     assert decision["claim"] == e["label"] and decision["decision"] == "rejected"
     assert decision["approval_basis"] == "source-authorship-correction"

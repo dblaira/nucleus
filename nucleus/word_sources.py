@@ -42,6 +42,18 @@ def app_generated(text: str) -> bool:
     return bool(APP_METADATA.match(text))
 
 
+def attribution_excluded(text: str) -> bool:
+    """Retain attributed/copied answers as context, not Adam-authored assertions.
+
+    The exact cloud-agent source was identified in Adam's correction on Oct 11.
+    Transport client_authored flags are deliberately not authorship evidence.
+    """
+    return (app_generated(text)
+            or digest(text) == "05f18bb21c8c5167b52539a1b5f1bff12448db1198eaafc068fd62ea185bba93"
+            or (text.lstrip().startswith("I asked Cowboy AI ")
+                and "and verified its saved response. It replied:" in text))
+
+
 def question_replies(text: str) -> list[dict] | None:
     opening, closing = '<send_user_message_question_reply>', '</send_user_message_question_reply>'
     wrapper = text.strip()
@@ -67,7 +79,7 @@ therefore collection exceptions, never requests for Adam to approve his words.
         return [], ["empty"]
     if FIXTURE.search(text):
         return [], ["test-fixture"]
-    if app_generated(text) or any(marker in text for marker in GENERATED):
+    if attribution_excluded(text) or any(marker in text for marker in GENERATED):
         return [], ["generated-wrapper"]
     if re.match(r"^\s*</?[A-Za-z][\w:-]*(?=[\s/>])", text):
         return [], ["pasted-document-authorship-unresolved"]

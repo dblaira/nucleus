@@ -383,3 +383,26 @@ def test_savy_gateway_preserves_form_answers_notes_and_only_new_receipts(config,
     assert all("AI fill" not in e["text"] for e in collector.entries)
     repeated = Collector(config, collector.cursors)
     assert repeated.gateway("http://127.0.0.1/fixture")["new_intakes_read"] == 0 and repeated.entries == []
+
+
+def test_copied_answer_context_is_not_personal_authorship(config):
+    from nucleus.word_sources import attribution_excluded
+    copied = "I asked Cowboy AI “why” and verified its saved response. It replied:\n> Answer\nIt returned those records."
+    assert attribution_excluded(copied)
+    c = Collector(config, {})
+    c.emit("codex", "copy", "user_prompt", copied, AT)
+    assert c.entries == []
+    c.emit("codex", "human", "user_prompt", "What do you mean by authorship errors", AT,
+           context={"client_authored": False})
+    assert c.entries[0]["text"] == "What do you mean by authorship errors"
+
+
+def test_missing_checkpointed_entry_stops_even_without_source_replay(config):
+    savy(config, "I feel lighter.")
+    assert sync.run(config, validator=validator)[0] == 0
+    Path(config["sources"]["savy"]).write_text("[]")
+    Path(config["graph"]).write_text(TTL)
+    before = snapshot(config)
+    code, result = sync.run(config, validator=validator)
+    assert code == 1 and "Previously published source entry is missing" in result["error"]
+    assert snapshot(config) == before

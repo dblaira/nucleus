@@ -17,7 +17,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from .graph import CONNECTION_PREFIX, load_graph, unescape
-from .word_sources import Collector, app_generated, digest
+from .word_sources import Collector, attribution_excluded, digest
 
 AUTHORITY = "My words do not need approval.  They are my words which means they went though an approval process before they were spoken.  Approve all candidates that use only my words."
 U = "https://understood.app/ontology#"
@@ -113,7 +113,7 @@ receive a new non-acceptance decision; user wording is never edited.
         original = snapshots[path].get(record.leaf)
         if not original or original["text"] != unescape(record.exact_words):
             raise ValueError("Published source entry changed independently; retained source disagrees: " + record.leaf)
-        if app_generated(original["source_text"]):
+        if attribution_excluded(original["source_text"]):
             if digest(original["source_text"]) != original["source_sha256"]:
                 raise ValueError("Generated source snapshot failed integrity check")
             result.append(original)
@@ -129,6 +129,10 @@ def prepare(config, state, entries, cursors, coverage, exceptions, batch):
     graph = load_graph(graph_path, ledger_path)
     updated = json.loads(json.dumps(state))
     seen = updated.setdefault("seen", {})
+    for prior in seen.values():
+        for record_id in set(prior.get("versions", {}).values()) | {prior["record_id"]}:
+            if graph.find(record_id) is None:
+                raise ValueError("Previously published source entry is missing: " + record_id)
     selected = []
     repeats, revisions = 0, 0
     at = now()
@@ -141,11 +145,11 @@ def prepare(config, state, entries, cursors, coverage, exceptions, batch):
         new_ledger.append({"ledger_id": "SOURCE-CORRECTION-" + e["record_id"],
                            "claim_id": e["record_id"], "claim": e["label"], "decision": "rejected",
                            "at": at, "actor": "cowboyai-word-sync", "approval_basis": "source-authorship-correction",
-                           "reason": "Verified Codex transport envelope; admitted fragment is generated metadata",
+                           "reason": "Source attribution correction: copied response or transport context is not accepted as Adam-authored words",
                            "source_identity": e["identity"], "source_snapshot": e["source_snapshot"],
                            "source_sha256": e["source_sha256"]})
         uri = "<" + CONNECTION_PREFIX + e["record_id"] + ">"
-        new_graph += "\n" + uri + ' understood:sourceAttribution "generated_app_metadata" ;\n'
+        new_graph += "\n" + uri + ' understood:sourceAttribution "excluded_source_context" ;\n'
         new_graph += '  <http://www.w3.org/ns/prov#invalidatedAtTime> ' + literal(at) + "^^xsd:dateTime .\n"
     for original in sorted(entries, key=lambda e: (e["modified_at"], e["identity"])):
         e = dict(original)
