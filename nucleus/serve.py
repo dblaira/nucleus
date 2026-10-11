@@ -3,20 +3,29 @@
 from __future__ import annotations
 
 import json
+import hashlib
+import subprocess
 from pathlib import Path
 import sys
 import threading
 import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from urllib.parse import urlparse
+from urllib.parse import urlparse, parse_qs
 
 from . import ask as ask_module
 from . import explain as explain_module
 from . import middle as middle_module
 from . import night as night_module
 from .store import Store
+from . import NUCLEUS_FILES
+from .graph import load_graph
 
 PORT = 8766
+_ROOT = Path(__file__).resolve().parents[1]
+_REVISION = subprocess.run(["/usr/bin/git", "rev-parse", "HEAD"], cwd=_ROOT,
+                           capture_output=True, text=True).stdout.strip()
+_MODULE_HASHES = {name: hashlib.sha256(Path(__file__).with_name(name).read_bytes()).hexdigest()
+                  for name in ("serve.py", "graph.py", "narrative.py", "phrases.py", "links.py")}
 HEADER_PHOTO = Path(__file__).with_name("header.jpg")   # the red rock photo Adam chose, 2026-09-12
 
 STEP_NAMES = [ask_module.STEP_QUESTION, ask_module.STEP_DICTIONARY, ask_module.STEP_PHRASES, ask_module.STEP_NUCLEUS,
@@ -213,6 +222,21 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_GET(self) -> None:  # noqa: N802
         path = urlparse(self.path).path
+        if path == "/health":
+            self._json(200, {"product": "Cowboy AI", "engine_revision": _REVISION,
+                             "loaded_module_sha256": _MODULE_HASHES})
+            return
+        if path == "/exact-words":
+            query = parse_qs(urlparse(self.path).query).get("query", [""])[0]
+            try:
+                graph = load_graph(NUCLEUS_FILES["graph"], NUCLEUS_FILES["ledger"])
+                rows = graph.source_entries(query)
+                self._json(200, {"entries": rows[:100], "matches": len(rows),
+                                 "graph_sha256": hashlib.sha256(graph.raw_graph.encode()).hexdigest(),
+                                 "retrieval": "literal; original roles and dates; no LLM"})
+            except Exception as e:
+                self._json(503, {"error": str(e)})
+            return
         if path == "/":
             body = PAGE.replace("__NAMES__", json.dumps(STEP_NAMES)).replace("__TITLE__", explain_module.TITLE).encode("utf-8")
             self.send_response(200)

@@ -11,14 +11,20 @@ from __future__ import annotations
 import json
 import re
 from dataclasses import dataclass
+from datetime import datetime
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 CONNECTION_PREFIX = "https://understood.app/ontology/connection/"
-_RECORD_START = re.compile(r"^<(" + re.escape(CONNECTION_PREFIX) + r"[^>]+)> a understood:Connection ;", re.M)
+_RECORD_START = re.compile(r"^<(" + re.escape(CONNECTION_PREFIX) + r"[^>]+)> a understood:(Connection|SourceEntry) ;", re.M)
 _LABEL = re.compile(r'understood:label "((?:[^"\\]|\\.)*)" ;', re.S)
 _TYPE = re.compile(r'understood:connectionType "((?:[^"\\]|\\.)*)"')
 _STRENGTH = re.compile(r'understood:strength "([^"]*)"')
 _ACCEPTED_AT = re.compile(r'understood:acceptedAt "([^"]*)"')
+_EXACT_WORDS = re.compile(r'understood:exactWords "((?:[^"\\]|\\.)*)" ;', re.S)
+_SOURCE_ROLE = re.compile(r'understood:sourceRole "([^"]*)"')
+_SOURCE_CREATED = re.compile(r'<http://purl.org/dc/terms/created> "([^"]*)"')
+_REVISION_OF = re.compile(r'<http://www.w3.org/ns/prov#wasRevisionOf> <' + re.escape(CONNECTION_PREFIX) + r'([^>]+)>')
 
 
 def normalize_claim(value: str) -> str:
@@ -26,7 +32,12 @@ def normalize_claim(value: str) -> str:
 
 
 def unescape(value: str) -> str:
-    return value.replace('\\"', '"').replace("\\\\", "\\")
+    """Decode Turtle escapes once, preserving Unicode and literal backslashes."""
+    escapes = {'t': '\t', 'n': '\n', 'r': '\r', 'b': '\b', 'f': '\f', '"': '"', "'": "'", '\\': '\\'}
+    def replace(match):
+        token = match.group(1)
+        return chr(int(token[1:], 16)) if token.startswith(('u', 'U')) else escapes[token]
+    return re.sub(r"\\(u[0-9a-fA-F]{4}|U[0-9a-fA-F]{8}|[tnrbf\"'\\])", replace, value)
 
 
 @dataclass(frozen=True)
@@ -38,6 +49,11 @@ class Record:
     strength: str
     accepted_at: str
     block: str
+    record_class: str = "Connection"
+    exact_words: str = ""
+    source_role: str = ""
+    source_created_at: str = ""
+    previous_record: str = ""
 
 
 @dataclass
@@ -76,6 +92,31 @@ class Graph:
             return False
         return quote in record.block or quote in unescape(record.block)
 
+    def source_entries(self, query: str = "", include_questions: bool = True) -> list[dict]:
+        """Literal retrieval of accepted originals. No domain or relationship inference."""
+        admitted = [r for r in self.records.values() if r.record_class == "SourceEntry" and self.is_accepted(r)]
+        superseded = {r.previous_record for r in admitted if r.previous_record}
+        terms = set(re.findall(r"[\w’']+", query.casefold()))
+        rows = []
+        for r in admitted:
+            if r.leaf in superseded or (not include_questions and r.source_role == "question"):
+                continue
+            text = unescape(r.exact_words)
+            shared = terms & set(re.findall(r"[\w’']+", text.casefold()))
+            if query and not shared:
+                continue
+            rows.append({"id": r.uri, "leaf": r.leaf, "text": text, "role": r.source_role,
+                         "source_created_at": r.source_created_at, "accepted_at": r.accepted_at,
+                         "source_date": datetime.fromisoformat(r.source_created_at.replace("Z", "+00:00")).astimezone(ZoneInfo("America/Los_Angeles")).date().isoformat(),
+                         "shared_terms": sorted(shared), "literal_matches": len(shared)})
+        ordered = sorted(rows, key=lambda r: (r["literal_matches"], r["source_created_at"], r["leaf"]), reverse=True)
+        result, seen = [], set()
+        for row in ordered:
+            if row["text"] not in seen:
+                seen.add(row["text"])
+                result.append(row)
+        return result
+
 
 def parse_graph(text: str) -> dict[str, Record]:
     records: dict[str, Record] = {}
@@ -90,6 +131,10 @@ def parse_graph(text: str) -> dict[str, Record]:
         kind = _TYPE.search(block)
         strength = _STRENGTH.search(block)
         accepted_at = _ACCEPTED_AT.search(block)
+        exact_words = _EXACT_WORDS.search(block)
+        source_role = _SOURCE_ROLE.search(block)
+        source_created = _SOURCE_CREATED.search(block)
+        previous = _REVISION_OF.search(block)
         records[uri] = Record(
             uri=uri,
             leaf=uri[len(CONNECTION_PREFIX) :],
@@ -98,6 +143,11 @@ def parse_graph(text: str) -> dict[str, Record]:
             strength=strength.group(1) if strength else "",
             accepted_at=accepted_at.group(1) if accepted_at else "",
             block=block,
+            record_class=start.group(2),
+            exact_words=exact_words.group(1) if exact_words else "",
+            source_role=source_role.group(1) if source_role else "",
+            source_created_at=source_created.group(1) if source_created else "",
+            previous_record=previous.group(1) if previous else "",
         )
     return records
 

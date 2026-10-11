@@ -164,7 +164,7 @@ class Narrator:
                 self.holders.setdefault(token, set()).add(meaning.word)
         self.record_spread: dict[str, int] = {}
         for record in graph.records.values():
-            if graph.is_accepted(record):
+            if record.record_class == "Connection" and graph.is_accepted(record):
                 for token in set(content(unescape_label(record.label))):
                     self.record_spread[token] = self.record_spread.get(token, 0) + 1
         # the graph on his dictionary: a word of his named inside another word's meaning is a neighbor
@@ -311,7 +311,7 @@ class Narrator:
             if link.get("thumb") == 0 or link["record"] in used:
                 continue
             record = self.graph.find(link["record"])
-            if record is None or not self.graph.is_accepted(record):
+            if record is None or record.record_class != "Connection" or not self.graph.is_accepted(record):
                 continue
             label = unescape_label(record.label)
             if record.connection_type in ("observed_pattern", "observed_correlation") or LOGGED in label:
@@ -540,6 +540,31 @@ class Narrator:
             blocks.insert(len(named), line)
         return blocks
 
+    def source_road(self, question: str, told: "Told") -> list[str]:
+        """New original entries remain retrievable without an invented life domain.
+
+        Questions are never supplied as answers. Inputs/reflections are quoted
+        in their original role and date; literal overlap is not a causal claim.
+        """
+        wanted = set(content(question)) - WHEN
+        if len(wanted) < 2:
+            return []
+        rows = self.graph.source_entries(question, include_questions=False)
+        blocks = []
+        for row in rows:
+            shared = wanted & set(content(row["text"]))
+            if len(shared) < 2:
+                continue
+            role = "input" if row["role"] == "input" else "reflection"
+            line = f"Your original {role}, {row['source_date']}: “{row['text']}”"
+            told.parts.append(Part(line, row["text"], "record", "", row["leaf"]))
+            blocks.append(line)
+            if len(blocks) == 2:
+                break
+        if blocks:
+            told.judged = "not_sure"
+        return blocks
+
     def weeks_line(self, record, question: str) -> tuple[str, str, str] | None:
         """From a record, through its two life domains, to what his tracked weeks measured between them.
         Told only when his statement names one of the two domains."""
@@ -666,7 +691,9 @@ class Narrator:
                 count += len(line.split())
                 break
         if not blocks:
-            blocks = self.domain_road(question, told)                # no word of his told: his ontology and his graph judge the entry
+            blocks = self.source_road(question, told)
+            if not blocks:
+                blocks = self.domain_road(question, told)            # no word of his told: his ontology and his graph judge the entry
             if not blocks and not told.reaches:
                 told.judged = "dont_know"                            # neither his dictionary nor his graph holds anything for it
                 absent = [as_typed(question, w) for w in told.no_meaning_yet if not (forms(w) & self.written)]
@@ -702,8 +729,10 @@ def records_told(told: Told, graph: Graph) -> list[dict]:
         if record is None or record.leaf in seen or not graph.is_accepted(record):
             continue
         seen.add(record.leaf)
-        rows.append({"id": record.uri, "leaf": record.leaf, "quote": unescape_label(record.label), "why": "",
-                     "strength": record.strength, "accepted_at": record.accepted_at,
+        rows.append({"id": record.uri, "leaf": record.leaf,
+                     "quote": unescape_label(record.exact_words if record.record_class == "SourceEntry" else record.label), "why": "",
+                     "strength": record.strength, "accepted_at": record.source_created_at or record.accepted_at,
+                     "source_created_at": record.source_created_at, "imported_at": record.accepted_at,
                      "connection_type": record.connection_type})
     return rows
 

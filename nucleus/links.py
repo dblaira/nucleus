@@ -105,7 +105,7 @@ def paint(question: str, reading: dict, hits, store: Store, graph: Graph, meanin
         words.append({"word": word, "why": f"you said {word}", "meanings": [m.text for m in dictionary_module.meanings_for(meanings, word)]})
         for link in links:
             record = graph.find(link["record"])
-            if record is None or not graph.is_accepted(record) or record.leaf in seen:
+            if record is None or record.record_class != "Connection" or not graph.is_accepted(record) or record.leaf in seen:
                 continue
             seen.add(record.leaf)
             # a why written while answering an earlier question is about that question, not this one; only a

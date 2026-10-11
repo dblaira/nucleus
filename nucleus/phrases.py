@@ -67,7 +67,7 @@ class PhraseIndex:
             for phrase in phrases(tokens(meaning.text)) | phrases(tokens(meaning.word)):
                 self.index.setdefault(phrase, []).append(Hit(phrase, "word", meaning.word, meaning.text))
         for record in graph.records.values():
-            if not graph.is_accepted(record):
+            if record.record_class != "Connection" or not graph.is_accepted(record):
                 continue
             for phrase in phrases(tokens(record.label)):
                 self.index.setdefault(phrase, []).append(Hit(phrase, "record", record.leaf, record.label, record.strength))
