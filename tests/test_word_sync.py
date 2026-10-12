@@ -178,6 +178,56 @@ def test_quoted_third_party_and_code_remain_context_not_adams_words():
     assert set(reasons) == {"quoted-material", "inline-quotation", "code-block"}
 
 
+BELIEF = "Think Bigger means think broader.  It also could be called thinking inside-out, rather than outside in."
+BELIEF_SOURCE = 'I have a belief called, "' + BELIEF + '"  Where is the first place I go in protege.\n'
+
+
+def test_explicitly_owned_belief_keeps_exact_content_and_existing_span_identities(config):
+    collector = Collector(config, {})
+    collector.emit("codex", "human:12:0", "user_prompt", BELIEF_SOURCE, AT)
+    quotes = [e for e in collector.entries if ":owned-belief:" in e["identity"]]
+    assert len(quotes) == 1 and quotes[0]["text"] == BELIEF
+    assert quotes[0]["source_text"][quotes[0]["char_start"]:quotes[0]["char_end"]] == BELIEF
+    assert collector.entries[0]["identity"] == "codex:human:12:0:user_prompt:span:0"
+    assert collector.entries[1]["identity"] == "codex:human:12:0:user_prompt:span:1"
+    for text in ('Assistant said, "' + BELIEF + '"', 'I read a belief called, "' + BELIEF + '"',
+                 '> I have a belief called, "' + BELIEF + '"',
+                 'I have a belief called, "SAVY SYNC PROBE"'):
+        c = Collector(config, {})
+        c.emit("codex", "other", "user_prompt", text, AT)
+        assert not any(":owned-belief:" in e["identity"] for e in c.entries)
+
+
+def test_owned_belief_backfills_consumed_source_and_repeat_adds_nothing(config):
+    # Simulate the previous collector having consumed and excluded the quote.
+    p = Path(config["archive_root"]) / "prior/sources.json"
+    p.parent.mkdir(parents=True)
+    p.write_text(json.dumps({"exceptions": [{"source_identity": "codex:human:12:0:user_prompt",
+        "source_text": BELIEF_SOURCE, "source_sha256": digest(BELIEF_SOURCE),
+        "created_at": AT, "reasons": ["inline-quotation"], "context": {"line": 12}}]}))
+    code, status = sync.run(config, validator=validator)
+    assert code == 0 and status["coverage"]["owned_belief_backfill"]["sources_replayed"] == 1
+    graph = load_graph(Path(config["graph"]), Path(config["ledger"]))
+    record = next(r for r in graph.records.values() if unescape(r.exact_words) == BELIEF)
+    assert graph.is_accepted(record)
+    assert "inLifeDomain" not in record.block and "strength" not in record.block
+    before = snapshot(config)
+    code, status = sync.run(config, validator=validator)
+    assert code == 0 and status["new_entries"] == 0 and snapshot(config) == before
+
+
+def test_owned_belief_backfill_rejects_changed_snapshot(config):
+    p = Path(config["archive_root"]) / "prior/sources.json"
+    p.parent.mkdir(parents=True)
+    p.write_text(json.dumps({"exceptions": [{"source_identity": "codex:human:12:0:user_prompt",
+        "source_text": BELIEF_SOURCE, "source_sha256": "incorrect", "created_at": AT}]}))
+    before = snapshot(config)
+    code, status = sync.run(config, validator=validator)
+    assert code == 1 and snapshot(config) == before
+    assert "hash mismatch" in status["coverage"]["owned_belief_backfill"]["error"]
+    assert not (Path(config["state_dir"]) / "state.json").exists()
+
+
 def test_turtle_escape_decoder_preserves_literal_backslash_and_unicode():
     assert unescape(r'Unicode 😀\nline\tand \\"quote\\"') == 'Unicode 😀\nline\tand \\"quote\\"'
     assert unescape(r'Literal \\n stays a backslash') == r'Literal \n stays a backslash'

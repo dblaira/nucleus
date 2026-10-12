@@ -7,7 +7,7 @@ import pyshacl
 import rdflib
 from rdflib import Graph, Literal, Namespace, URIRef
 from rdflib.namespace import RDF
-from word_sources import attribution_excluded, question_replies
+from word_sources import attribution_excluded, question_replies, owned_belief_quotes
 
 B = Path("/batch")
 U = Namespace("https://understood.app/ontology#")
@@ -36,6 +36,8 @@ for e in manifest["entries"]:
     assert sha(e["source_text"]) == e["source_sha256"]
     assert e["source_text"][e["char_start"]:e["char_end"]] == e["text"]
     assert sha(e["text"]) == e["text_sha256"]
+    if ":owned-belief:" in e["identity"]:
+        assert (e["char_start"], e["char_end"]) in owned_belief_quotes(e["source_text"]), "Quotation lacks explicit self-ownership"
     s = URIRef(P + e["record_id"])
     assert (s, RDF.type, U.SourceEntry) in new
     assert (s, U.exactWords, Literal(e["text"])) in new

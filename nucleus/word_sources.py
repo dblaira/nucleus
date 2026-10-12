@@ -68,6 +68,22 @@ def question_replies(text: str) -> list[dict] | None:
     return replies
 
 
+def owned_belief_quotes(text: str) -> list[tuple[int, int]]:
+    """An explicit first-person ownership statement identifies this quotation.
+
+    This admits the named belief's exact content, not arbitrary pasted quotes,
+    classifications, or inferred relationships. Outer quote marks are syntax;
+    returned offsets address the unchanged source content inside them.
+    """
+    if FIXTURE.search(text) or attribution_excluded(text) or any(marker in text for marker in GENERATED):
+        return []
+    match = re.match(r'^\s*I have a belief called,\s*(?:"(?P<straight>[^"\n]+)"|“(?P<curly>[^”\n]+)”)', text)
+    if not match:
+        return []
+    group = "straight" if match.group("straight") is not None else "curly"
+    return [match.span(group)]
+
+
 def own_spans(text: str) -> tuple[list[tuple[int, int]], list[str]]:
     """Only unquoted prose. Offsets always address the untouched original.
 
@@ -137,9 +153,12 @@ class Collector:
             self.exceptions.append({"source_identity": identity, "reasons": reasons,
                                     "source_sha256": digest(text), "context": context,
                                     "source_text": text, "created_at": created})
-        for index, (start, end) in enumerate(spans):
+        # Keep existing unquoted identities stable when admitting owned quotes.
+        identified = [(f"span:{i}", a, b) for i, (a, b) in enumerate(spans)]
+        identified += [(f"owned-belief:{a}:{b}", a, b) for a, b in owned_belief_quotes(text)]
+        for span_identity, start, end in identified:
             quote = text[start:end]
-            self.entries.append({"identity": identity + f":span:{index}",
+            self.entries.append({"identity": identity + ":" + span_identity,
                                  "adapter": adapter, "source_id": str(ident), "field": field,
                                  "role": role, "text": quote, "text_sha256": digest(quote),
                                  "source_text": text, "source_sha256": digest(text),
@@ -398,10 +417,43 @@ class Collector:
         paths = [p for p in root.glob("*/*.jsonl") if not p.name.startswith("agent-") and p.stat().st_mtime >= cutoff]
         return {"files_checked": len(paths), "human_messages_read": sum(self.transcript(p, "claude") for p in paths)}
 
+    def owned_belief_backfill(self):
+        """Replay only previously excluded, explicitly self-owned quotations.
+
+        Original snapshots and source identities survive; no source database or
+        cursor is reset. Publication checkpoints this schema after validation.
+        """
+        if self.cursors.get("owned_belief_quote_schema") == 1:
+            return {"sources_replayed": 0}
+        root = self.config.get("archive_root")
+        replayed = set()
+        for path in sorted(Path(root).glob("*/sources.json")) if root else []:
+            for e in json.loads(path.read_text())["exceptions"]:
+                text = e.get("source_text", "")
+                if not owned_belief_quotes(text):
+                    continue
+                if digest(text) != e["source_sha256"]:
+                    raise ValueError("Owned belief backfill source hash mismatch: " + str(path))
+                identity = e["source_identity"]
+                if identity in replayed:
+                    continue
+                adapter, remainder = identity.split(":", 1)
+                ident, field = remainder.rsplit(":", 1)
+                if adapter not in ("codex", "claude", "all_entries") or field != "user_prompt":
+                    continue
+                self.emit(adapter, ident, field, text, e["created_at"], context=e.get("context"))
+                replayed.add(identity)
+        self.cursors["owned_belief_quote_schema"] = 1
+        return {"sources_replayed": len(replayed)}
+
     def collect(self):
         for adapter, path in self.config["sources"].items():
             try:
                 self.coverage[adapter] = {"status": "read", **getattr(self, adapter)(path)}
             except Exception as e:
                 self.coverage[adapter] = {"status": "failed", "error": f"{type(e).__name__}: {e}"}
+        try:
+            self.coverage["owned_belief_backfill"] = {"status": "read", **self.owned_belief_backfill()}
+        except Exception as e:
+            self.coverage["owned_belief_backfill"] = {"status": "failed", "error": f"{type(e).__name__}: {e}"}
         return self.entries, self.cursors, self.coverage, self.exceptions
