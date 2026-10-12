@@ -20,7 +20,7 @@ from . import phrases as phrases_module
 from . import prompt as prompt_module
 from .compact import compact_nucleus
 from .graph import load_graph
-from .contextual_sources import later_reports
+from .contextual_sources import review_later_words
 from .store import Store
 
 STEP_QUESTION = "1 question in"
@@ -90,13 +90,22 @@ def ask(question: str, store: Store | None = None, surface: str = "cli",
 
     question_id = question_id or store.new_question(question, surface)
     store.start_step(question_id, STEP_QUESTION)
-    store.finish_step(question_id, STEP_QUESTION)
 
     def finish(result: Result) -> Result:
         result.steps = store.steps(question_id)
         result.seconds = round(time.time() - started_all, 3)
         result.times_asked_before = store.times_asked(question, question_id)
         return result
+
+    # All questions check the latest accepted originals before any answer route.
+    try:
+        graph = load_graph(NUCLEUS_FILES["graph"], NUCLEUS_FILES["ledger"])
+        context_records, context_audit = review_later_words(graph, question)
+    except (OSError, ValueError) as error:
+        store.finish_step(question_id, STEP_QUESTION, note=f"Later words check failed: {error}")
+        store.save_answer(question_id, "failed", None, "", None, None, str(error))
+        return finish(Result(question_id, question, "failed", reason=str(error)))
+    store.finish_step(question_id, STEP_QUESTION, note=json.dumps({"later_words_review": context_audit}, ensure_ascii=False))
 
     # 2. the dictionary reads the question with its own program
     store.start_step(question_id, STEP_DICTIONARY)
@@ -119,7 +128,6 @@ def ask(question: str, store: Store | None = None, surface: str = "cli",
 
     # 3. his phrases, looked up by code. Meaning with meaning.
     store.start_step(question_id, STEP_PHRASES)
-    graph = load_graph(NUCLEUS_FILES["graph"], NUCLEUS_FILES["ledger"])
     meanings = dictionary_module.load_meanings(NUCLEUS_FILES["meanings"])
     hits = phrases_module.PhraseIndex(meanings, graph).lookup(question)
     store.save_phrase_hits(question_id, hits)
@@ -138,14 +146,13 @@ def ask(question: str, store: Store | None = None, surface: str = "cli",
         # no dictionary word reached, but his knowledge graph holds something for it: his middle line, the records told as rows
         rows = narrative_module.records_told(told, graph)
         picture = links_module.Picture(answer="not_sure", text=gate_module.compose("not_sure", [], rows, []), records=rows)
-    context_records = later_reports(graph, question)
-    if context_records:
+    if context_records and told is not None:
         if picture is None:
-            picture = links_module.Picture(answer="not_sure")
+            picture = links_module.Picture(answer="not_sure", text="")
         existing = {row["leaf"] for row in context_records}
         picture.records = context_records + [row for row in picture.records if row["leaf"] not in existing]
         # Chronology is context, not proof of causation or an invented link.
-        picture.answer = "not_sure"
+        # Keep an existing verdict; chronology alone does not prove alignment or causation.
         picture.missing = []
         picture.text = gate_module.compose(picture.answer, picture.words, picture.records, [])
         if told is not None:
@@ -197,6 +204,8 @@ def ask(question: str, store: Store | None = None, surface: str = "cli",
     else:
         nucleus, sizes = prompt_module.nucleus_text()
     prompt = prompt_module.build(question, reading, nucleus, graph, hits)
+    if context_records:
+        prompt += "\n\n===== Later original words: recorded source context, not causal relationships =====\n" + json.dumps(context_records, ensure_ascii=False)
     bytes_sent = len(prompt.encode("utf-8"))
     store.finish_step(question_id, STEP_NUCLEUS, note=f"{bytes_sent} bytes; " + ", ".join(f"{k} {v}" for k, v in sizes.items()))
 
