@@ -45,7 +45,8 @@ def quotes(answer_text: str, reply_json: str | None) -> list[str]:
         records = json.loads(reply_json or "{}").get("records") or []
     except (json.JSONDecodeError, AttributeError):
         records = []
-    found += [_plain(record.get("quote") or "") for record in records if isinstance(record, dict)]
+    found += [record.get("quote", "") if record.get("exact_words") else _plain(record.get("quote") or "")
+              for record in records if isinstance(record, dict)]
     out, seen = [], set()
     for quote in found:
         key = quote.lower()
@@ -73,6 +74,15 @@ def form(answer_text: str, reply_json: str | None, options: list[dict]) -> dict:
     """Everything his app draws for one middle answer, in the order he laid it out."""
     sections = []
     reasons = quotes(answer_text, reply_json)
+    try:
+        contextual = [r for r in json.loads(reply_json or "{}").get("records", []) if r.get("context") and r.get("exact_words")]
+    except (ValueError, AttributeError, TypeError):
+        contextual = []
+    if contextual:
+        sections.append({"head": "Later in the same conversation", "symbol": "book",
+                         "lines": [f"{r['source_date']} — “{r['quote']}”" for r in contextual]})
+        contextual_quotes = {r["quote"] for r in contextual}
+        reasons = [quote for quote in reasons if quote not in contextual_quotes]
     if reasons:
         sections.append({"head": REASONS, "symbol": "book", "lines": [f"“{quote}”" for quote in reasons]})
     suggested = suggestions(options)

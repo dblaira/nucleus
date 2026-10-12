@@ -20,6 +20,7 @@ from . import phrases as phrases_module
 from . import prompt as prompt_module
 from .compact import compact_nucleus
 from .graph import load_graph
+from .contextual_sources import later_reports
 from .store import Store
 
 STEP_QUESTION = "1 question in"
@@ -137,12 +138,26 @@ def ask(question: str, store: Store | None = None, surface: str = "cli",
         # no dictionary word reached, but his knowledge graph holds something for it: his middle line, the records told as rows
         rows = narrative_module.records_told(told, graph)
         picture = links_module.Picture(answer="not_sure", text=gate_module.compose("not_sure", [], rows, []), records=rows)
+    context_records = later_reports(graph, question)
+    if context_records:
+        if picture is None:
+            picture = links_module.Picture(answer="not_sure")
+        existing = {row["leaf"] for row in context_records}
+        picture.records = context_records + [row for row in picture.records if row["leaf"] not in existing]
+        # Chronology is context, not proof of causation or an invented link.
+        picture.answer = "not_sure"
+        picture.missing = []
+        picture.text = gate_module.compose(picture.answer, picture.words, picture.records, [])
+        if told is not None:
+            context_text = "\n\n".join(f"Later in the same conversation, {row['source_date']}: “{row['quote']}”" for row in context_records)
+            told.text = context_text + ("\n\n" + told.text if told.text else "")
     if picture is not None and not picture.missing:
         for name in (STEP_NUCLEUS, STEP_MODEL, STEP_GATE, STEP_ANSWER):
             store.start_step(question_id, name)
             store.finish_step(question_id, name, note="painted from your links, no model" if name == STEP_MODEL else "")
         reply_json = json.dumps({"answer": picture.answer, "words": [{"word": w["word"], "why": w["why"]} for w in picture.words],
-                                 "records": [{"id": r["leaf"], "quote": r["quote"], "why": r["why"]} for r in picture.records],
+                                 "records": [{"id": r["leaf"], "quote": r["quote"], "why": r["why"],
+                                              **{k: r[k] for k in ("context", "source_date", "source_created_at", "conversation_id", "anchor_identity", "exact_words") if k in r}} for r in picture.records],
                                  "possibility": []}, ensure_ascii=False)
         if told is not None and told.text:
             # the meaning, in normal sentences, built by code in milliseconds; the model is not asked.

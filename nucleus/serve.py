@@ -25,7 +25,7 @@ _ROOT = Path(__file__).resolve().parents[1]
 _REVISION = subprocess.run(["/usr/bin/git", "rev-parse", "HEAD"], cwd=_ROOT,
                            capture_output=True, text=True).stdout.strip()
 _MODULE_HASHES = {name: hashlib.sha256(Path(__file__).with_name(name).read_bytes()).hexdigest()
-                  for name in ("serve.py", "graph.py", "narrative.py", "phrases.py", "links.py")}
+                  for name in ("serve.py", "graph.py", "narrative.py", "phrases.py", "links.py", "ask.py", "middle.py", "contextual_sources.py")}
 HEADER_PHOTO = Path(__file__).with_name("header.jpg")   # the red rock photo Adam chose, 2026-09-12
 
 STEP_NAMES = [ask_module.STEP_QUESTION, ask_module.STEP_DICTIONARY, ask_module.STEP_PHRASES, ask_module.STEP_NUCLEUS,
