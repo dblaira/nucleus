@@ -70,6 +70,19 @@ def suggestions(options: list[dict]) -> list[str]:
     return out
 
 
+def context_section(reply_json: str | None) -> dict | None:
+    """Show exact later originals on all three answer forms, without changing the verdict."""
+    try:
+        contextual = [r for r in json.loads(reply_json or "{}").get("records", [])
+                      if r.get("context") and r.get("exact_words")]
+    except (ValueError, AttributeError, TypeError):
+        contextual = []
+    if not contextual:
+        return None
+    return {"head": "Later in the same conversation", "symbol": "book",
+            "lines": [f"{r['source_date']} — “{r['quote']}”" for r in contextual]}
+
+
 def form(answer_text: str, reply_json: str | None, options: list[dict]) -> dict:
     """Everything his app draws for one middle answer, in the order he laid it out."""
     sections = []
@@ -115,10 +128,13 @@ def form_for(answer: dict | None, rows: list[dict], explanation: dict | None, op
     if kind == "not_sure":
         return form(text, reply, options)
     paragraph = (explanation or {}).get("text") if (explanation or {}).get("status") == "shown" else None
+    later = context_section(reply)
     if kind == "dont_know":
-        return {"explanation": paragraph, "answer": FIRST_LINE["dont_know"], "sections": [], "ask": None}
+        return {"explanation": paragraph, "answer": FIRST_LINE["dont_know"], "sections": [later] if later else [], "ask": None}
     sections = [{"head": word, "symbol": "book", "lines": [f"“{m}”" for m in meanings]}
                 for word, meanings in word_meanings(text).items()]
+    if later:
+        sections.insert(0, later)
     for row in (rows or [])[:MOST_QUOTES]:
         head = " ".join(part for part in (row.get("word"), row.get("kind")) if part)
         quote = _plain(row.get("quote") or "")

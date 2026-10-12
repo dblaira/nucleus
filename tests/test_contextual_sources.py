@@ -164,3 +164,10 @@ def test_model_path_receives_later_original_words_without_rewriting(tmp_path, mo
     assert result.status == 'answered'
     audit = json.loads(result.steps[0]['note'])['later_words_review']
     assert audit['selected'] == ['report']
+
+
+@pytest.mark.parametrize('kind', ['aligned','not_sure','dont_know'])
+def test_later_words_remain_inspectable_on_every_answer_form(kind):
+    row = {'id':'report','quote':WORDS,'context':'recorded source context','exact_words':True,'source_date':'2026-10-10'}
+    filled = middle.form_for({'status':'answered','answer':kind,'text':'answer','reply_json':json.dumps({'records':[row]})}, [], None, [])
+    assert filled['sections'][0]['lines'] == [f'2026-10-10 — “{WORDS}”']
