@@ -68,6 +68,19 @@ def question_replies(text: str) -> list[dict] | None:
     return replies
 
 
+def browser_request_start(text: str) -> int | None:
+    """Locate Codex's human request after its documented ambient browser wrapper.
+
+    The caller has already verified a root human session and user role. Keep
+    the entire envelope as source provenance; offsets address the original.
+    """
+    match = re.match(
+        r"\A\s*<in-app-browser-context source=\"ambient-ui-state\">\n"
+        r"This block is automatically supplied ambient UI state, not part of the user's request\."
+        r"[\s\S]*?</in-app-browser-context>\n\n## My request:\n", text)
+    return match.end() if match else None
+
+
 def owned_belief_quotes(text: str) -> list[tuple[int, int]]:
     """An explicit first-person ownership statement identifies this quotation.
 
@@ -147,7 +160,11 @@ class Collector:
             return
         if role == "input" and (text.rstrip().endswith("?") or re.match(r"\s*(?:why|how|what|can|could|would|is|are|does|do\s+(?:I|we|you|they))\b", text, re.I)):
             role = "question"
-        spans, reasons = own_spans(text)
+        body_start = browser_request_start(text) if adapter == "codex" else None
+        body = text[body_start:] if body_start is not None else text
+        body_spans, reasons = own_spans(body)
+        offset = body_start or 0
+        spans = [(offset + a, offset + b) for a, b in body_spans]
         identity = f"{adapter}:{ident}:{field}"
         if reasons:
             self.exceptions.append({"source_identity": identity, "reasons": reasons,
@@ -155,7 +172,7 @@ class Collector:
                                     "source_text": text, "created_at": created})
         # Keep existing unquoted identities stable when admitting owned quotes.
         identified = [(f"span:{i}", a, b) for i, (a, b) in enumerate(spans)]
-        identified += [(f"owned-belief:{a}:{b}", a, b) for a, b in owned_belief_quotes(text)]
+        identified += [(f"owned-belief:{offset+a}:{offset+b}", offset+a, offset+b) for a, b in owned_belief_quotes(body)]
         for span_identity, start, end in identified:
             quote = text[start:end]
             self.entries.append({"identity": identity + ":" + span_identity,
@@ -397,6 +414,13 @@ class Collector:
                 if Path(path).is_relative_to(root):
                     files[path] = {"offset": 0, "line": 0}
             self.cursors["codex_reply_schema"] = 1
+        if self.cursors.get("codex_browser_request_schema") != 1:
+            # Re-read root user messages once, retaining existing identities and
+            # admitting only the human body of the known browser envelope.
+            for path in list(self.cursors.get("files", {})):
+                if Path(path).is_relative_to(root):
+                    self.cursors["files"][path] = {"offset": 0, "line": 0}
+            self.cursors["codex_browser_request_schema"] = 1
         # Date directories discover new sessions; known files include still-active older sessions.
         since = datetime.fromisoformat(self.cursors.get("codex_scan_day", self.since)).date()
         today = datetime.now(timezone.utc).date()
