@@ -14,7 +14,7 @@ from .graph import unescape
 SNAPSHOT = re.compile(r'understood:sourceSnapshot "((?:[^"\\]|\\.)*)" ;')
 SELF_REPORT = re.compile(r"\bI (?:am|feel|felt|have|find myself)\b", re.I)
 REPLY_REFERENCE = re.compile(r"\b(?:answer|response|replied|reflections)\b", re.I)
-REQUEST = re.compile(r"^\s*(?:fix|open|show|use|try|keep|make sure|verify|check|set up|put|ask|approve|do it|then fix|now show)\b", re.I)
+REQUEST = re.compile(r"^\s*(?:(?:now|then|okay|ok)[, ]+)?(?:fix|open|show|use|try|keep|make sure|verify|check|set up|put|ask|approve|do it|then fix|now show)\b", re.I)
 
 
 class SourceContextUnavailable(ValueError):
@@ -125,7 +125,7 @@ def review_later_words(graph, question: str) -> tuple[list[dict], dict]:
         text = unescape(record.exact_words)
         # Questions and operational requests are considered in the audit but
         # never presented as personal facts or answers to another question.
-        if record.source_role not in ("input", "reflection") or REQUEST.search(text):
+        if record.source_role not in ("input", "reflection") or REQUEST.search(text) or REQUEST.search(entry["source_text"]):
             continue
         date = datetime.fromisoformat(record.source_created_at.replace("Z", "+00:00")).astimezone(ZoneInfo("America/Los_Angeles")).date().isoformat()
         row = {"id": record.uri, "leaf": record.leaf, "quote": text, "why": "", "strength": "",
@@ -136,11 +136,19 @@ def review_later_words(graph, question: str) -> tuple[list[dict], dict]:
         priority = int(bool(SELF_REPORT.search(text) and REPLY_REFERENCE.search(text)))
         rows.append((priority, record.source_created_at, row))
     rows.sort(key=lambda item: (item[0], item[1], item[2]["leaf"]), reverse=True)
-    selected, scopes = [], set()
-    for _, _, row in rows:
-        if row["conversation_id"] not in scopes:
-            selected.append(row)
-            scopes.add(row["conversation_id"])
+    # Always retain the newest eligible later words, including a subsequent
+    # update that has none of the old report vocabulary. An explicit earlier
+    # report may also remain, with its own date; neither silently replaces the other.
+    selected = []
+    groups = {}
+    for priority, created, row in rows:
+        groups.setdefault(row["conversation_id"], []).append((priority, created, row))
+    for group in groups.values():
+        newest = max(group, key=lambda item: (item[1], item[2]["leaf"]))[2]
+        reference = group[0][2]
+        if group[0][0] and reference["leaf"] != newest["leaf"]:
+            selected.append(reference)
+        selected.append(newest)
     audit["selected"] = [row["leaf"] for row in selected]
     return selected, audit
 

@@ -171,3 +171,23 @@ def test_later_words_remain_inspectable_on_every_answer_form(kind):
     row = {'id':'report','quote':WORDS,'context':'recorded source context','exact_words':True,'source_date':'2026-10-10'}
     filled = middle.form_for({'status':'answered','answer':kind,'text':'answer','reply_json':json.dumps({'records':[row]})}, [], None, [])
     assert filled['sections'][0]['lines'] == [f'2026-10-10 — “{WORDS}”']
+
+
+def test_newer_update_without_report_vocabulary_is_not_hidden_by_older_response(tmp_path, monkeypatch):
+    from dataclasses import replace
+    graph, path = fixture(tmp_path, monkeypatch)
+    data = json.loads(path.read_text())
+    words = 'The ache is gone.  Back to normal.\n'
+    latest = dict(data['entries'][1], identity='codex:one:3:0:user_prompt:span:0', text=words, source_text=words,
+                  text_sha256=hashlib.sha256(words.encode()).hexdigest(), source_sha256=hashlib.sha256(words.encode()).hexdigest(),
+                  char_start=0,char_end=len(words),created_at='2026-10-11T06:00:00+00:00')
+    data['entries'].append(latest);path.write_text(json.dumps(data))
+    before = next(iter(graph.records.values()))
+    newest = replace(before,uri=before.uri+'-new',leaf='report-new',label='report-new',exact_words=words,
+                     source_identity=latest['identity'],source_created_at=latest['created_at'])
+    graph.records[newest.uri] = newest
+    graph.ledger.append({'claim':'report-new','decision':'accepted','at':latest['created_at']})
+    rows, audit = review_later_words(graph, QUESTION)
+    assert words in [row['quote'] for row in rows]
+    assert WORDS in [row['quote'] for row in rows]
+    assert audit['selected'] == ['report', 'report-new']
