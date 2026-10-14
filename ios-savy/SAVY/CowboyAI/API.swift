@@ -62,8 +62,13 @@ enum NucleusAPI {
            let value = ProcessInfo.processInfo.environment["COWBOYAI_UI_TEST_BASE_URL"],
            let url = URL(string: value) { return url }
         #endif
-        let saved = UserDefaults.standard.string(forKey: "nucleus.base") ?? "http://127.0.0.1:8766"
-        return URL(string: saved) ?? URL(string: "http://127.0.0.1:8766")!
+        #if targetEnvironment(simulator)
+        let defaultBase = URL(string: "http://127.0.0.1:8766")!
+        #else
+        let defaultBase = URL(string: "http://100.111.154.126:8766")!
+        #endif
+        let saved = UserDefaults.standard.string(forKey: "nucleus.base") ?? defaultBase.absoluteString
+        return URL(string: saved) ?? defaultBase
     }
 
     static func ask(_ question: String, themeData: Data? = nil) async throws -> String {

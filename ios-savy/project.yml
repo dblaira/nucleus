@@ -31,7 +31,7 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.adamblair.cowboyai.savytrial
         PRODUCT_NAME: CowboyAITrial
         PRODUCT_MODULE_NAME: SAVY
-        SUPPORTED_PLATFORMS: iphonesimulator
+        SUPPORTED_PLATFORMS: "iphoneos iphonesimulator"
         CODE_SIGN_ENTITLEMENTS: SAVY/SAVY.entitlements
         CODE_SIGN_STYLE: Automatic
         DEVELOPMENT_TEAM: 7FKUS5M5QS

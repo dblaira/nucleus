@@ -674,7 +674,7 @@
 				PRODUCT_MODULE_NAME = SAVY;
 				PRODUCT_NAME = CowboyAITrial;
 				SDKROOT = iphoneos;
-				SUPPORTED_PLATFORMS = iphonesimulator;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = YES;
 				TARGETED_DEVICE_FAMILY = "1,2,6";
 			};
@@ -795,7 +795,7 @@
 				PRODUCT_MODULE_NAME = SAVY;
 				PRODUCT_NAME = CowboyAITrial;
 				SDKROOT = iphoneos;
-				SUPPORTED_PLATFORMS = iphonesimulator;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = YES;
 				TARGETED_DEVICE_FAMILY = "1,2,6";
 			};
