@@ -74,9 +74,13 @@ enum SavyMenuAppearance {
 struct SavyMenuButton: View {
     let openConnection: () -> Void
     var appearance: SavyMenuAppearance = .onDarkHero
+    var openRoute: (() -> Void)? = nil
+    var openAppearance: (() -> Void)? = nil
 
     var body: some View {
         Menu {
+            if let openAppearance { Button("Background photo", systemImage: "photo", action: openAppearance) }
+            if let openRoute { Button("Route", systemImage: "arrow.triangle.branch", action: openRoute) }
             Button {
                 openConnection()
             } label: {
@@ -91,7 +95,7 @@ struct SavyMenuButton: View {
                 .overlay(Circle().stroke(borderColor, lineWidth: 1))
         }
         .buttonStyle(.plain)
-        .accessibilityLabel("nucleus menu")
+        .accessibilityLabel("CowboyAI menu")
     }
 
     private var iconColor: Color {
@@ -119,6 +123,7 @@ struct SavyMenuButton: View {
 /// SAVY's back button on a pushed page (ConnectionView.connectionHeader).
 struct SavyBackButton: View {
     @Environment(\.dismiss) private var dismiss
+    var onDarkBackground = false
 
     var body: some View {
         Button {
@@ -126,10 +131,10 @@ struct SavyBackButton: View {
         } label: {
             Image(systemName: "chevron.left")
                 .font(.system(size: 21, weight: .bold))
-                .foregroundStyle(CowboyTheme.red)
+                .foregroundStyle(onDarkBackground ? .white : CowboyTheme.red)
                 .frame(width: 48, height: 48)
                 .overlay {
-                    Circle().stroke(CowboyTheme.red.opacity(0.85), lineWidth: 1)
+                    Circle().stroke((onDarkBackground ? Color.white : CowboyTheme.red).opacity(0.85), lineWidth: 1)
                 }
         }
         .buttonStyle(.plain)
@@ -137,92 +142,247 @@ struct SavyBackButton: View {
     }
 }
 
-/// SAVY's bottom bar (SavyBottomNavigationBar) with the bolt; the bolt opens the question form.
+enum SavyFabMenuMotion {
+    static let open = Animation.spring(response: 0.34, dampingFraction: 0.72)
+    static let close = Animation.spring(response: 0.3, dampingFraction: 0.8)
+}
+
+enum CowboyCaptureKind: String {
+    case reminder, action, question, calendar
+    var menuTitle: String {
+        switch self { case .reminder: "Reminder"; case .action: "Action"; case .question: "Question"; case .calendar: "Calendar event" }
+    }
+    var fabMenuSymbolName: String {
+        switch self { case .reminder: "bell.fill"; case .action: "bolt.fill"; case .question: "questionmark.bubble.fill"; case .calendar: "calendar" }
+    }
+}
+
 struct SavyBottomNavigationBar: View {
     @Binding var selection: AppTab
-    let openComposer: () -> Void
+    @Binding var isRadialMenuPresented: Bool
+    @State private var highlightedCaptureKind: CowboyCaptureKind?
+    let onSelectCaptureKind: (CowboyCaptureKind) -> Void
 
-    private let barBackground = CowboyTheme.bottomNavigationTan
-    private let inactiveColor = CowboyTheme.navigationInactive
+    @State private var draggingFab = false
+    @State private var menuWasOpenAtStart = false
+
+    private let barBackground = SavyTheme.bottomNavTan
+    private let inactiveColor = Color(red: 0.34, green: 0.27, blue: 0.21).opacity(0.68)
     private let navyTopBandHeight: CGFloat = 24
+    private var topBandColor: Color {
+        selection == .now ? SavyTheme.deepNavy : SavyTheme.pageBackground
+    }
 
     var body: some View {
         VStack(spacing: 0) {
-            CowboyTheme.navy
+            topBandColor
                 .frame(height: navyTopBandHeight)
 
             ZStack(alignment: .top) {
                 barBackground
 
                 HStack(alignment: .center, spacing: 0) {
-                    navigationButton(for: .now)
+                    ForEach([AppTab.now, .reminders]) { section in
+                        navigationButton(for: section)
+                    }
 
                     Spacer()
                         .frame(maxWidth: .infinity)
 
-                    navigationButton(for: .route)
+                    ForEach([AppTab.actions, .calendar]) { section in
+                        navigationButton(for: section)
+                    }
                 }
+                .padding(.horizontal, RootHomeLayout.bottomNavigationHorizontalPadding)
+                .frame(maxWidth: SavyWideLayout.navigationMaximumWidth)
                 .frame(maxHeight: .infinity, alignment: .top)
 
-                Button(action: openComposer) {
-                    borderedSymbol("bolt.fill")
-                        .frame(width: SavyLayout.floatingCaptureSize, height: SavyLayout.floatingCaptureSize)
-                        .background(CowboyTheme.red, in: Circle())
-                        .shadow(color: .black.opacity(0.3), radius: 12, y: 6)
+                ZStack {
+                    if isRadialMenuPresented {
+                        // Four doors on one arc, left to right: Reminder, Action, Question, Calendar.
+                        fabOption(.reminder).offset(x: -92, y: -62)
+                        fabOption(.action).offset(x: -40, y: -122)
+                        fabOption(.question).offset(x: 40, y: -122)
+                        fabOption(.calendar).offset(x: 92, y: -62)
+                    }
+
+                    captureFab
+                        .offset(y: -22)
                 }
-                .buttonStyle(.plain)
-                .offset(y: -22)
-                .accessibilityLabel("Add a question")
-                .accessibilityIdentifier("chargeFab")
             }
-            .frame(height: SavyLayout.bottomNavigationHeight - navyTopBandHeight)
+            .frame(height: RootHomeLayout.bottomNavigationHeight - navyTopBandHeight)
         }
-        .frame(height: SavyLayout.bottomNavigationHeight)
+        .frame(height: RootHomeLayout.bottomNavigationHeight)
         .background(alignment: .top) {
-            CowboyTheme.navy
-                .frame(height: SavyLayout.bottomNavNavyRiserHeight + SavyLayout.bottomNavigationTopPadding)
-                .offset(y: -(SavyLayout.bottomNavNavyRiserHeight + SavyLayout.bottomNavigationTopPadding))
+            topBandColor
+                .frame(
+                    height: RootHomeLayout.bottomNavNavyRiserHeight + RootHomeLayout.bottomNavigationTopPadding
+                )
+                .offset(
+                    y: -(RootHomeLayout.bottomNavNavyRiserHeight + RootHomeLayout.bottomNavigationTopPadding)
+                )
         }
         .background(barBackground.ignoresSafeArea(edges: .bottom))
+        .animation(SavyFabMenuMotion.open, value: isRadialMenuPresented)
+    }
+
+    private var captureFab: some View {
+        borderedSymbol(isRadialMenuPresented ? "xmark" : "bolt.fill")
+            .frame(
+                width: RootHomeLayout.floatingCaptureSize,
+                height: RootHomeLayout.floatingCaptureSize
+            )
+            .background(RootHomeLayout.floatingCaptureBackground, in: Circle())
+            .shadow(color: .black.opacity(0.3), radius: 12, y: 6)
+            .contentShape(Circle())
+            .gesture(
+                DragGesture(minimumDistance: 0)
+                    .onChanged { value in
+                        if !draggingFab {
+                            draggingFab = true
+                            menuWasOpenAtStart = isRadialMenuPresented
+                            if !isRadialMenuPresented {
+                                SavyHapticFeedback.menuOpen()
+                                withAnimation(SavyFabMenuMotion.open) {
+                                    isRadialMenuPresented = true
+                                }
+                            }
+                        }
+
+                        let target = targetKind(for: value.translation)
+                        if target != highlightedCaptureKind {
+                            highlightedCaptureKind = target
+                            if target != nil {
+                                SavyHapticFeedback.selection()
+                            }
+                        }
+                    }
+                    .onEnded { _ in
+                        if let selected = highlightedCaptureKind {
+                            SavyHapticFeedback.primaryImpact()
+                            withAnimation(SavyFabMenuMotion.close) {
+                                onSelectCaptureKind(selected)
+                            }
+                        } else if menuWasOpenAtStart {
+                            SavyHapticFeedback.menuClose()
+                            withAnimation(SavyFabMenuMotion.close) {
+                                dismissRadialMenu()
+                            }
+                        }
+
+                        draggingFab = false
+                        highlightedCaptureKind = nil
+                    }
+            )
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(
+                isRadialMenuPresented
+                    ? "Close quick entry menu"
+                    : "Open quick entry menu"
+            )
+            .accessibilityIdentifier("chargeFab")
+            .accessibilityAddTraits(.isButton)
+            .accessibilityAction { withAnimation(SavyFabMenuMotion.open) { isRadialMenuPresented.toggle() } }
+    }
+
+    private func fabOption(_ kind: CowboyCaptureKind) -> some View {
+        let isHighlighted = highlightedCaptureKind == kind
+
+        return Button {
+            SavyHapticFeedback.primaryImpact()
+            withAnimation(SavyFabMenuMotion.close) {
+                onSelectCaptureKind(kind)
+            }
+        } label: {
+            VStack(spacing: 5) {
+                Image(systemName: kind.fabMenuSymbolName)
+                    .font(.system(size: RootHomeLayout.radialMenuIconSize, weight: .bold))
+                    .foregroundStyle(.white)
+                    .frame(
+                        width: RootHomeLayout.radialMenuButtonSize,
+                        height: RootHomeLayout.radialMenuButtonSize
+                    )
+                    .background(
+                        isHighlighted ? SavyTheme.crimson : Brand.nearBlack,
+                        in: Circle()
+                    )
+                    .overlay(
+                        Circle()
+                            .stroke(
+                                .white.opacity(isHighlighted ? 0.9 : 0.15),
+                                lineWidth: 1.5
+                            )
+                    )
+                    .scaleEffect(isHighlighted ? 1.15 : 1)
+
+                Text(kind.menuTitle)
+                    .font(.system(size: RootHomeLayout.radialMenuLabelSize, weight: .heavy))
+                    .foregroundStyle(SavyTheme.crimson)
+            }
+            .shadow(color: .black.opacity(0.3), radius: 8, y: 4)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(kind.menuTitle)
     }
 
     private func borderedSymbol(_ name: String) -> some View {
         ZStack {
             Image(systemName: name)
-                .font(.system(size: SavyLayout.floatingCaptureSymbolOuterSize, weight: .bold))
+                .font(.system(size: RootHomeLayout.floatingCaptureSymbolOuterSize, weight: .bold))
                 .foregroundStyle(.black)
             Image(systemName: name)
-                .font(.system(size: SavyLayout.floatingCaptureSymbolInnerSize, weight: .bold))
+                .font(.system(size: RootHomeLayout.floatingCaptureSymbolInnerSize, weight: .bold))
                 .foregroundStyle(.white)
         }
     }
 
-    private func navigationButton(for tab: AppTab) -> some View {
-        let isActive = selection == tab
+    private func dismissRadialMenu() {
+        isRadialMenuPresented = false
+        highlightedCaptureKind = nil
+    }
+
+    private func targetKind(for translation: CGSize) -> CowboyCaptureKind? {
+        guard hypot(translation.width, translation.height) > 30 else { return nil }
+        let angle = atan2(-translation.height, translation.width) * 180 / .pi
+        if angle >= 90 && angle < 135 { return .action }
+        if angle >= 45 && angle < 90 { return .question }
+        if angle >= -45 && angle < 45 { return .calendar }
+        if angle >= 135 || angle < -135 { return .reminder }
+        return nil
+    }
+
+    private func navigationButton(for section: AppTab) -> some View {
+        let isActive = selection == section
 
         return Button {
-            selection = tab
+            SavyHapticFeedback.selection()
+            selection = section
+            withAnimation(SavyFabMenuMotion.close) {
+                dismissRadialMenu()
+            }
         } label: {
-            VStack(spacing: SavyLayout.bottomNavigationIconLabelSpacing) {
-                Image(systemName: tab.symbolName)
-                    .font(.system(size: SavyLayout.bottomNavigationIconSize, weight: .regular))
+            VStack(spacing: RootHomeLayout.bottomNavigationIconLabelSpacing) {
+                Image(systemName: section.symbolName)
+                    .font(.system(size: RootHomeLayout.bottomNavigationIconSize, weight: .regular))
 
-                Text(tab.title)
-                    .font(.system(size: SavyLayout.bottomNavigationLabelSize, weight: isActive ? .bold : .semibold))
+                Text(section.title)
+                    .font(.system(size: RootHomeLayout.bottomNavigationLabelSize, weight: isActive ? .bold : .semibold))
                     .lineLimit(1)
                     .minimumScaleFactor(0.72)
             }
-            .padding(.top, SavyLayout.bottomNavigationTopPadding)
-            .padding(.bottom, SavyLayout.bottomNavigationBottomPadding)
+            .padding(.top, RootHomeLayout.bottomNavigationTopPadding)
+            .padding(.bottom, RootHomeLayout.bottomNavigationBottomPadding)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-            .foregroundStyle(isActive ? CowboyTheme.red : inactiveColor)
+            .foregroundStyle(isActive ? SavyTheme.crimson : inactiveColor)
             .contentShape(Rectangle())
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .buttonStyle(.plain)
-        .accessibilityLabel(tab.title)
+        .accessibilityLabel(section.title)
+        .accessibilityIdentifier("tab-\(section.rawValue)")
     }
 }
+
 
 extension RecentItem {
     var dateLabel: String {

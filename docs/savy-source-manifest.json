@@ -1,0 +1,70 @@
+{
+  "source_commit": "87f2b8c535fd7069d9748159a78d3770247f1a2c",
+  "copied": [
+    {
+      "source": "ReminderModels.swift",
+      "source_sha256": "934c6118dc49710243479be42c0763bc6ffaa623d238011ec8cbe8659b735e0d"
+    },
+    {
+      "source": "ReminderFormView.swift",
+      "source_sha256": "435853fe63b624ac7038a2bb3aaf0b6e4c6c6b17b79104d1e831b93215785013"
+    },
+    {
+      "source": "ReminderScheduleView.swift",
+      "source_sha256": "ce4e7a57f844ff98ca950311e2427abcb8e91fede9dfdf19dd8829942e9a886a"
+    },
+    {
+      "source": "ReminderCalendarIntegration.swift",
+      "source_sha256": "0559028967e50eff1327c9a09f596dbae4854323ca37fdaa94667dd8d3eed6bf"
+    },
+    {
+      "source": "ReminderNotificationScheduler.swift",
+      "source_sha256": "97cc60d2b31e2a3f2607c7337a7e7a6dfdd1b2bb266367c47d5d8bdc43228391"
+    },
+    {
+      "source": "SavyReminderScreens.swift",
+      "source_sha256": "3d0d468d9aec13d62fb21e39d70b74f34a869d6d7254219ca86cec226d6035f4"
+    },
+    {
+      "source": "CalendarView.swift",
+      "source_sha256": "fa337f18e060201f7b4f8becd940aed4d95c407f4b331deca7660188ddce117f"
+    },
+    {
+      "source": "SavyTypography.swift",
+      "source_sha256": "4bfc593e3828059c71d6d763ee89d9f021510fa907723e94c18a540e3699c867"
+    },
+    {
+      "source": "ReminderBrandTheme.swift",
+      "source_sha256": "7c3c707a9d8c5dbc8d7f3ce71ea444fd4d8b44c80b560f2be8225d29e2ecbe04"
+    },
+    {
+      "source": "SavyWideLayout.swift",
+      "source_sha256": "91c297952d197c16ce6384e20b976410756da7cab90e459ba7e7ae4c66206d34"
+    },
+    {
+      "source": "SavyCarouselDetails.swift",
+      "source_sha256": "f1654f44f74e3a081b767d2ba68626eeb1eabba757f34532c37f220f8e48510b"
+    },
+    {
+      "source": "LocalImageStore.swift",
+      "source_sha256": "2e52b65c00ceef780f632983818ae29ee281463646ff5f05b49448eb2e88bd97"
+    },
+    {
+      "source": "SavyImageCache.swift",
+      "source_sha256": "62c30c452eab0299be1628f4e7493fb5deb6c0203ccfbe630e70f58e41debfef"
+    }
+  ],
+  "boundary": "Local CowboyAI code only. No SAVY data, services, cloud, or Harness writes.",
+  "verified_unchanged_components": [
+    {
+      "component": "SavyBandCard",
+      "source": "SavyReminderScreens.swift",
+      "sha256": "1bbd70cf1114f83ee279491ed0191ac198885b0e3953e2fef6f39680f62906e0"
+    },
+    {
+      "component": "RootHomeLayout",
+      "source": "RootView.swift",
+      "sha256": "8780421b4f03596dc69d88509457efacbe91838928ee6654513a1923cea2a211"
+    }
+  ]
+}

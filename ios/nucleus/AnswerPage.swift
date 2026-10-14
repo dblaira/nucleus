@@ -15,7 +15,7 @@ struct AnswerPage: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
-                SavyBackButton()
+                SavyBackButton(onDarkBackground: true)
                     .padding(.horizontal, SavyLayout.horizontalPadding)
                     .padding(.top, 8)
 
@@ -27,13 +27,18 @@ struct AnswerPage: View {
                         .accessibilityIdentifier("live-answer-error")
                 }
 
+                if model.isFrozen, let origin = model.currentOrigin {
+                    Text("Saved response · " + origin.capturedAt.formatted(date: .abbreviated, time: .shortened))
+                        .font(.footnote).foregroundStyle(CowboyTheme.tan).padding(.horizontal, 20)
+                }
                 if loaded {
+                    if let origin = model.currentOrigin { ConversationControls(origin: origin) }
                     LiveAnswerSection(
                         model: model,
                         selectRecord: { selectedRecord = $0 },
                         selectWords: { selectedWords = $0 }
                     )
-                } else {
+                } else if model.problem == nil {
                     ProgressView("reading your words…")
                         .tint(CowboyTheme.red)
                         .padding(SavyLayout.horizontalPadding)
@@ -41,7 +46,7 @@ struct AnswerPage: View {
             }
             .padding(.bottom, 40)
         }
-        .background(Color.white.ignoresSafeArea())
+        .background(CowboyTheme.navy.ignoresSafeArea())
         .environment(\.colorScheme, .light)
         .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .navigationBar)

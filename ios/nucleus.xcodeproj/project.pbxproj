@@ -8,47 +8,156 @@
 
 /* Begin PBXBuildFile section */
 		0AC90A26445ED166E9623D1F /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9B121C2C35D4DAE04D3B8C7 /* HomeView.swift */; };
+		0E50B63D2592EB352727867A /* ReminderModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2A410E9CA1CFCFE9FE2EB27 /* ReminderModels.swift */; };
+		13C584051913714BEDEC8FD6 /* CowboyUITestFixtures.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5383F1B4BEF16514C84E1A35 /* CowboyUITestFixtures.swift */; };
 		199D6C3E2CD579F707D6F211 /* RouteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F3D3EB3C39F81501DB24AEE /* RouteView.swift */; };
+		1A01F652912E35302FFAE265 /* PostEntryDraft.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11E306A4608C527E2AFF41C4 /* PostEntryDraft.swift */; };
 		219981E8B4F0A4B024B6FE13 /* LiveAnswerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2614CD6E9B378B1DC8F501A4 /* LiveAnswerView.swift */; };
+		2E83948AF9A58061B1E3D8DA /* SavyImageCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6D28F28FF3C09242B3EC8C9 /* SavyImageCache.swift */; };
+		3949528911E26749036817AB /* SavyFlowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25E903D70352D2500E3E8262 /* SavyFlowTests.swift */; };
 		4941C33F163607FF53EFA902 /* NucleusApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2B89B1F698F39DAE236DF18 /* NucleusApp.swift */; };
+		4A8B836EBDE9C8CCFB6406FD /* ReminderBrandTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0377086FC8B3761E388B83E9 /* ReminderBrandTheme.swift */; };
 		4DE0D5700E19BF26742F0278 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86C5FAF1126B7E046F1A98BA /* Theme.swift */; };
 		519E7C299FECB914836FC66B /* AskModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59CECC2AEC8748659A8DF22E /* AskModel.swift */; };
 		5548C54DF3E7B2D84C383BBA /* Themes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F42C43FF2164587344D44FC /* Themes.swift */; };
+		5704361D876301712021EBA6 /* CowboyStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C2A41B65F137FF8A8712D7E /* CowboyStorage.swift */; };
+		5B7A4A0D92CE07ABCE4ABC7C /* SavyFeatureSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24FECF759399370EE4E0B255 /* SavyFeatureSupport.swift */; };
 		5C07E40D9A9CB9BC80C2142C /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C082CD7AC0D6A881FAF686A9 /* RootView.swift */; };
+		60E8EDB96A287FBA7C546BCB /* Roboto-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 951E177F2407AE0AD1E48DBC /* Roboto-Medium.ttf */; };
 		659505C265FDFF8E17159694 /* CategoryPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEF10B511844B3A0FB2C1273 /* CategoryPage.swift */; };
+		66F00301C929A71198C691ED /* SavyCarouselDetails.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94FEC62361578704BB2F640F /* SavyCarouselDetails.swift */; };
 		6D518CAD813CEFB8B760F7A7 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2E89E3BD7CAFE24D5C7A916B /* Assets.xcassets */; };
+		72976199B45F699AEEC24916 /* ConversationControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = 479A753ED3345165BBA1ACCE /* ConversationControls.swift */; };
+		789016C9A177E9E2D4168A71 /* EntryDraftStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CBF1FEF5EED9B14AB6C361D /* EntryDraftStore.swift */; };
+		88F4B3E6E5D063EFE2ACAB13 /* SavyReminderScreens.swift in Sources */ = {isa = PBXBuildFile; fileRef = 275CF5D62C3461E307B00049 /* SavyReminderScreens.swift */; };
+		9519F1DEA587E97EA0324460 /* CalendarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCA2ECAF8A7B7443E2840C71 /* CalendarView.swift */; };
+		97A9F7E625F1CC5275251E30 /* BodoniModa-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 394A6A8147D054C1C211B4A6 /* BodoniModa-Regular.ttf */; };
+		98A0C4569DCDCFA11FF52C8D /* SavyTypography.swift in Sources */ = {isa = PBXBuildFile; fileRef = 036320B462CF63DFBC99C02D /* SavyTypography.swift */; };
+		9966D317482DD2C4055AC724 /* HomeAppearance.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA2359D98E13F7E6A452A43E /* HomeAppearance.swift */; };
+		9B3DBF393831B33BB5870C3C /* ReminderCalendarIntegration.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED000E97D8369118748843A3 /* ReminderCalendarIntegration.swift */; };
+		9DDB95C6857AA52FAB4B8668 /* ReminderStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D2FA94605E13E9115101307 /* ReminderStore.swift */; };
 		A0B0A9F3C1ED6F74FB664488 /* ComposerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46057AE018B023975DBC2553 /* ComposerView.swift */; };
 		A68942DD67CB7D968477C290 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A49B9580D73CCA7B3B9AE89 /* SettingsView.swift */; };
+		AEB77CE2460FE2D43338381E /* ConversationArchive.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20F1680126FCF4EE4F65763C /* ConversationArchive.swift */; };
+		B086E0429A343D119AB630E2 /* ReminderFormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5019F13E16A6E11552B1F3A0 /* ReminderFormView.swift */; };
 		B32B9F584FF020FCBB0CD883 /* AnswerPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEE50F95E6B2E40925CFDD7B /* AnswerPage.swift */; };
+		BF3AC2AE739EB86C900844B0 /* ReminderNotificationScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62DDFDA2D1B3951401D7FB85 /* ReminderNotificationScheduler.swift */; };
 		C277DCFE237D25936198B354 /* BuildStamp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 708E90DEBEC4B8919BF9FC3F /* BuildStamp.swift */; };
+		CC10730AC511A6DB461577F5 /* SavyWideLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3DB1BEDC684F69C12D068D6 /* SavyWideLayout.swift */; };
+		DCC54774D9921E43960578D4 /* EntryPersistenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B74A570AC0E8CCE2870436DE /* EntryPersistenceTests.swift */; };
 		E6FC9D7AD94CCFB08D74426B /* SavyShell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04B5D5E8432C964982CC8105 /* SavyShell.swift */; };
+		E748957249AE27433FB7F0E0 /* ReminderScheduleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16A17FA745429A06965232B6 /* ReminderScheduleView.swift */; };
 		EE78102B5A44FFE2530EF58F /* API.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EAF369E62451DEC45CAE0EA /* API.swift */; };
 		F4053AA7BE5A7208D083D75F /* AnswerParts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BA8FB81CA0A90B62CDA3E6F /* AnswerParts.swift */; };
+		F87E4DE32F10D7F7822AB950 /* LocalImageStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76C9D850E89EC9194FF34A89 /* LocalImageStore.swift */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		15A9C106F5C58B5EE8C3C168 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34CB49D31D3C26CF291D26A4 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 65707B96A71722421BF125F2;
+			remoteInfo = nucleus;
+		};
+		A3C6B647C59A7E8EC595A287 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34CB49D31D3C26CF291D26A4 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 65707B96A71722421BF125F2;
+			remoteInfo = nucleus;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
+		036320B462CF63DFBC99C02D /* SavyTypography.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavyTypography.swift; sourceTree = "<group>"; };
+		0377086FC8B3761E388B83E9 /* ReminderBrandTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReminderBrandTheme.swift; sourceTree = "<group>"; };
 		04B5D5E8432C964982CC8105 /* SavyShell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavyShell.swift; sourceTree = "<group>"; };
 		0BA8FB81CA0A90B62CDA3E6F /* AnswerParts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnswerParts.swift; sourceTree = "<group>"; };
+		11E306A4608C527E2AFF41C4 /* PostEntryDraft.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostEntryDraft.swift; sourceTree = "<group>"; };
+		16A17FA745429A06965232B6 /* ReminderScheduleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReminderScheduleView.swift; sourceTree = "<group>"; };
+		20F1680126FCF4EE4F65763C /* ConversationArchive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationArchive.swift; sourceTree = "<group>"; };
+		24FECF759399370EE4E0B255 /* SavyFeatureSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavyFeatureSupport.swift; sourceTree = "<group>"; };
+		25E903D70352D2500E3E8262 /* SavyFlowTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavyFlowTests.swift; sourceTree = "<group>"; };
 		2614CD6E9B378B1DC8F501A4 /* LiveAnswerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveAnswerView.swift; sourceTree = "<group>"; };
+		275CF5D62C3461E307B00049 /* SavyReminderScreens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavyReminderScreens.swift; sourceTree = "<group>"; };
 		2E89E3BD7CAFE24D5C7A916B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		2F42C43FF2164587344D44FC /* Themes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Themes.swift; sourceTree = "<group>"; };
+		394A6A8147D054C1C211B4A6 /* BodoniModa-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "BodoniModa-Regular.ttf"; sourceTree = "<group>"; };
+		3C2A41B65F137FF8A8712D7E /* CowboyStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CowboyStorage.swift; sourceTree = "<group>"; };
+		4273BBA50744BEF77358280D /* nucleusTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = nucleusTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		46057AE018B023975DBC2553 /* ComposerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComposerView.swift; sourceTree = "<group>"; };
+		479A753ED3345165BBA1ACCE /* ConversationControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationControls.swift; sourceTree = "<group>"; };
 		4A49B9580D73CCA7B3B9AE89 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		4EAF369E62451DEC45CAE0EA /* API.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = API.swift; sourceTree = "<group>"; };
+		5019F13E16A6E11552B1F3A0 /* ReminderFormView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReminderFormView.swift; sourceTree = "<group>"; };
+		5383F1B4BEF16514C84E1A35 /* CowboyUITestFixtures.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CowboyUITestFixtures.swift; sourceTree = "<group>"; };
 		59CECC2AEC8748659A8DF22E /* AskModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AskModel.swift; sourceTree = "<group>"; };
+		62DDFDA2D1B3951401D7FB85 /* ReminderNotificationScheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReminderNotificationScheduler.swift; sourceTree = "<group>"; };
 		708E90DEBEC4B8919BF9FC3F /* BuildStamp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuildStamp.swift; sourceTree = "<group>"; };
+		76C9D850E89EC9194FF34A89 /* LocalImageStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalImageStore.swift; sourceTree = "<group>"; };
+		7CBF1FEF5EED9B14AB6C361D /* EntryDraftStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntryDraftStore.swift; sourceTree = "<group>"; };
 		7F3D3EB3C39F81501DB24AEE /* RouteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteView.swift; sourceTree = "<group>"; };
 		86C5FAF1126B7E046F1A98BA /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		8C592D7C9FE3C9E3746A768E /* nucleus.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = nucleus.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		8D2FA94605E13E9115101307 /* ReminderStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReminderStore.swift; sourceTree = "<group>"; };
+		94FEC62361578704BB2F640F /* SavyCarouselDetails.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavyCarouselDetails.swift; sourceTree = "<group>"; };
+		951E177F2407AE0AD1E48DBC /* Roboto-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Roboto-Medium.ttf"; sourceTree = "<group>"; };
 		A9B121C2C35D4DAE04D3B8C7 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		B74A570AC0E8CCE2870436DE /* EntryPersistenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntryPersistenceTests.swift; sourceTree = "<group>"; };
+		BA2359D98E13F7E6A452A43E /* HomeAppearance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeAppearance.swift; sourceTree = "<group>"; };
 		BEE50F95E6B2E40925CFDD7B /* AnswerPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnswerPage.swift; sourceTree = "<group>"; };
 		BEF10B511844B3A0FB2C1273 /* CategoryPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryPage.swift; sourceTree = "<group>"; };
 		C082CD7AC0D6A881FAF686A9 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		C2A410E9CA1CFCFE9FE2EB27 /* ReminderModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReminderModels.swift; sourceTree = "<group>"; };
+		CB6F4CC5ACF5E614FAB562CF /* nucleusUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = nucleusUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		D6D28F28FF3C09242B3EC8C9 /* SavyImageCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavyImageCache.swift; sourceTree = "<group>"; };
 		DC68FEDFA4602FFE4F18F341 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		E2B89B1F698F39DAE236DF18 /* NucleusApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NucleusApp.swift; sourceTree = "<group>"; };
+		E3DB1BEDC684F69C12D068D6 /* SavyWideLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavyWideLayout.swift; sourceTree = "<group>"; };
+		ED000E97D8369118748843A3 /* ReminderCalendarIntegration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReminderCalendarIntegration.swift; sourceTree = "<group>"; };
+		FCA2ECAF8A7B7443E2840C71 /* CalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
+		0F0C315723ADB91F4B55C4C7 /* SavyFeatures */ = {
+			isa = PBXGroup;
+			children = (
+				FCA2ECAF8A7B7443E2840C71 /* CalendarView.swift */,
+				20F1680126FCF4EE4F65763C /* ConversationArchive.swift */,
+				479A753ED3345165BBA1ACCE /* ConversationControls.swift */,
+				3C2A41B65F137FF8A8712D7E /* CowboyStorage.swift */,
+				5383F1B4BEF16514C84E1A35 /* CowboyUITestFixtures.swift */,
+				7CBF1FEF5EED9B14AB6C361D /* EntryDraftStore.swift */,
+				BA2359D98E13F7E6A452A43E /* HomeAppearance.swift */,
+				76C9D850E89EC9194FF34A89 /* LocalImageStore.swift */,
+				11E306A4608C527E2AFF41C4 /* PostEntryDraft.swift */,
+				0377086FC8B3761E388B83E9 /* ReminderBrandTheme.swift */,
+				ED000E97D8369118748843A3 /* ReminderCalendarIntegration.swift */,
+				5019F13E16A6E11552B1F3A0 /* ReminderFormView.swift */,
+				C2A410E9CA1CFCFE9FE2EB27 /* ReminderModels.swift */,
+				62DDFDA2D1B3951401D7FB85 /* ReminderNotificationScheduler.swift */,
+				16A17FA745429A06965232B6 /* ReminderScheduleView.swift */,
+				8D2FA94605E13E9115101307 /* ReminderStore.swift */,
+				94FEC62361578704BB2F640F /* SavyCarouselDetails.swift */,
+				24FECF759399370EE4E0B255 /* SavyFeatureSupport.swift */,
+				D6D28F28FF3C09242B3EC8C9 /* SavyImageCache.swift */,
+				275CF5D62C3461E307B00049 /* SavyReminderScreens.swift */,
+				036320B462CF63DFBC99C02D /* SavyTypography.swift */,
+				E3DB1BEDC684F69C12D068D6 /* SavyWideLayout.swift */,
+				DC79E79969CB35F1BF6D1892 /* Fonts */,
+			);
+			path = SavyFeatures;
+			sourceTree = "<group>";
+		};
+		145F9E1F75DF5B9906F5397C /* nucleusTests */ = {
+			isa = PBXGroup;
+			children = (
+				B74A570AC0E8CCE2870436DE /* EntryPersistenceTests.swift */,
+			);
+			path = nucleusTests;
+			sourceTree = "<group>";
+		};
 		37941606FF26E812C51F64B2 /* nucleus */ = {
 			isa = PBXGroup;
 			children = (
@@ -70,6 +179,7 @@
 				4A49B9580D73CCA7B3B9AE89 /* SettingsView.swift */,
 				86C5FAF1126B7E046F1A98BA /* Theme.swift */,
 				2F42C43FF2164587344D44FC /* Themes.swift */,
+				0F0C315723ADB91F4B55C4C7 /* SavyFeatures */,
 			);
 			path = nucleus;
 			sourceTree = "<group>";
@@ -78,6 +188,8 @@
 			isa = PBXGroup;
 			children = (
 				37941606FF26E812C51F64B2 /* nucleus */,
+				145F9E1F75DF5B9906F5397C /* nucleusTests */,
+				DD3569334109CEA4D8DE797B /* nucleusUITests */,
 				880C1801A52937680183DBBF /* Products */,
 			);
 			sourceTree = "<group>";
@@ -86,13 +198,50 @@
 			isa = PBXGroup;
 			children = (
 				8C592D7C9FE3C9E3746A768E /* nucleus.app */,
+				4273BBA50744BEF77358280D /* nucleusTests.xctest */,
+				CB6F4CC5ACF5E614FAB562CF /* nucleusUITests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		DC79E79969CB35F1BF6D1892 /* Fonts */ = {
+			isa = PBXGroup;
+			children = (
+				394A6A8147D054C1C211B4A6 /* BodoniModa-Regular.ttf */,
+				951E177F2407AE0AD1E48DBC /* Roboto-Medium.ttf */,
+			);
+			path = Fonts;
+			sourceTree = "<group>";
+		};
+		DD3569334109CEA4D8DE797B /* nucleusUITests */ = {
+			isa = PBXGroup;
+			children = (
+				25E903D70352D2500E3E8262 /* SavyFlowTests.swift */,
+			);
+			path = nucleusUITests;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		5EB58D9623D3F183CAB3D028 /* nucleusTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 7BD6E05CB250F0A18A1BC25C /* Build configuration list for PBXNativeTarget "nucleusTests" */;
+			buildPhases = (
+				A7AA25A31F83137D6DC6DCD4 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				7D6D871EE1F4F139C6953CCC /* PBXTargetDependency */,
+			);
+			name = nucleusTests;
+			packageProductDependencies = (
+			);
+			productName = nucleusTests;
+			productReference = 4273BBA50744BEF77358280D /* nucleusTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		65707B96A71722421BF125F2 /* nucleus */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 2AD0E561DEC659E964D433BF /* Build configuration list for PBXNativeTarget "nucleus" */;
@@ -111,6 +260,24 @@
 			productReference = 8C592D7C9FE3C9E3746A768E /* nucleus.app */;
 			productType = "com.apple.product-type.application";
 		};
+		DD65A70A3B2A7BB036512621 /* nucleusUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 97690ED89BC96B7EF93593A7 /* Build configuration list for PBXNativeTarget "nucleusUITests" */;
+			buildPhases = (
+				347CD7EBDA0C99C7ACBC6411 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				1A32DCDBD535362C44C0EEA9 /* PBXTargetDependency */,
+			);
+			name = nucleusUITests;
+			packageProductDependencies = (
+			);
+			productName = nucleusUITests;
+			productReference = CB6F4CC5ACF5E614FAB562CF /* nucleusUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -120,9 +287,18 @@
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
+					5EB58D9623D3F183CAB3D028 = {
+						DevelopmentTeam = 7FKUS5M5QS;
+						ProvisioningStyle = Automatic;
+					};
 					65707B96A71722421BF125F2 = {
 						DevelopmentTeam = 7FKUS5M5QS;
 						ProvisioningStyle = Automatic;
+					};
+					DD65A70A3B2A7BB036512621 = {
+						DevelopmentTeam = 7FKUS5M5QS;
+						ProvisioningStyle = Automatic;
+						TestTargetID = 65707B96A71722421BF125F2;
 					};
 				};
 			};
@@ -141,6 +317,8 @@
 			projectRoot = "";
 			targets = (
 				65707B96A71722421BF125F2 /* nucleus */,
+				5EB58D9623D3F183CAB3D028 /* nucleusTests */,
+				DD65A70A3B2A7BB036512621 /* nucleusUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -151,12 +329,30 @@
 			buildActionMask = 2147483647;
 			files = (
 				6D518CAD813CEFB8B760F7A7 /* Assets.xcassets in Resources */,
+				97A9F7E625F1CC5275251E30 /* BodoniModa-Regular.ttf in Resources */,
+				60E8EDB96A287FBA7C546BCB /* Roboto-Medium.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		347CD7EBDA0C99C7ACBC6411 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3949528911E26749036817AB /* SavyFlowTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A7AA25A31F83137D6DC6DCD4 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DCC54774D9921E43960578D4 /* EntryPersistenceTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		E0774D689C1F1D5D6CF43B96 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -166,14 +362,36 @@
 				F4053AA7BE5A7208D083D75F /* AnswerParts.swift in Sources */,
 				519E7C299FECB914836FC66B /* AskModel.swift in Sources */,
 				C277DCFE237D25936198B354 /* BuildStamp.swift in Sources */,
+				9519F1DEA587E97EA0324460 /* CalendarView.swift in Sources */,
 				659505C265FDFF8E17159694 /* CategoryPage.swift in Sources */,
 				A0B0A9F3C1ED6F74FB664488 /* ComposerView.swift in Sources */,
+				AEB77CE2460FE2D43338381E /* ConversationArchive.swift in Sources */,
+				72976199B45F699AEEC24916 /* ConversationControls.swift in Sources */,
+				5704361D876301712021EBA6 /* CowboyStorage.swift in Sources */,
+				13C584051913714BEDEC8FD6 /* CowboyUITestFixtures.swift in Sources */,
+				789016C9A177E9E2D4168A71 /* EntryDraftStore.swift in Sources */,
+				9966D317482DD2C4055AC724 /* HomeAppearance.swift in Sources */,
 				0AC90A26445ED166E9623D1F /* HomeView.swift in Sources */,
 				219981E8B4F0A4B024B6FE13 /* LiveAnswerView.swift in Sources */,
+				F87E4DE32F10D7F7822AB950 /* LocalImageStore.swift in Sources */,
 				4941C33F163607FF53EFA902 /* NucleusApp.swift in Sources */,
+				1A01F652912E35302FFAE265 /* PostEntryDraft.swift in Sources */,
+				4A8B836EBDE9C8CCFB6406FD /* ReminderBrandTheme.swift in Sources */,
+				9B3DBF393831B33BB5870C3C /* ReminderCalendarIntegration.swift in Sources */,
+				B086E0429A343D119AB630E2 /* ReminderFormView.swift in Sources */,
+				0E50B63D2592EB352727867A /* ReminderModels.swift in Sources */,
+				BF3AC2AE739EB86C900844B0 /* ReminderNotificationScheduler.swift in Sources */,
+				E748957249AE27433FB7F0E0 /* ReminderScheduleView.swift in Sources */,
+				9DDB95C6857AA52FAB4B8668 /* ReminderStore.swift in Sources */,
 				5C07E40D9A9CB9BC80C2142C /* RootView.swift in Sources */,
 				199D6C3E2CD579F707D6F211 /* RouteView.swift in Sources */,
+				66F00301C929A71198C691ED /* SavyCarouselDetails.swift in Sources */,
+				5B7A4A0D92CE07ABCE4ABC7C /* SavyFeatureSupport.swift in Sources */,
+				2E83948AF9A58061B1E3D8DA /* SavyImageCache.swift in Sources */,
+				88F4B3E6E5D063EFE2ACAB13 /* SavyReminderScreens.swift in Sources */,
 				E6FC9D7AD94CCFB08D74426B /* SavyShell.swift in Sources */,
+				98A0C4569DCDCFA11FF52C8D /* SavyTypography.swift in Sources */,
+				CC10730AC511A6DB461577F5 /* SavyWideLayout.swift in Sources */,
 				A68942DD67CB7D968477C290 /* SettingsView.swift in Sources */,
 				4DE0D5700E19BF26742F0278 /* Theme.swift in Sources */,
 				5548C54DF3E7B2D84C383BBA /* Themes.swift in Sources */,
@@ -182,7 +400,37 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		1A32DCDBD535362C44C0EEA9 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 65707B96A71722421BF125F2 /* nucleus */;
+			targetProxy = 15A9C106F5C58B5EE8C3C168 /* PBXContainerItemProxy */;
+		};
+		7D6D871EE1F4F139C6953CCC /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 65707B96A71722421BF125F2 /* nucleus */;
+			targetProxy = A3C6B647C59A7E8EC595A287 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		02F1AFF4A5E5C4111B979969 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.adamblair.nucleusTests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/nucleus.app/nucleus";
+			};
+			name = Release;
+		};
 		34A6A1F209A9D8BBDB135786 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -295,6 +543,23 @@
 			};
 			name = Debug;
 		};
+		53F7F3E12CD60DD7E181161F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.adamblair.nucleusTests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/nucleus.app/nucleus";
+			};
+			name = Debug;
+		};
 		79C706B50F3DCAD8635A3589 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -354,6 +619,40 @@
 			};
 			name = Release;
 		};
+		7AF29D46D600788575343121 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.adamblair.nucleusUITests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = nucleus;
+			};
+			name = Debug;
+		};
+		EBFDF808E7BAD4C6931529B0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.adamblair.nucleusUITests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = nucleus;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -371,6 +670,24 @@
 			buildConfigurations = (
 				42D43A1EBCFC8541B9582D4A /* Debug */,
 				79C706B50F3DCAD8635A3589 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		7BD6E05CB250F0A18A1BC25C /* Build configuration list for PBXNativeTarget "nucleusTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				53F7F3E12CD60DD7E181161F /* Debug */,
+				02F1AFF4A5E5C4111B979969 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		97690ED89BC96B7EF93593A7 /* Build configuration list for PBXNativeTarget "nucleusUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7AF29D46D600788575343121 /* Debug */,
+				EBFDF808E7BAD4C6931529B0 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;

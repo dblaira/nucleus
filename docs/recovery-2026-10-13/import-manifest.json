@@ -1,0 +1,270 @@
+{
+  "source": "/Users/adamblair/.codex/worktrees/cowboyai-savy-native",
+  "baseline": "5d307ba7eb90dc7f4278e853087167032e8a0841",
+  "files": [
+    {
+      "path": "ios/build-phone.sh",
+      "sha256": "c69486139ae44101f1206ec3f0cfe321e48041e38659a44747fb5a50506b1644"
+    },
+    {
+      "path": "ios/project.yml",
+      "sha256": "886ca49c91c7070a74ee6196662e6b118305b66f6d8ed979de3b2a5c63d14209"
+    },
+    {
+      "path": "ios/README.md",
+      "sha256": "4fb8d36303ba9a8513c485a5fa2524a003fe9670c00582a6f65475b4f9309706"
+    },
+    {
+      "path": "ios/nucleusUITests/SavyFlowTests.swift",
+      "sha256": "f87499f5a92d9b5579add995bbc6cbd62facb3659649ae2ca667a90afafafcf2"
+    },
+    {
+      "path": "ios/nucleus.xcodeproj/project.pbxproj",
+      "sha256": "ffa1d80e4a4fdbc3649dbf4159a517d52286862f08b1a10c26a2d894f651aa0b"
+    },
+    {
+      "path": "ios/nucleusTests/EntryPersistenceTests.swift",
+      "sha256": "c5dbdf67cbcc44abd3191324ea98728af04481a230cee01cdefc0e50f72ce512"
+    },
+    {
+      "path": "ios/nucleus/AskModel.swift",
+      "sha256": "50d7244e56788c14a9faa2cf1b1fed38b040415e33129367223d56834c25967e"
+    },
+    {
+      "path": "ios/nucleus/SettingsView.swift",
+      "sha256": "e877e662ffc3e61e774b857ebae5b9ff30360faf9ae43c629c3a7db670c1f00d"
+    },
+    {
+      "path": "ios/nucleus/BuildStamp.swift",
+      "sha256": "f1e4c42d3c4e35f2633fdefdee621b04012238b00910584f4fee4eb2b31d7e72"
+    },
+    {
+      "path": "ios/nucleus/SavyShell.swift",
+      "sha256": "8467721582dbb090557ef81a99e48ba37aed22a4e160417a306f1ad8bf2c822b"
+    },
+    {
+      "path": "ios/nucleus/AnswerParts.swift",
+      "sha256": "03023a266d563d7682c4de25a3a958ca938d0f7db541f160b26674dc93c2988b"
+    },
+    {
+      "path": "ios/nucleus/Themes.swift",
+      "sha256": "b06febe9c982fa9440198d5600295fb3ad31d00c7b61a81b578355e82e2a66d5"
+    },
+    {
+      "path": "ios/nucleus/HomeView.swift",
+      "sha256": "7f255298d6221d5a0d972dd7c799f27e1b1539cc0948a7cc47a8517d4090e07b"
+    },
+    {
+      "path": "ios/nucleus/RootView.swift",
+      "sha256": "2f2df24e2124c56b07473b9deed882a1eafc5a3bffd8d74bdc4705eca36ab8cb"
+    },
+    {
+      "path": "ios/nucleus/NucleusApp.swift",
+      "sha256": "3446f2f41ca00d557d0b91e80f1e29909593ffcf797d11a11b96aa8b01a67e8f"
+    },
+    {
+      "path": "ios/nucleus/RouteView.swift",
+      "sha256": "9f62e1b05cce19c1e224f7c22a1cdef2ae9d42561726d4e9c52279aa474baa27"
+    },
+    {
+      "path": "ios/nucleus/AnswerPage.swift",
+      "sha256": "40b854ee44557857aa7a2783ea887ac16c8c08e6391f6d9e27e74272661697bf"
+    },
+    {
+      "path": "ios/nucleus/ComposerView.swift",
+      "sha256": "316dd31b781c51f703bb1e2e5dda85a6207333c4bc9aa6155e70b854bc54edd2"
+    },
+    {
+      "path": "ios/nucleus/API.swift",
+      "sha256": "b6c2a9f522e962659695b1eba555097edfac6b8e589c7e790e586d8670648c55"
+    },
+    {
+      "path": "ios/nucleus/LiveAnswerView.swift",
+      "sha256": "f6a4694fc964d1a34e3ad9a4f3fc6132f90c9732cd5a80920715d485d4af8cff"
+    },
+    {
+      "path": "ios/nucleus/Theme.swift",
+      "sha256": "74cb31ffce74ebd8e08a56ee7892c5f8f82a27aed1f3460c1acca0e42c16840e"
+    },
+    {
+      "path": "ios/nucleus/Info.plist",
+      "sha256": "a6dbc8a867df60e75f584632557abe3a9691a5d26c6a4de266490d366740fa74"
+    },
+    {
+      "path": "ios/nucleus/CategoryPage.swift",
+      "sha256": "9c07dd54f903f29fc453f7399829ac9c30ed8271963bca761df6a0d303c496ad"
+    },
+    {
+      "path": "ios/nucleus/Assets.xcassets/Contents.json",
+      "sha256": "0fd49ba3c3585c709678e0046a821c3c60685ec7063720d30d3a3448be3a208b"
+    },
+    {
+      "path": "ios/nucleus/SavyFeatures/CowboyUITestFixtures.swift",
+      "sha256": "a82e8bc91a8364d18898d395d8c27971303085468a8afc331bc0fc32ebae659a"
+    },
+    {
+      "path": "ios/nucleus/SavyFeatures/LocalImageStore.swift",
+      "sha256": "dc1bd65fd1f696ab4f529ec693860d190c81b40acea62ca91a386888ed0de9e3"
+    },
+    {
+      "path": "ios/nucleus/SavyFeatures/CowboyStorage.swift",
+      "sha256": "eedb3561e90e2cceb999bd9fc7886eb5c9653cbd925d75c50b8e51c2e484c2c2"
+    },
+    {
+      "path": "ios/nucleus/SavyFeatures/ConversationArchive.swift",
+      "sha256": "817e8ddc6ce99c7c1b1614f5778ca0abadf1564c8ccdee7a6e496bf7ab96054a"
+    },
+    {
+      "path": "ios/nucleus/SavyFeatures/SavyReminderScreens.swift",
+      "sha256": "259803e53ee415ad8a6af480bc9c26d965d37f7d3c55735171a553b1f1c2327d"
+    },
+    {
+      "path": "ios/nucleus/SavyFeatures/EntryDraftStore.swift",
+      "sha256": "c6b7ad289a7fb41bb59779540af1d35563305668efd75ab2679d2325747a1c20"
+    },
+    {
+      "path": "ios/nucleus/SavyFeatures/ReminderModels.swift",
+      "sha256": "204a5e2af54d235bd37c36822e6aef2c1c862f55abcc10752e3b6a9f9ca6ccae"
+    },
+    {
+      "path": "ios/nucleus/SavyFeatures/ReminderScheduleView.swift",
+      "sha256": "68e68fb65a1f60caf8d513a7216c541f70c011af3a6ab5ecc7955767d8a32ec7"
+    },
+    {
+      "path": "ios/nucleus/SavyFeatures/SavyWideLayout.swift",
+      "sha256": "7319900c4e4eb9e8755f11bc8fb0489986754c233e99ae7b59a4f4ad4c9bea85"
+    },
+    {
+      "path": "ios/nucleus/SavyFeatures/SavyTypography.swift",
+      "sha256": "327fcc511d073954bbaf28314d281d5f773e4c4f08b2322a32b95c682487a4e5"
+    },
+    {
+      "path": "ios/nucleus/SavyFeatures/SavyImageCache.swift",
+      "sha256": "3d9328513894af5bd36e9c917b73bb20ee1e8164cc5661d30c9d34cd3ab422f0"
+    },
+    {
+      "path": "ios/nucleus/SavyFeatures/ConversationControls.swift",
+      "sha256": "9fd7fcf3de1e4e02c4a2576345e61a5df0f9eacf8e7285f9e5017a6b7d4d57ff"
+    },
+    {
+      "path": "ios/nucleus/SavyFeatures/ReminderNotificationScheduler.swift",
+      "sha256": "8f11e5cc119232aa49f9a16d7b1852238c650b3c7f88eebf0e5885ee8b03937c"
+    },
+    {
+      "path": "ios/nucleus/SavyFeatures/ReminderStore.swift",
+      "sha256": "9295e01f85e1eab11d17686425738aef19c3ecdce38d4ed6a46d7bfd21babfd3"
+    },
+    {
+      "path": "ios/nucleus/SavyFeatures/ReminderCalendarIntegration.swift",
+      "sha256": "6b39f11c7ea1431c79f1f0615b68c7118fc777f715d15d35416ad4a3c33d2376"
+    },
+    {
+      "path": "ios/nucleus/SavyFeatures/SavyFeatureSupport.swift",
+      "sha256": "e6d04e146d4e014807478d21a0a01c07cf474251f7f4f76ba212e982082e2f5b"
+    },
+    {
+      "path": "ios/nucleus/SavyFeatures/ReminderFormView.swift",
+      "sha256": "370b4370240c3a0048d037d1b68479182f6e41189971293750851758370f5d2d"
+    },
+    {
+      "path": "ios/nucleus/SavyFeatures/HomeAppearance.swift",
+      "sha256": "6f391b800d7f84c5739a96a250a24b594ba511391f22b0ff8c360f3c10974648"
+    },
+    {
+      "path": "ios/nucleus/SavyFeatures/ReminderBrandTheme.swift",
+      "sha256": "7ae33caaafdf90efa3c0f2eb4603d3421771780c95e6fd3bf8bfca1037d76295"
+    },
+    {
+      "path": "ios/nucleus/SavyFeatures/PostEntryDraft.swift",
+      "sha256": "c093d9199f96c69e26bd5c4e579056a8646ef4acf43604516e71dd09bd3b9cad"
+    },
+    {
+      "path": "ios/nucleus/SavyFeatures/SavyCarouselDetails.swift",
+      "sha256": "a9cdc56efb644d8903fddebb65dc4b733e56c8b26380f10cdcba10afc2b50360"
+    },
+    {
+      "path": "ios/nucleus/SavyFeatures/CalendarView.swift",
+      "sha256": "e826b36eaa190e10bb025150b68dc04dcf593a63f25dae620885e2f731d0fab1"
+    },
+    {
+      "path": "ios/nucleus/SavyFeatures/Fonts/Roboto-Medium.ttf",
+      "sha256": "2879a5ecb7fbfa13a7fc3e2cdd7fecbf73aa45e91b541dfdfa2c442eed0aac21"
+    },
+    {
+      "path": "ios/nucleus/SavyFeatures/Fonts/BodoniModa-Regular.ttf",
+      "sha256": "550f5e34ee0a828d7941b1fe9bc58b34e5260d3f33a61532e6d0a0114e79a5cf"
+    },
+    {
+      "path": "ios/nucleus/Assets.xcassets/CowboyHat.imageset/hat.png",
+      "sha256": "750ed36d535e9535b89c868c5644c03fdf90ebbaefd120b437d4498f9e6e3874"
+    },
+    {
+      "path": "ios/nucleus/Assets.xcassets/CowboyHat.imageset/Contents.json",
+      "sha256": "e0176f39925f6556d87a41cab5264748acd5a6dfdb2ba3a8b7aeeed35ad7277a"
+    },
+    {
+      "path": "ios/nucleus/Assets.xcassets/CowboyHat.imageset/hat-thinner.png",
+      "sha256": "4b46ca95e6d18e31b4f5391db6162fd67267879eb372a06becb1ae52ad224a0b"
+    },
+    {
+      "path": "ios/nucleus/Assets.xcassets/Header.imageset/header.jpg",
+      "sha256": "49954dd8ecf4c7bed24ee3c215001eb5f6d654ccf9d7074f9206ce843ba3d5ac"
+    },
+    {
+      "path": "ios/nucleus/Assets.xcassets/Header.imageset/Contents.json",
+      "sha256": "245a89728f3b3522764ed8e9a9df0c7acb09998c285765c7887c216a2dbcc45b"
+    },
+    {
+      "path": "ios/nucleus/Assets.xcassets/AppIcon.appiconset/Contents.json",
+      "sha256": "3725fefca1cc2f15dcff52b03b7db47884c8141e5be1d4e559367b76117f8c48"
+    },
+    {
+      "path": "ios/nucleus/Assets.xcassets/AppIcon.appiconset/AppIcon.png",
+      "sha256": "36c2f62f9f2a75f3f171cc62305ac8d86c74e1f4ad3b611d55861b414bc97205"
+    },
+    {
+      "path": "ios/nucleus/Assets.xcassets/HomeMountainLandscape.imageset/mountain-original.jpeg",
+      "sha256": "a823fe128523facbbb182407ef50abddca93310bac6606ecdd8544ab961ccf9e"
+    },
+    {
+      "path": "ios/nucleus/Assets.xcassets/HomeMountainLandscape.imageset/Contents.json",
+      "sha256": "ec8d7e6419ac26524cc7619763052f4af83b7edc0c5642e0cc940358b2987316"
+    },
+    {
+      "path": "ios/nucleus/Assets.xcassets/RemindersBeachLandscape.imageset/Contents.json",
+      "sha256": "f94aef3a871f7d26f28d0eee54dbc5acd6942d06ba8b65cf72b3a2ab7c044306"
+    },
+    {
+      "path": "ios/nucleus/Assets.xcassets/RemindersBeachLandscape.imageset/beach-original.png",
+      "sha256": "169a16c15c2bbc68b917bbfca55426644e8024947981492a40a7e28c576ca391"
+    },
+    {
+      "path": "ios/nucleus/Assets.xcassets/ActionsCarLandscape.imageset/car-original.jpeg",
+      "sha256": "e577687e90deeebb6683bb2477e28109341f6d29543ee2d5f158533f4faab05c"
+    },
+    {
+      "path": "ios/nucleus/Assets.xcassets/ActionsCarLandscape.imageset/Contents.json",
+      "sha256": "8763d4080cb5135ab5bdac95c5cf56cf87f60a108ae138c94f0921a6de64b124"
+    },
+    {
+      "path": "ios/nucleus.xcodeproj/project.xcworkspace/contents.xcworkspacedata",
+      "sha256": "7f3b00b5c3fdb45242d7b87e1e5c4e25d1fa8129a16c94295ecc4e8ea2235c5f"
+    },
+    {
+      "path": "ios/nucleus.xcodeproj/xcshareddata/xcschemes/nucleus.xcscheme",
+      "sha256": "c507cb39f7a4ff77fadeb42c3e523195bd4c8642210a2490e6c19119ebbf8007"
+    },
+    {
+      "path": "docs/adam-savy-decisions.md",
+      "sha256": "dac3d8cfb17b8d5d212117a11f492228b57577cb5e022a10d0f5a0aa3695b8e7"
+    },
+    {
+      "path": "docs/savy-source-manifest.json",
+      "sha256": "fe45aabde0c73d28595b113714f354d382b2a1048a75adb142d1f22b9c82f6e3"
+    },
+    {
+      "path": "scripts/copy-savy-native.py",
+      "sha256": "25ec7ab2cf01c3d8239eadf1a4522e9eb7a839e68ffd73d04b2af6a518e8bdaf"
+    }
+  ]
+}

@@ -1,159 +1,235 @@
 import SwiftUI
 
-/// SAVY's home (EditorialHomeView): the wordmark hero, the carousel, then the sections under it. Here the carousel
-/// is the latest answers and the sections are his three lines. Adam, 2026-09-14: "don't use greatest leverage above
-/// the carousel ... just don't give them as much room as Savy gives ... all three options should be available to
-/// press on".
+private struct HomeConversation: Identifiable {
+    let id: String
+    let answer: String
+    let origin: ConversationOrigin?
+    let metadata: Reminder
+    var pinned: Bool { metadata.pinned }
+}
+
 struct HomeView: View {
     var model: AskModel
+    @Environment(HomeAppearance.self) private var appearance
     let openAnswer: (String) -> Void
     let openCategory: (Category) -> Void
     let openConnection: () -> Void
+    let openOrigin: (ConversationOrigin) -> Void
+    let openRoute: () -> Void
+    let openAppearance: () -> Void
+    @State private var editingDetails: ConversationOrigin?
+    @State private var armedConversationID: String?
+
+    private var cards: [HomeConversation] {
+        let records = model.archive.recentRecords(for: NucleusAPI.base, recent: model.recent)
+        var values = records.map { record in
+            HomeConversation(id: record.latest.questionID, answer: record.displayed.answerPreview,
+                             origin: record.displayed, metadata: model.archive.metadata(for: record.displayed))
+        }
+        let savedIDs = Set(values.map(\.id))
+        for item in model.recent where !savedIDs.contains(item.id) {
+            var metadata = Reminder()
+            metadata.title = item.question
+            metadata.createdAt = Date(timeIntervalSince1970: item.finished)
+            // No fabricated response or metadata while the saved response is loading.
+            values.append(HomeConversation(id: item.id, answer: "", origin: nil, metadata: metadata))
+        }
+        let dates = Dictionary(model.recent.map { ($0.id, $0.finished) }, uniquingKeysWith: max)
+        return values.sorted {
+            let left = dates[$0.id] ?? $0.metadata.createdAt.timeIntervalSince1970
+            let right = dates[$1.id] ?? $1.metadata.createdAt.timeIntervalSince1970
+            return left == right ? $0.id < $1.id : left > right
+        }
+    }
+
+    private var carouselCards: [HomeConversation] {
+        let values = cards
+        let pins = model.archive.records(for: NucleusAPI.base).filter { $0.pinned != nil }.map { $0.latest.questionID }
+        let byID = Dictionary(values.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+        return pins.compactMap { byID[$0] } + values.filter { !$0.pinned }
+    }
 
     var body: some View {
         GeometryReader { proxy in
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
                     header(topInset: proxy.safeAreaInsets.top)
-
-                    carousel
-
-                    ForEach(Category.allCases) { category in
-                        Button {
-                            openCategory(category)
-                        } label: {
-                            CategoryRow(category: category, count: model.recent(in: category).count)
-                        }
-                        .buttonStyle(.plain)
-                        .accessibilityIdentifier("homeCategory-\(category.rawValue)")
+                    VStack(alignment: .leading, spacing: 0) {
+                        carousel
+                        Color.clear.frame(height: 28).accessibilityHidden(true)
+                        recentResponses
+                        categories
                     }
-                }
-                .padding(.bottom, 40)
+                    .padding(.bottom, 40)
+                    .frame(maxWidth: .infinity,
+                           minHeight: max(0, proxy.size.height + proxy.safeAreaInsets.top - SavyLayout.heroHeight),
+                           alignment: .top)
+                    .background {
+                        GeometryReader { landscape in
+                            appearance.background
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: landscape.size.width,
+                                       height: proxy.size.height + proxy.safeAreaInsets.top)
+                                .clipped()
+                                .offset(y: max(0, -landscape.frame(in: .named("homeLandscapeScroll")).minY))
+                        }
+                        .clipped()
+                        .allowsHitTesting(false)
+                        .accessibilityHidden(true)
+                    }
+                }.padding(.bottom, 24)
             }
-            .accessibilityIdentifier("editorialHomeScroll")
+            .coordinateSpace(name: "homeLandscapeScroll")
             .ignoresSafeArea(edges: .top)
             .refreshable { await model.loadRecent() }
+            .accessibilityIdentifier("editorialHomeScroll")
         }
-        .background(Color.white.ignoresSafeArea())
-        .environment(\.colorScheme, .light)
+        .background(CowboyTheme.navy.ignoresSafeArea())
+        .sheet(item: $editingDetails) { origin in
+            ConversationDetailsEditor(origin: origin)
+        }
     }
 
     private func header(topInset: CGFloat) -> some View {
-        HStack(alignment: .top, spacing: 0) {
-            // Cowboy AI's name on screen is the hat, no letters: the CowboyAI app's header (CowboyHeader).
-            // Adam, 2026-09-14: "You know what cowboy I looked like before? The hat icon"
-            Image("CowboyHat")
-                .renderingMode(.template)
-                .resizable()
-                .scaledToFill()
-                .frame(width: 188, height: 106)
-                .clipped()
-                .foregroundStyle(CowboyTheme.tan)
+        HStack(alignment: .top) {
+            Text("CowboyAI")
+                .font(CowboyTheme.editorialSerif(56, relativeTo: .largeTitle))
+                .foregroundStyle(.white)
                 .accessibilityLabel("Cowboy AI")
-
-            Spacer(minLength: 0)
-
-            SavyMenuButton(openConnection: openConnection)
-                .padding(.top, (106 - SavyLayout.accountMenuButtonSize) / 2)
+            Spacer()
+            SavyMenuButton(openConnection: openConnection, openRoute: openRoute, openAppearance: openAppearance)
+                .padding(.top, 8)
         }
         .padding(.horizontal, SavyLayout.horizontalPadding)
         .padding(.top, topInset + SavyLayout.heroContentTopPadding)
-        .frame(maxWidth: .infinity, minHeight: SavyLayout.heroHeight, maxHeight: SavyLayout.heroHeight, alignment: .topLeading)
-        .background(CowboyTheme.navy)
-        .overlay(alignment: .bottom) {
-            Rectangle()
-                .fill(CowboyTheme.red)
-                .frame(height: SavyLayout.heroDividerHeight)
+        .frame(height: SavyLayout.heroHeight, alignment: .topLeading)
+        .frame(maxWidth: .infinity, alignment: .topLeading)
+        .background(alignment: .topLeading) {
+            ZStack(alignment: .topLeading) {
+                CowboyTheme.navy
+                Image("CowboyHat")
+                    .renderingMode(.template)
+                    .resizable()
+                    .scaledToFit()
+                    .foregroundStyle(.white.opacity(0.18))
+                    .frame(width: 220, height: 220)
+                    .offset(x: 30, y: topInset - 18)
+                    .allowsHitTesting(false)
+                    .accessibilityHidden(true)
+            }
         }
+        .clipped()
+        .overlay(alignment: .bottom) { Rectangle().fill(CowboyTheme.red).frame(height: 2) }
     }
 
-    /// The latest answers, in SAVY's home carousel (greatestLeverageSection without its title band).
     private var carousel: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 16) {
-                ForEach(Array(model.recent.prefix(10).enumerated()), id: \.element.id) { index, item in
-                    Button {
-                        openAnswer(item.id)
-                    } label: {
-                        HomeFeedCard(item: item, alignment: index.isMultiple(of: 2) ? .leading : .center)
+            HStack(alignment: .top, spacing: 16) {
+                ForEach(carouselCards) { item in
+                    Button { open(item) } label: {
+                        SavyReminderBandCard(
+                            reminder: item.metadata,
+                            bg: Brand.card,
+                            fg: SavyTheme.deepNavy,
+                            accent: Brand.crimson,
+                            detail: item.pinned ? .full : .minimal,
+                            showsSchedule: false,
+                            showsCompleteMetadata: false,
+                            previewHeight: item.pinned ? RootHomeLayout.carouselCardHeight : nil,
+                            carouselDetails: SavyCarouselDetail.values(for: item.metadata)
+                        )
+                        .frame(width: RootHomeLayout.carouselCardWidth, alignment: .topLeading)
                     }
-                    .buttonStyle(.plain)
-                    .accessibilityIdentifier("latest-\(item.id)")
+                        .buttonStyle(.plain)
+                        .accessibilityIdentifier("latest-\(item.id)")
+                        .contextMenu {
+                            if let origin = item.origin {
+                                Button("Details", systemImage: "slider.horizontal.3") { editingDetails = origin }
+                                Button(item.pinned ? "Unpin" : "Pin", systemImage: "pin") { _ = model.archive.togglePin(origin) }
+                            }
+                        }
                 }
             }
-            .padding(.horizontal, SavyLayout.carouselHorizontalPadding)
-            .padding(.vertical, 16)
-        }
-        .accessibilityIdentifier("latestCarousel")
-        .background(Color.white)
-    }
-}
-
-/// SAVY's home carousel card (HomeFeedRowView).
-private struct HomeFeedCard: View {
-    let item: RecentItem
-    let alignment: Alignment
-
-    var body: some View {
-        VStack(alignment: horizontalAlignment, spacing: 8) {
-            Text(item.question)
-                .font(CowboyTheme.carouselSerif(SavyLayout.carouselCardTitleFontSize))
-                .lineLimit(3)
-                .minimumScaleFactor(0.85)
-                .foregroundStyle(CowboyTheme.ink)
-                .frame(maxWidth: .infinity, alignment: alignment)
-
-            Text(item.dateLabel)
-                .font(.system(size: 12, weight: .heavy))
-                .tracking(1.4)
-                .foregroundStyle(CowboyTheme.red)
-                .multilineTextAlignment(.leading)
-                .frame(maxWidth: .infinity, alignment: .leading)
-        }
-        .padding(.horizontal, SavyLayout.pinnedEntryTrailingInset)
-        .padding(.vertical, 16)
-        .frame(width: SavyLayout.carouselCardWidth, height: SavyLayout.carouselCardHeight, alignment: .topLeading)
-        .background(CowboyTheme.cream, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-        .overlay {
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .stroke(Color.black.opacity(0.08), lineWidth: 1)
-        }
+            .padding(.horizontal, RootHomeLayout.carouselHorizontalPadding)
+            .padding(.top, RootHomeLayout.carouselTopPadding)
+            .padding(.bottom, RootHomeLayout.carouselBottomPadding)
+        }.accessibilityIdentifier("latestCarousel")
     }
 
-    private var horizontalAlignment: HorizontalAlignment {
-        alignment == .center ? .center : .leading
+    private var recentResponses: some View {
+        LazyVStack(alignment: .leading, spacing: 12) {
+            Text("Recent responses")
+                .font(CowboyTheme.carouselSerif(25)).foregroundStyle(.white)
+                .padding(12).frame(maxWidth: .infinity, alignment: .leading)
+                .background(CowboyTheme.navy.opacity(0.9), in: RoundedRectangle(cornerRadius: 8))
+            if cards.isEmpty {
+                Text(model.loadingRecent ? "Opening conversations…" : "Use the lightning button to ask CowboyAI a question.")
+                    .foregroundStyle(CowboyTheme.ink).padding(20)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(.white, in: RoundedRectangle(cornerRadius: 8))
+            }
+            if let problem = model.recentProblem {
+                Text(problem).font(.callout).foregroundStyle(CowboyTheme.ink).padding(16)
+                    .background(CowboyTheme.tan, in: RoundedRectangle(cornerRadius: 8))
+            }
+            ForEach(cards) { item in
+                Button { open(item) } label: {
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text(item.metadata.title).font(.system(size: 14, weight: .semibold))
+                            .lineLimit(2).foregroundStyle(.white.opacity(0.85))
+                        Text(item.answer.isEmpty ? "Open the conversation" : item.answer)
+                            .font(CowboyTheme.carouselSerif(22)).lineLimit(4).foregroundStyle(.white)
+                            .accessibilityIdentifier("recentResponse-\(item.id)")
+                        HStack {
+                            if item.pinned { Label("Pinned", systemImage: "pin.fill") }
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                        }.font(.system(size: 11, weight: .semibold)).foregroundStyle(.white.opacity(0.8))
+                    }
+                    .multilineTextAlignment(.leading).padding(18)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(CowboyTheme.red, in: RoundedRectangle(cornerRadius: 8))
+                }
+                .buttonStyle(.plain)
+                .contextMenu {
+                    if let origin = item.origin {
+                        Button("Details", systemImage: "slider.horizontal.3") { editingDetails = origin }
+                        Button(item.pinned ? "Unpin" : "Pin", systemImage: "pin") { _ = model.archive.togglePin(origin) }
+                    }
+                }
+            }
+        }.padding(.horizontal, 16).padding(.bottom, 20)
     }
-}
 
-/// SAVY's home section row (HomeContentSectionView), with less room so all three fit on the first screen.
-private struct CategoryRow: View {
-    let category: Category
-    let count: Int
+    private func conversationActions(_ item: HomeConversation) -> [SavySwipeAction] {
+        guard let origin = item.origin else { return [] }
+        return [
+            SavySwipeAction(title: "Details", icon: "slider.horizontal.3", bg: Brand.tileBlue) { editingDetails = origin },
+            SavySwipeAction(title: item.pinned ? "Unpin" : "Pin", icon: "pin", bg: Brand.tileBlue) {
+                _ = model.archive.togglePin(origin)
+            },
+        ]
+    }
 
-    var body: some View {
+    private var categories: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(category.eyebrow)
-                .font(.system(size: 12, weight: .heavy))
-                .tracking(1.8)
-                .foregroundStyle(CowboyTheme.red)
-
-            Text(category.title)
-                .font(CowboyTheme.carouselSerif(22))
-                .lineSpacing(1)
-                .foregroundStyle(CowboyTheme.ink)
-                .lineLimit(2)
-                .minimumScaleFactor(0.78)
-                .fixedSize(horizontal: false, vertical: true)
-
-            Text("\(count) ITEMS")
-                .font(.system(size: 12, weight: .heavy))
-                .tracking(1.4)
-                .foregroundStyle(Color.black.opacity(0.45))
-        }
-        .padding(.horizontal, SavyLayout.horizontalPadding)
-        .padding(.vertical, 12)
-        .frame(maxWidth: .infinity, alignment: .topLeading)
-        .background(Color.white)
-        .contentShape(Rectangle())
+            ForEach(Category.allCases) { category in
+                Button { openCategory(category) } label: {
+                    HStack {
+                        Text(category.eyebrow).font(.system(size: 12, weight: .heavy))
+                        Spacer()
+                        Text("\(model.recent(in: category).count)")
+                        Image(systemName: "chevron.right")
+                    }.foregroundStyle(CowboyTheme.ink).padding(15).background(.white, in: RoundedRectangle(cornerRadius: 8))
+                }.buttonStyle(.plain).accessibilityIdentifier("homeCategory-\(category.rawValue)")
+            }
+        }.padding(.horizontal, 16)
     }
+
+    private func open(_ item: HomeConversation) {
+        if item.pinned, let origin = item.origin { openOrigin(origin) }
+        else { openAnswer(item.id) }
+    }
+
 }

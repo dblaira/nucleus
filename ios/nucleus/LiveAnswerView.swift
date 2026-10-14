@@ -82,7 +82,7 @@ struct LiveAnswerSection: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(20)
-            .background(CowboyTheme.cream, in: RoundedRectangle(cornerRadius: 18))
+            .background(Color.white, in: RoundedRectangle(cornerRadius: 8))
             .padding(.horizontal, 18)
             .padding(.top, 24)
 
@@ -92,7 +92,7 @@ struct LiveAnswerSection: View {
                 answer
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(20)
-                    .background(CowboyTheme.cream, in: RoundedRectangle(cornerRadius: 18))
+                    .background(CowboyTheme.red, in: RoundedRectangle(cornerRadius: 8))
                     .padding(.horizontal, 18)
                     .padding(.top, 24)
                     .padding(.bottom, 8)
@@ -111,16 +111,16 @@ struct LiveAnswerSection: View {
         if let a = current?.answer {
             VStack(alignment: .leading, spacing: 14) {
                 if a.status == "answered" {
-                    kicker("ANSWER")
+                    kicker("ANSWER", color: .white)
                     if let n = current?.asked_before, n > 0 {
                         Text("asked before · \(n) \(n == 1 ? "time" : "times")")
                             .font(.system(size: 11, weight: .bold))
                             .tracking(1)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(.white.opacity(0.8))
                     }
                     Text(parts.firstLine)
                         .font(CowboyTheme.readingSerif(22, relativeTo: .body))
-                        .foregroundStyle(.black)
+                        .foregroundStyle(.white)
                         .lineSpacing(5)
                         .fixedSize(horizontal: false, vertical: true)
                         .textSelection(.enabled)
@@ -129,16 +129,16 @@ struct LiveAnswerSection: View {
                     ForEach(Array(parts.other.enumerated()), id: \.offset) { _, block in
                         Text(block)
                             .font(CowboyTheme.readingSerif(22, relativeTo: .body))
-                            .foregroundStyle(.black)
+                            .foregroundStyle(.white)
                             .lineSpacing(5)
                             .fixedSize(horizontal: false, vertical: true)
                             .textSelection(.enabled)
                     }
                 } else {
-                    kicker(a.status.replacingOccurrences(of: "_", with: " ").uppercased())
+                    kicker(a.status.replacingOccurrences(of: "_", with: " ").uppercased(), color: .white)
                     Text(a.text ?? a.gate_reason ?? "")
                         .font(CowboyTheme.readingSerif(22, relativeTo: .body))
-                        .foregroundStyle(CowboyTheme.red)
+                        .foregroundStyle(.white)
                         .lineSpacing(5)
                         .fixedSize(horizontal: false, vertical: true)
                         .textSelection(.enabled)
@@ -147,7 +147,7 @@ struct LiveAnswerSection: View {
             }
         } else {
             ProgressView("reading your words…")
-                .tint(CowboyTheme.red)
+                .tint(.white)
                 .accessibilityIdentifier("live-answer-progress")
         }
     }
@@ -159,38 +159,38 @@ struct LiveAnswerSection: View {
     private func answerForm(_ m: AskResponse.Form) -> some View {
         if let explanation = m.explanation {
             VStack(alignment: .leading, spacing: 12) {
-                kicker("EXPLANATION")
+                kicker("EXPLANATION", color: .white)
                 Text(explanation)
                     .font(CowboyTheme.readingSerif(22, relativeTo: .body))
-                    .foregroundStyle(.black)
+                    .foregroundStyle(.white)
                     .lineSpacing(5)
                     .fixedSize(horizontal: false, vertical: true)
                     .textSelection(.enabled)
                     .accessibilityIdentifier("form-explanation")
                 if let ex = current?.explanation, ex.status == "shown", m.ask == nil {
-                    Thumbs(state: model.explanationThumb ?? ex.thumb) { up in
+                    Thumbs(state: model.explanationThumb ?? ex.thumb, disabled: model.isFrozen, tint: .white) { up in
                         Task { await model.thumbExplanation(up: up) }
                     }
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(20)
-            .background(CowboyTheme.cream, in: RoundedRectangle(cornerRadius: 18))
+            .background(CowboyTheme.red, in: RoundedRectangle(cornerRadius: 8))
             .padding(.horizontal, 18)
             .padding(.top, 24)
         }
 
         VStack(alignment: .leading, spacing: 14) {
-            kicker("ANSWER")
+            kicker("ANSWER", color: .white)
             if let n = current?.asked_before, n > 0 {
                 Text("asked before · \(n) \(n == 1 ? "time" : "times")")
                     .font(.system(size: 11, weight: .bold))
                     .tracking(1)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.white.opacity(0.8))
             }
             Text(m.answer)
                 .font(CowboyTheme.readingSerif(22, relativeTo: .body))
-                .foregroundStyle(.black)
+                .foregroundStyle(.white)
                 .lineSpacing(5)
                 .fixedSize(horizontal: false, vertical: true)
                 .textSelection(.enabled)
@@ -198,16 +198,16 @@ struct LiveAnswerSection: View {
             VStack(alignment: .leading, spacing: 0) {
                 ForEach(Array(m.sections.enumerated()), id: \.offset) { index, section in
                     if index > 0 { Divider().padding(.leading, 34) }
-                    middleRow(symbol: section.symbol) {
+                    middleRow(symbol: section.symbol, onResponse: true) {
                         Text(section.head)
                             .font(.body.weight(.semibold))
-                            .foregroundStyle(.black)
+                            .foregroundStyle(.white)
                             .fixedSize(horizontal: false, vertical: true)
                         VStack(alignment: .leading, spacing: 10) {
                             ForEach(Array(section.lines.enumerated()), id: \.offset) { _, line in
                                 Text(line)
                                     .font(.body)
-                                    .foregroundStyle(.black)
+                                    .foregroundStyle(.white)
                                     .fixedSize(horizontal: false, vertical: true)
                                     .textSelection(.enabled)
                             }
@@ -216,10 +216,10 @@ struct LiveAnswerSection: View {
                 }
                 if let ask = m.ask {
                     Divider().padding(.leading, 34)
-                    middleRow(symbol: "arrow.turn.down.right") {
+                    middleRow(symbol: "arrow.turn.down.right", onResponse: true) {
                         Text(ask)
                             .font(.body.weight(.semibold))
-                            .foregroundStyle(.black)
+                            .foregroundStyle(.white)
                             .fixedSize(horizontal: false, vertical: true)
                         moreUnderTheQuestion
                     }
@@ -229,17 +229,17 @@ struct LiveAnswerSection: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(20)
-        .background(CowboyTheme.cream, in: RoundedRectangle(cornerRadius: 18))
+        .background(CowboyTheme.red, in: RoundedRectangle(cornerRadius: 8))
         .padding(.horizontal, 18)
         .padding(.top, 24)
         .padding(.bottom, 8)
     }
 
-    private func middleRow<Content: View>(symbol: String, @ViewBuilder content: () -> Content) -> some View {
+    private func middleRow<Content: View>(symbol: String, onResponse: Bool = false, @ViewBuilder content: () -> Content) -> some View {
         HStack(alignment: .firstTextBaseline, spacing: 10) {
             Image(systemName: symbol)
                 .font(.system(size: 16))
-                .foregroundStyle(CowboyTheme.red)
+                .foregroundStyle(onResponse ? .white : CowboyTheme.red)
                 .frame(width: 24)
             VStack(alignment: .leading, spacing: 0) { content() }
                 .frame(minHeight: UIFont.preferredFont(forTextStyle: .body).lineHeight * 3, alignment: .top)
@@ -255,7 +255,7 @@ struct LiveAnswerSection: View {
             ForEach(current?.more ?? []) { entry in
                 Text(entry.text)
                     .font(.body)
-                    .foregroundStyle(.black)
+                    .foregroundStyle(.white)
                     .fixedSize(horizontal: false, vertical: true)
                     .textSelection(.enabled)
             }
@@ -271,10 +271,10 @@ struct LiveAnswerSection: View {
                 }), axis: .vertical)
                 .lineLimit(3, reservesSpace: true)
                 .font(.body)
-                .foregroundStyle(.black)
-                .tint(CowboyTheme.red)
+                .foregroundStyle(.white)
+                .tint(.white)
                 .submitLabel(.send)
-                .disabled(model.loggingMore)
+                .disabled(model.loggingMore || model.isFrozen)
                 .accessibilityIdentifier("middle-more")
         }
     }
@@ -284,16 +284,16 @@ struct LiveAnswerSection: View {
         if let ex = current?.explanation {
             if ex.status == "pending" {
                 ProgressView("writing what this says about your question…")
-                    .tint(CowboyTheme.red)
+                    .tint(.white)
             } else if ex.status == "shown", let text = ex.text {
                 Text(text)
                     .font(CowboyTheme.readingSerif(22, relativeTo: .body))
-                    .foregroundStyle(.black)
+                    .foregroundStyle(.white)
                     .lineSpacing(5)
                     .fixedSize(horizontal: false, vertical: true)
                     .textSelection(.enabled)
                     .accessibilityIdentifier("live-explanation-text")
-                Thumbs(state: model.explanationThumb ?? ex.thumb) { up in
+                Thumbs(state: model.explanationThumb ?? ex.thumb, disabled: model.isFrozen, tint: .white) { up in
                     Task { await model.thumbExplanation(up: up) }
                 }
             }
@@ -343,7 +343,7 @@ struct LiveAnswerSection: View {
                                 secondary: record.why.isEmpty && record.row != nil ? record.stamp : record.why
                             ) {
                                 if let row = record.row {
-                                    Thumbs(state: model.thumbState(row)) { up in
+                                    Thumbs(state: model.thumbState(row), disabled: model.isFrozen) { up in
                                         Task { await model.thumb(row, up: up) }
                                     }
                                 } else {
@@ -377,7 +377,7 @@ struct LiveAnswerSection: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(20)
-            .background(CowboyTheme.cream, in: RoundedRectangle(cornerRadius: 18))
+            .background(CowboyTheme.tan, in: RoundedRectangle(cornerRadius: 8))
             .padding(.horizontal, 18)
             .padding(.top, 24)
         }
@@ -386,16 +386,16 @@ struct LiveAnswerSection: View {
     private func sectionTitle(_ title: String) -> some View {
         Text(title)
             .font(.system(size: 20, weight: .black))
-            .foregroundStyle(.black)
+            .foregroundStyle(.white)
             .frame(minHeight: 80)
             .padding(.horizontal, 18)
     }
 
-    private func kicker(_ title: String) -> some View {
+    private func kicker(_ title: String, color: Color = CowboyTheme.red) -> some View {
         Text(title)
             .font(.system(size: 11, weight: .heavy))
             .tracking(1.4)
-            .foregroundStyle(CowboyTheme.red)
+            .foregroundStyle(color)
     }
 }
 
@@ -445,12 +445,12 @@ private struct MeaningCard<Corner: View>: View {
         .padding(.horizontal, 17)
         .padding(.vertical, 16)
         .frame(width: 282, height: cardHeight, alignment: .topLeading)
-        .background(CowboyTheme.cream, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .background(CowboyTheme.tan, in: RoundedRectangle(cornerRadius: 8))
         .overlay {
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
+            RoundedRectangle(cornerRadius: 8)
                 .stroke(.black.opacity(0.08), lineWidth: 1)
         }
-        .contentShape(RoundedRectangle(cornerRadius: 12))
+        .contentShape(RoundedRectangle(cornerRadius: 8))
         .accessibilityHint("Opens the complete words")
     }
 }
@@ -466,6 +466,8 @@ extension MeaningCard where Corner == AnyView {
 /// His thumb on a row or on the meaning, in the app's own red-tinted button style.
 struct Thumbs: View {
     let state: Int?
+    var disabled = false
+    var tint: Color = CowboyTheme.red
     let choose: (Bool) -> Void
 
     var body: some View {
@@ -486,7 +488,8 @@ struct Thumbs: View {
             .accessibilityLabel("Thumbs down")
         }
         .buttonStyle(.borderless)
-        .tint(CowboyTheme.red)
+        .tint(tint)
+        .disabled(disabled)
     }
 }
 
@@ -527,14 +530,14 @@ struct RecordDetail: View {
                                 .padding(.top, 4)
                         }
                         if let row = record.row {
-                            Thumbs(state: model.thumbState(row)) { up in
+                            Thumbs(state: model.thumbState(row), disabled: model.isFrozen) { up in
                                 Task { await model.thumb(row, up: up) }
                             }
                         }
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(20)
-                    .background(CowboyTheme.cream, in: RoundedRectangle(cornerRadius: 18))
+                    .background(CowboyTheme.tan, in: RoundedRectangle(cornerRadius: 8))
                     .accessibilityIdentifier("meaning-detail-words")
                 }
                 .padding(20)
@@ -589,7 +592,7 @@ struct WordsDetail: View {
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(20)
-                    .background(CowboyTheme.cream, in: RoundedRectangle(cornerRadius: 18))
+                    .background(CowboyTheme.tan, in: RoundedRectangle(cornerRadius: 8))
                     .accessibilityIdentifier("meaning-detail-words")
                 }
                 .padding(20)

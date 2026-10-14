@@ -25,3 +25,35 @@ targets:
         INFOPLIST_FILE: nucleus/Info.plist
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         SWIFT_STRICT_CONCURRENCY: minimal
+
+  nucleusTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources: [nucleusTests]
+    dependencies:
+      - target: nucleus
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+  nucleusUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources: [nucleusUITests]
+    dependencies:
+      - target: nucleus
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+schemes:
+  nucleus:
+    build:
+      targets:
+        nucleus: all
+        nucleusTests: [test]
+        nucleusUITests: [test]
+    test:
+      targets:
+        - nucleusTests
+        - nucleusUITests
+      environmentVariables:
+        COWBOYAI_UI_TEST: "1"

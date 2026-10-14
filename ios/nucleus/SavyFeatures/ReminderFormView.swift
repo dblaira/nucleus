@@ -1,0 +1,966 @@
+// Adapted from SAVY-iOS 87f2b8c; runs only inside CowboyAI. No SAVY service or data access.
+import SwiftUI
+import PhotosUI
+import UIKit
+import MessageUI
+
+/// The entry form. One shared Action-style capture flow for Reminder, Action, and Event entries:
+/// the top selector changes where the saved item lands, while the field order stays identical.
+struct ReminderFormView: View {
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.scenePhase) private var scenePhase
+
+    let existing: Reminder?
+    let existingTags: [String]
+    private let connectionMode = false
+    let origin: ConversationOrigin?
+    private let conversationID: String?
+    private let conversationTheme: PostTheme?
+    @Environment(ConversationArchive.self) private var archive
+    @State private var showingOrigin: ConversationOrigin?
+    private let initialEntry: Reminder
+    private let recoveryID: String
+    var onSaveAttempt: ((Reminder) -> Bool)?
+    var onSave: (Reminder) -> Void
+
+    @State private var r: Reminder
+    @State private var showsSchedule = false
+    @State private var invitationEntry: Reminder?
+    @State private var isSaving = false
+    @State private var saveErrorMessage = "Your writing is still here. Please try saving again."
+    @State private var tagDraft = ""
+    @State private var photoItem: PhotosPickerItem?
+    @State private var pickedImage: UIImage?
+    @State private var recoveryImageData: Data?
+    @State private var committed = false
+    @State private var cancelled = false
+    @State private var showSaved = false
+    @State private var saveFailed = false
+    // One cursor for the whole form. The keyboard row moves it; the boxes report it.
+    @FocusState private var focusedField: EntryField?
+    // The Decide boxes are UIKit text views, which SwiftUI's focus cannot move. This holds
+    // which Decide box has the cursor; the keyboard row reads both through `activeField`.
+    @State private var decideFocus: Int?
+    @State private var subtasks: [Subtask]
+    // Editable questions and answers are shared by Post themes and the fixed Connection theme.
+    @State private var postDraft: PostEntryDraft
+
+    private let listChoices = ["Learning", "Leverage", "Delegation", "Inspiration", "Risk", "Health"]
+
+    init(initialKind: ReminderKind = .reminder, origin: ConversationOrigin? = nil, existing: Reminder?, existingTags: [String] = [], recoveryDraft: EntryRecoveryDraft? = nil, conversationID: String? = nil, onSaveAttempt: ((Reminder) -> Bool)? = nil, onSave: @escaping (Reminder) -> Void) {
+        self.existing = existing
+        self.existingTags = existingTags
+        self.origin = origin
+        self.conversationID = conversationID
+        let fixedTheme: PostTheme?
+        if conversationID != nil, let theme = origin?.response?.question.theme {
+            fixedTheme = PostTheme(id: theme.id, name: theme.name, questions: theme.fields.map {
+                PostThemeQuestion(prompt: $0.prompt, symbol: $0.symbol ?? "text.bubble")
+            })
+        } else { fixedTheme = nil }
+        self.conversationTheme = fixedTheme
+        self.onSaveAttempt = onSaveAttempt
+        self.onSave = onSave
+        recoveryID = recoveryDraft?.id ?? conversationID.map { "conversation:" + $0 } ?? EntryRecoveryDraft.reminderKey(existing: existing, kind: initialKind, origin: origin)
+        var base = existing ?? Reminder()
+        if existing == nil {
+            base.kind = initialKind
+            base.origin = origin
+            if initialKind == .event { base.dueDate = Date() }
+        }
+        self.initialEntry = base
+        let recovered = recoveryDraft ?? EntryDraftStore.shared.draft(for: recoveryID)
+        if case .reminder(let writing) = recovered?.contents {
+            _r = State(initialValue: writing.entry)
+            _subtasks = State(initialValue: writing.subtasks)
+            _postDraft = State(initialValue: writing.questions)
+            _tagDraft = State(initialValue: writing.tagDraft)
+            _recoveryImageData = State(initialValue: writing.imageData)
+            _pickedImage = State(initialValue: writing.imageData.flatMap(UIImage.init(data:)) ?? LocalImageStore.load(writing.entry.imageLocalPath))
+            return
+        }
+        _r = State(initialValue: base)
+        _subtasks = State(initialValue: base.subtasks)
+        _postDraft = State(initialValue: PostEntryDraft(entry: base, fixedTheme: fixedTheme))
+        _pickedImage = State(initialValue: LocalImageStore.load(base.imageLocalPath))
+    }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                if !connectionMode && conversationID == nil {
+                    Section {
+                        Picker(EntryFormCopy.destinationPickerTitle, selection: $r.kind) {
+                            ForEach(ReminderKind.allCases.filter { $0 != .post }) { Text($0.segmentLabel).tag($0) }
+                        }
+                        .pickerStyle(.segmented)
+                    }
+                    .listRowBackground(Brand.card)
+                }
+
+                if let source = r.origin {
+                    Section("From this conversation") {
+                        Button { showingOrigin = source } label: {
+                            Label(source.question, systemImage: "arrow.uturn.backward")
+                                .lineLimit(3).foregroundStyle(CowboyTheme.red)
+                        }.accessibilityIdentifier("entryOrigin")
+                    }.listRowBackground(CowboyTheme.tan)
+                }
+                unifiedEntrySections
+            }
+            .scrollContentBackground(.hidden)
+            .background(SavyTheme.contentBackground.ignoresSafeArea())
+            .accessibilityIdentifier(connectionMode ? "connectionEntryForm" : "sharedEntryForm")
+            .tint(Brand.crimson)
+            // The keyboard row sits on top of the keyboard while any box has the cursor.
+            .safeAreaInset(edge: .bottom, spacing: 0) {
+                if Self.showsKeyboardRow, activeField != nil { keyboardRow }
+            }
+            // Header mirrors the Title as you type — the type name until the first character, then
+            // the live title at full size. Compact icon buttons leave it more room.
+            .savyPageTitle(r.title.trimmingCharacters(in: .whitespaces).isEmpty ? entryLabel : r.title,
+                           color: SavyTheme.deepNavy)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button { cancel() } label: {
+                        Image(systemName: "xmark.circle").font(.system(size: 22))
+                    }
+                    .tint(.black)
+                    .accessibilityLabel("Cancel")
+                    .accessibilityIdentifier("entryCancel")
+                    .disabled(isSaving)
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button { commit() } label: {
+                        SaveDiskIcon(size: 24)
+                    }
+                    .accessibilityLabel("Save")
+                    .accessibilityIdentifier("entrySave")
+                    .disabled(isSaving)
+                }
+            }
+            .toolbarBackground(Color.white, for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
+            .toolbarColorScheme(.light, for: .navigationBar)
+            .onChange(of: photoItem) { _, item in loadPhoto(item) }
+            .onChange(of: recoveryContents) { _, _ in saveRecoveryDraft(force: true) }
+            .onChange(of: scenePhase) { _, phase in
+                if phase != .active { saveRecoveryDraft() }
+            }
+            // Auto-save: if the form is swiped away (not via Cancel) and has content, keep it.
+            .onDisappear { saveRecoveryDraft(); autosaveIfNeeded() }
+            .alert("Couldn't save \(entryLabel)", isPresented: $saveFailed) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                Text(saveErrorMessage)
+            }
+        }
+        .sheet(item: $showingOrigin) { source in
+            NavigationStack { ArchivedAnswerPage(origin: source, archive: archive) }
+        }
+        .sheet(isPresented: $showsSchedule) {
+            ReminderScheduleView(entry: r, onSave: {
+                r = $0
+                r.scheduleSyncVersion = 1
+            }, onRemove: {
+                r.schedule = nil
+                r.scheduleSyncVersion = 1
+                r.dueDate = nil
+                r.dueTime = nil
+                r.endTime = nil
+                r.deferDate = nil
+                r.repeatRule = .none
+            })
+        }
+        .sheet(item: $invitationEntry, onDismiss: { dismiss() }) { entry in
+            ScheduleInvitationComposer(reminder: entry, organizerEmail: entry.schedule?.organizerEmail ?? "") { _, error in
+                if let error { NotificationScheduler.status.errorMessage = error.localizedDescription }
+                invitationEntry = nil
+            }
+        }
+        .overlay { if showSaved { savedToast } }
+        // Keep Connection writing onscreen until Save succeeds or the user chooses Cancel.
+        .interactiveDismissDisabled(isSaving || (!committed && (initialEntry.schedule != nil || (hasContent && (connectionMode || r.schedule != nil)))))
+        .preferredColorScheme(.light)
+        .savyMacFormSheet()
+    }
+
+    /// Brief confirmation shown when the Save button is tapped (not on swipe-to-save).
+    private var savedToast: some View {
+        ZStack {
+            Color.black.opacity(0.12).ignoresSafeArea()
+            VStack(spacing: 12) {
+                Image(systemName: "checkmark.circle.fill")
+                    .font(.system(size: 46)).foregroundStyle(Brand.crimson)
+                Text("Saved").font(Brand.serif(30)).foregroundStyle(.black)
+            }
+            .padding(.horizontal, 40).padding(.vertical, 30)
+            .background(Color.white, in: RoundedRectangle(cornerRadius: 22))
+            .shadow(color: .black.opacity(0.2), radius: 28, y: 12)
+        }
+        .transition(.opacity)
+    }
+
+    // MARK: - Shared entry flow
+
+    private var entryLabel: String { conversationID != nil ? "Conversation details" : (connectionMode ? "Connection" : r.kind.label) }
+    private var hasDecideQuestions: Bool { true }
+
+    @ViewBuilder private var unifiedEntrySections: some View {
+        // Every entry leads with its theme and Decide questions, followed by shared fields.
+        if hasDecideQuestions {
+            postThemeSection
+            postDecideSection
+        }
+
+        Section {
+            // Grow with content so every character stays visible — no mid-word "..." cutoff.
+            TextField(EntryFormCopy.wantPrompt, text: $r.title, axis: .vertical)
+                .lineLimit(1...)
+                .textFieldStyle(.plain)
+                .fixedSize(horizontal: false, vertical: true)
+                .focused($focusedField, equals: .title)
+                .accessibilityIdentifier("Title")
+                .disabled(conversationID != nil)
+            TextField(EntryFormCopy.whenPrompt, text: whenIAmBinding, axis: .vertical)
+                .lineLimit(1...)
+                .textFieldStyle(.plain)
+                .fixedSize(horizontal: false, vertical: true)
+                .focused($focusedField, equals: .whenIAm)
+                .accessibilityIdentifier("WhenIAm")
+            TextField(EntryFormCopy.donePrompt, text: $r.outcome, axis: .vertical)
+                .lineLimit(1...)
+                .textFieldStyle(.plain)
+                .fixedSize(horizontal: false, vertical: true)
+                .focused($focusedField, equals: .doneLooksLike)
+                .accessibilityIdentifier("DoneLooksLike")
+        } header: { sectionHeader(EntryFormCopy.delegateHeader) }
+        .listRowBackground(Brand.card)
+
+        stepsSection
+
+        organizationSection
+
+        Section {
+            priorityGroup
+            energyGroup
+        } header: { sectionHeader(EntryFormCopy.chooseHeader) }
+        .listRowBackground(Brand.card)
+
+        if conversationID == nil {
+            Section {
+                Button { showsSchedule = true } label: {
+                    HStack(spacing: 12) {
+                        Label("Date", systemImage: "calendar")
+                            .foregroundStyle(.black)
+                        Spacer()
+                        Text(r.whenLabel ?? "Choose a date")
+                            .foregroundStyle(Brand.crimson)
+                            .multilineTextAlignment(.trailing)
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundStyle(Brand.crimson)
+                    }
+                }
+                .accessibilityIdentifier("openSchedule")
+                if r.schedule?.invitees?.isEmpty == false {
+                    Button { commit(sendInvitations: true) } label: {
+                        Label("Save & Send Invitations", systemImage: "envelope")
+                    }
+                    .disabled(isSaving)
+                    .accessibilityIdentifier("sendScheduleInvitations")
+                }
+            } header: { sectionHeader(EntryFormCopy.scheduleHeader) }
+            .listRowBackground(Brand.card)
+        }
+
+        Section {
+            imageRow
+        } header: { sectionHeader("Details") }
+        .listRowBackground(Brand.card)
+    }
+
+    // MARK: - Post: Theme + Decide
+
+    private var selectedPostTheme: PostTheme {
+        postDraft.theme
+    }
+
+    private var postThemeSection: some View {
+        Section {
+            if connectionMode || conversationTheme != nil {
+                Label(selectedPostTheme.name, systemImage: selectedPostTheme.questions.first?.symbol ?? "lightbulb")
+                    .foregroundStyle(Brand.crimson)
+                    .accessibilityIdentifier("connectionTheme")
+            } else {
+                Picker(selection: Binding(get: { postDraft.themeID }, set: { postDraft.selectTheme($0) })) {
+                    ForEach(PostThemeCatalog.themes) { theme in
+                        Label {
+                            Text(theme.name)
+                        } icon: {
+                            Image(uiImage: postThemeIcon(theme))
+                        }
+                        .tag(theme.id)
+                    }
+                } label: {
+                    Label(EntryFormCopy.themeTitle, systemImage: "list.bullet")
+                }
+                .pickerStyle(.menu)
+                .tint(Brand.crimson)
+                .accessibilityIdentifier("PostTheme")
+            }
+        } header: { sectionHeader(EntryFormCopy.themeHeader) }
+        .listRowBackground(Brand.card)
+    }
+
+    private func postThemeIcon(_ theme: PostTheme) -> UIImage {
+        let configuration = UIImage.SymbolConfiguration(pointSize: 16, weight: .regular)
+        let symbol = theme.questions.first?.symbol ?? "list.bullet"
+        // Native menus otherwise retint symbols; preserve the exact form icon color.
+        return (UIImage(systemName: symbol, withConfiguration: configuration) ?? UIImage())
+            .withTintColor(UIColor(Brand.crimson), renderingMode: .alwaysOriginal)
+    }
+
+    private var postDecideSection: some View {
+        Section {
+            ForEach(postDraft.answers.indices, id: \.self) { index in
+                let question = selectedPostTheme.questions.indices.contains(index) ? selectedPostTheme.questions[index] : nil
+                HStack(alignment: .firstTextBaseline, spacing: 10) {
+                    Image(systemName: question?.symbol ?? "text.bubble")
+                        .font(.system(size: 16))
+                        .foregroundStyle(Brand.crimson)
+                        .frame(width: 24)
+                    PredictiveWritingField(
+                        text: postAnswerBinding(index),
+                        isFocused: decideFocus == index,
+                        label: question?.prompt ?? "Decide",
+                        identifier: "DecideAnswer\(index)",
+                        onFocusChange: { editing in
+                            if editing {
+                                decideFocus = index
+                            } else if decideFocus == index {
+                                decideFocus = nil
+                            }
+                        }
+                    )
+                    .id("\(postDraft.themeID)-\(index)")
+                    .alignmentGuide(.firstTextBaseline) { _ in
+                        UIFont.preferredFont(forTextStyle: .body).ascender
+                    }
+                }
+            }
+        } header: { sectionHeader(EntryFormCopy.decideHeader) }
+        .listRowBackground(Brand.card)
+    }
+
+    /// The field contains both question and answer; its question is editable saved content.
+    private func postAnswerBinding(_ index: Int) -> Binding<String> {
+        let themeID = postDraft.themeID
+        return Binding(
+            get: { postDraft.answers.indices.contains(index) ? postDraft.answers[index] : "" },
+            set: {
+                guard postDraft.themeID == themeID else { return }
+                postDraft.setAnswer($0, at: index)
+            }
+        )
+    }
+
+    // MARK: - Keyboard row
+
+    /// Adam, 2026-09-26: "why can't it replace the word prediction I never fucking use?" It can't.
+    /// With autocorrection off in this form, iOS 27 still kept its suggestion bar above the keys,
+    /// empty. Turning prediction off won no space and cost autocorrect and gray completion, so
+    /// prediction stays on and the row sits on top of Apple's bar. The Mac has no keyboard to ride.
+    #if targetEnvironment(macCatalyst)
+    private static let showsKeyboardRow = false
+    #else
+    private static let showsKeyboardRow = true
+    #endif
+
+    /// Every box the cursor can sit in, in the order the keyboard row walks them.
+    private enum EntryField: Hashable {
+        case decide(Int)
+        case title
+        case whenIAm
+        case doneLooksLike
+        case step(UUID)
+        case tag
+    }
+
+    /// The row that rides on top of the keyboard — Adam, 2026-09-26: "a row of buttons that
+    /// could be used for quickly navigating different sections with a form without leaving the
+    /// keyboard area". Up and down step box to box, the Decide icons jump straight to their
+    /// question, Done drops the keyboard and the row with it. Seven buttons on a four-question
+    /// theme, eight on The 5 Ws; Reminder, Action and Calendar get the three-button row.
+    ///
+    /// The row is the form's own bar, not Apple's keyboard toolbar: Apple's toolbar pushed
+    /// Done out of sight when The 5 Ws put eight buttons in it. Fixed 38-point buttons keep all
+    /// eight on the narrowest iPhone, and the bar is 40 points tall.
+    private var keyboardRow: some View {
+        HStack(spacing: 0) {
+            keyboardRowButton("chevron.up", label: "Previous box", id: "KeyboardRowUp") { moveFocus(by: -1) }
+            keyboardRowButton("chevron.down", label: "Next box", id: "KeyboardRowDown") { moveFocus(by: 1) }
+
+            Spacer(minLength: 4)
+            if hasDecideQuestions {
+                // The same icons that sit beside each question in the form, so no reading is needed.
+                ForEach(postDraft.answers.indices, id: \.self) { index in
+                    let question = selectedPostTheme.questions.indices.contains(index) ? selectedPostTheme.questions[index] : nil
+                    keyboardRowButton(question?.symbol ?? "text.bubble",
+                                      label: question?.prompt ?? "Decide \(index + 1)",
+                                      id: "KeyboardRowDecide\(index)") { moveCursor(to: .decide(index)) }
+                }
+                Spacer(minLength: 4)
+            }
+
+            Button { moveCursor(to: nil) } label: {
+                Text("Done")
+                    .font(.system(size: 17, weight: .semibold))
+                    .padding(.horizontal, 10)
+                    .frame(height: 40)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(Brand.crimson)
+            .accessibilityIdentifier("KeyboardRowDone")
+        }
+        .padding(.horizontal, 6)
+        .frame(maxWidth: .infinity)
+        .frame(height: 40)
+        .background(.bar)
+        .overlay(alignment: .top) { Divider() }
+    }
+
+    private func keyboardRowButton(_ symbol: String, label: String, id: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Image(systemName: symbol)
+                .font(.system(size: 17, weight: .medium))
+                .frame(width: 38, height: 40)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .foregroundStyle(Brand.crimson)
+        .accessibilityLabel(label)
+        .accessibilityIdentifier(id)
+    }
+
+    /// The boxes in form order: Decide first on a Post, then Delegate, then the Steps, then the tag box.
+    private var fieldOrder: [EntryField] {
+        var order: [EntryField] = []
+        if hasDecideQuestions {
+            order += postDraft.answers.indices.map { EntryField.decide($0) }
+        }
+        if conversationID == nil { order.append(.title) }
+        order += [.whenIAm, .doneLooksLike]
+        order += subtasks.map { EntryField.step($0.id) }
+        order.append(.tag)
+        return order
+    }
+
+    /// One box up or down. At either end the row does nothing.
+    private func moveFocus(by step: Int) {
+        let order = fieldOrder
+        guard let current = activeField, let index = order.firstIndex(of: current) else {
+            moveCursor(to: order.first)
+            return
+        }
+        let next = index + step
+        guard order.indices.contains(next) else { return }
+        moveCursor(to: order[next])
+    }
+
+    /// The box that has the cursor, whether it is a SwiftUI box or a UIKit Decide box.
+    private var activeField: EntryField? {
+        if let index = decideFocus { return .decide(index) }
+        return focusedField
+    }
+
+    /// Puts the cursor in one box, or nowhere. Decide boxes are UIKit, the rest are SwiftUI.
+    private func moveCursor(to field: EntryField?) {
+        switch field {
+        case .decide(let index)?:
+            // The UIKit box takes the cursor itself; clearing SwiftUI's focus here as well
+            // would dismiss the keyboard out from under it.
+            decideFocus = index
+        case let other?:
+            decideFocus = nil
+            focusedField = other
+        case nil:
+            decideFocus = nil
+            focusedField = nil
+        }
+    }
+
+    // MARK: - Reusable field groups
+
+    private func sectionHeader(_ title: String) -> some View {
+        Text(title)
+            .font(.system(size: 15, weight: .semibold))
+            .foregroundStyle(SavyTheme.deepNavy.opacity(0.72))
+    }
+
+    private var whenIAmBinding: Binding<String> {
+        Binding(
+            get: { r.whenIAm ?? "" },
+            set: { r.whenIAm = $0 }
+        )
+    }
+
+    private var imageRow: some View {
+        let hasPickedImage = pickedImage != nil
+
+        return HStack {
+            Label("Image", systemImage: "photo")
+            Spacer()
+            if let img = pickedImage {
+                Image(uiImage: img).resizable().scaledToFill()
+                    .frame(width: 40, height: 40).clipShape(RoundedRectangle(cornerRadius: 8))
+            }
+            PhotosPicker(selection: $photoItem, matching: .images) {
+                Text(hasPickedImage ? "Change" : "Add").foregroundStyle(Brand.crimson)
+            }
+        }
+    }
+
+    /// A single clean dropdown row for a CaseIterable enum selector.
+    private func enumMenu<T: CaseIterable & Identifiable & Hashable>(
+        _ title: String, icon: String, selection: Binding<T>, label: @escaping (T) -> String
+    ) -> some View where T.AllCases: RandomAccessCollection {
+        Picker(selection: selection) {
+            ForEach(T.allCases) { Text(label($0)).tag($0) }
+        } label: {
+            Label(title, systemImage: icon)
+        }
+        .pickerStyle(.menu)
+        .tint(Brand.crimson)
+    }
+
+    private var priorityGroup: some View {
+        enumMenu("Priority", icon: "exclamationmark.3", selection: $r.priority) { $0.label }
+    }
+    private var energyGroup: some View {
+        enumMenu("Energy", icon: "bolt", selection: $r.energy) { $0.label }
+    }
+    /// One organizing area: Pattern first, then Lift and Tags at the same hierarchy level.
+    private var organizationSection: some View {
+        Section {
+            enumMenu(EntryFormCopy.patternTitle, icon: "list.number", selection: $r.context) { $0.label }
+            listGroup
+            tagsEditor
+        } header: { sectionHeader(EntryFormCopy.patternHeader) }
+        .listRowBackground(Brand.card)
+    }
+
+    private var listGroup: some View {
+        Picker(selection: $r.listName) {
+            Text("None").tag("")
+            ForEach(listChoices, id: \.self) { Text($0).tag($0) }
+        } label: {
+            Label("Lift", systemImage: "sparkles")
+        }
+        .pickerStyle(.menu)
+        .tint(Brand.crimson)
+    }
+
+    private var tagsEditor: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Label("Tags", systemImage: "tag")
+            HStack {
+                TextField("Add a tag", text: $tagDraft)
+                    .focused($focusedField, equals: .tag)
+                    .onSubmit(addTag)
+                    .onChange(of: tagDraft) { _, value in if value.contains(",") { addTag() } }
+                Button("Add", action: addTag)
+                    .foregroundStyle(Brand.crimson)
+                    .disabled(tagDraft.trimmingCharacters(in: .whitespaces).isEmpty)
+            }
+            if !suggestedTags.isEmpty {
+                Menu {
+                    ForEach(suggestedTags, id: \.self) { tag in
+                        Button(tag) { addExistingTag(tag) }
+                    }
+                } label: {
+                    HStack {
+                        Label("Add a recent tag", systemImage: "clock.arrow.circlepath")
+                        Spacer()
+                        Image(systemName: "chevron.up.chevron.down")
+                            .font(.system(size: 12)).foregroundStyle(.secondary)
+                    }
+                }
+                .tint(Brand.crimson)
+            }
+            if !r.tags.isEmpty {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 6) {
+                        ForEach(r.tags, id: \.self) { tag in
+                            HStack(spacing: 4) {
+                                Text(tag).font(.system(size: 15, weight: .semibold))
+                                Button { r.tags.removeAll { $0 == tag } } label: {
+                                    Image(systemName: "xmark.circle.fill")
+                                }.foregroundStyle(.secondary)
+                            }
+                            .padding(.vertical, 5).padding(.horizontal, 10)
+                            .background(Color(white: 0.92)).clipShape(Capsule())
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private var stepsSection: some View {
+        Section {
+            ForEach($subtasks) { $sub in
+                HStack {
+                    Image(systemName: "circle").foregroundStyle(.secondary)
+                    TextField("Step", text: $sub.title)
+                        .focused($focusedField, equals: .step(sub.id))
+                    Button { subtasks.removeAll { $0.id == sub.id } } label: {
+                        Image(systemName: "minus.circle.fill")
+                    }
+                    .foregroundStyle(.secondary)
+                    .accessibilityIdentifier("removeStep")
+                }
+            }
+
+            Button(action: addSubtask) {
+                Text(EntryFormCopy.addStepTitle).foregroundStyle(Brand.crimson)
+            }
+        } header: {
+            sectionHeader(EntryFormCopy.stepsTitle)
+        }
+        .listRowBackground(Brand.card)
+    }
+
+    // MARK: - Actions
+
+    private func addSubtask() {
+        let subtask = Subtask()
+        subtasks.append(subtask)
+        DispatchQueue.main.async { moveCursor(to: .step(subtask.id)) }
+    }
+
+    private func addTag() {
+        let t = tagDraft
+            .replacingOccurrences(of: ",", with: "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .replacingOccurrences(of: "#", with: "")
+        if !t.isEmpty && !r.tags.contains(t) { r.tags.append(t) }
+        tagDraft = ""
+    }
+
+    /// Previously-used tags not already on this item (most-used first, supplied by the caller).
+    private var suggestedTags: [String] { existingTags.filter { !r.tags.contains($0) } }
+
+    private func addExistingTag(_ tag: String) {
+        if !r.tags.contains(tag) { r.tags.append(tag) }
+    }
+
+    private func loadPhoto(_ item: PhotosPickerItem?) {
+        guard let item else { return }
+        Task {
+            if let data = try? await item.loadTransferable(type: Data.self), let img = UIImage(data: data) {
+                recoveryImageData = data
+                pickedImage = img
+            }
+        }
+    }
+
+    private func commit(sendInvitations: Bool = false) {
+        guard !isSaving else { return }
+        if sendInvitations, let message = ScheduleInvitation.validationMessage(for: r, organizerEmail: r.schedule?.organizerEmail ?? "") {
+            saveErrorMessage = message
+            saveFailed = true
+            return
+        }
+        if sendInvitations, !MFMailComposeViewController.canSendMail() {
+            saveErrorMessage = "Add an email account in Apple Mail to send invitations. You can still save this entry."
+            saveFailed = true
+            return
+        }
+        isSaving = true
+        Task { @MainActor in
+            defer { isSaving = false }
+            guard await persist() else { saveFailed = true; return }
+            committed = true
+            finishCommit(sendInvitations: sendInvitations)
+        }
+    }
+
+    private func finishCommit(sendInvitations: Bool) {
+        // Local CowboyAI save only; no Harness or candidate submission.
+        UINotificationFeedbackGenerator().notificationOccurred(.success)
+        if sendInvitations {
+            invitationEntry = r
+            return
+        }
+        withAnimation(.spring(response: 0.3)) { showSaved = true }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.75) { dismiss() }
+    }
+
+    /// Save when the sheet is dismissed by swiping (not Cancel) and the user actually entered something.
+    private func autosaveIfNeeded() {
+        guard !committed, !cancelled, !isSaving, hasContent else { return }
+        isSaving = true
+        Task { @MainActor in
+            defer { isSaving = false }
+            if await persist() { committed = true } else { saveFailed = true }
+        }
+    }
+
+    private var recoveryContents: EntryRecoveryDraft.Contents {
+        .reminder(.init(original: existing, entry: r, questions: postDraft, subtasks: subtasks,
+                        tagDraft: tagDraft, imageData: recoveryImageData, connectionMode: false, conversationID: conversationID))
+    }
+
+    private func saveRecoveryDraft(force: Bool = false) {
+        guard !committed, !cancelled else { return }
+        guard force || hasContent || EntryDraftStore.shared.draft(for: recoveryID) != nil else { return }
+        if !EntryDraftStore.shared.save(id: recoveryID, contents: recoveryContents) {
+            saveErrorMessage = "Your latest changes could not be saved to this device. Keep this form open and try Save again."
+            saveFailed = true
+        }
+    }
+
+    private func cancel() {
+        guard EntryDraftStore.shared.remove(recoveryID) else { saveFailed = true; return }
+        cancelled = true
+        dismiss()
+    }
+
+    private var hasContent: Bool {
+        if conversationID != nil {
+            return r != initialEntry || subtasks != initialEntry.subtasks
+                || postDraft != PostEntryDraft(entry: initialEntry, fixedTheme: conversationTheme)
+                || !tagDraft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                || recoveryImageData != nil
+        }
+        if connectionMode, r != initialEntry || !tagDraft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            return true
+        }
+        if !r.title.trimmingCharacters(in: .whitespaces).isEmpty { return true }
+        if !r.notes.isEmpty || !r.outcome.isEmpty || !(r.whenIAm ?? "").isEmpty || !r.url.isEmpty { return true }
+        if hasDecideQuestions, postDraft.hasUserContent { return true }
+        if !r.locationName.isEmpty || !r.waitingOn.isEmpty { return true }
+        if !r.tags.isEmpty { return true }
+        if subtasks.contains(where: { !$0.title.trimmingCharacters(in: .whitespaces).isEmpty }) { return true }
+        if r.dueDate != nil || r.deferDate != nil || r.schedule != nil || pickedImage != nil { return true }
+        return false
+    }
+
+    @discardableResult private func persist() async -> Bool {
+        addTag()
+        if let pickedImage {
+            r.imageLocalPath = LocalImageStore.save(pickedImage)
+        }
+        if let schedule = r.schedule {
+            if let validation = schedule.validationMessage {
+                saveErrorMessage = validation
+                return false
+            }
+            r.dueDate = schedule.startDate
+            r.dueTime = schedule.isAllDay ? nil : schedule.startDate
+            r.endTime = schedule.isAllDay ? nil : schedule.endDate
+        }
+        r.subtasks = subtasks.filter { !$0.title.trimmingCharacters(in: .whitespaces).isEmpty }
+        if hasDecideQuestions {
+            postDraft.apply(to: &r)
+        } else {
+            r.postThemeID = nil
+            r.postThemeName = nil
+            r.postAnswers = nil
+            r.postAnswersContainQuestions = nil
+        }
+        if r.title.trimmingCharacters(in: .whitespaces).isEmpty { r.title = "New \(entryLabel)" }
+        r.updatedAt = Date()
+        if conversationID == nil {
+            if r.schedule?.calendarIdentifier != nil {
+                do {
+                    let eventID = try await CalendarScheduleBridge.shared.saveEvent(for: r)
+                    r.schedule?.calendarEventIdentifier = eventID
+                } catch {
+                    saveErrorMessage = error.localizedDescription
+                    return false
+                }
+            } else if initialEntry.schedule?.calendarIdentifier != nil {
+                do {
+                    try await CalendarScheduleBridge.shared.disableAlertsForLinkedEvent(initialEntry)
+                } catch {
+                    saveErrorMessage = error.localizedDescription
+                    return false
+                }
+            }
+        }
+        if let onSaveAttempt, !onSaveAttempt(r) { return false }
+        onSave(r)
+        guard EntryDraftStore.shared.remove(recoveryID) else { return false }
+        if conversationID == nil { CalendarScheduleBridge.shared.discardPendingSync(for: r.id) }
+        return true
+    }
+}
+
+/// UIKit owns the live writing session, including the keyboard's gray inline completion.
+/// SwiftUI stores the writing and does not replace the text while a completion is pending.
+private struct PredictiveWritingField: UIViewRepresentable {
+    @Binding var text: String
+    let isFocused: Bool
+    let label: String
+    let identifier: String
+    let onFocusChange: (Bool) -> Void
+
+    func makeCoordinator() -> Coordinator { Coordinator(parent: self) }
+
+    func makeUIView(context: Context) -> UITextView {
+        let view = UITextView()
+        view.delegate = context.coordinator
+        view.backgroundColor = .clear
+        view.textColor = .black
+        view.tintColor = UIColor(Brand.crimson)
+        view.font = UIFont.preferredFont(forTextStyle: .body)
+        view.adjustsFontForContentSizeCategory = true
+        view.textContainerInset = .zero
+        view.textContainer.lineFragmentPadding = 0
+        view.isScrollEnabled = false
+        view.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        view.keyboardType = .default
+        view.autocapitalizationType = .sentences
+        view.autocorrectionType = .yes
+        view.spellCheckingType = .yes
+        view.inlinePredictionType = .yes
+        view.text = text
+        view.accessibilityLabel = label
+        view.accessibilityIdentifier = identifier
+        return view
+    }
+
+    func updateUIView(_ view: UITextView, context: Context) {
+        context.coordinator.parent = self
+        view.accessibilityLabel = label
+        view.accessibilityIdentifier = identifier
+        // Marked text is the gray continuation. Replacing storage or moving the
+        // cursor here drops it. Space accepts it through the system keyboard.
+        // Focus still follows the keyboard row while a continuation is showing.
+        if view.markedTextRange == nil, view.text != text {
+            let selection = view.selectedRange
+            view.text = text
+            let length = (text as NSString).length
+            let location = min(selection.location, length)
+            view.selectedRange = NSRange(location: location, length: min(selection.length, length - location))
+        }
+        if isFocused, !view.isFirstResponder {
+            view.becomeFirstResponder()
+        } else if !isFocused, view.isFirstResponder {
+            view.resignFirstResponder()
+        }
+    }
+
+    func sizeThatFits(_ proposal: ProposedViewSize, uiView: UITextView, context: Context) -> CGSize? {
+        guard let width = proposal.width, width > 0 else { return nil }
+        let fitted = uiView.sizeThatFits(CGSize(width: width, height: .greatestFiniteMagnitude))
+        let minimum = (uiView.font ?? UIFont.preferredFont(forTextStyle: .body)).lineHeight * 3
+        return CGSize(width: width, height: ceil(max(minimum, fitted.height)))
+    }
+
+    static func dismantleUIView(_ view: UITextView, coordinator: Coordinator) {
+        view.delegate = nil
+    }
+
+    final class Coordinator: NSObject, UITextViewDelegate {
+        var parent: PredictiveWritingField
+        init(parent: PredictiveWritingField) { self.parent = parent }
+
+        func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
+            true
+        }
+
+        func textViewDidChange(_ textView: UITextView) {
+            let committed = Self.committedText(in: textView)
+            if parent.text != committed { parent.text = committed }
+        }
+
+        /// Everything typed, without the gray continuation. Saving while a continuation is
+        /// showing keeps every typed word and never saves the gray suggestion.
+        static func committedText(in textView: UITextView) -> String {
+            guard let marked = textView.markedTextRange else { return textView.text }
+            let start = textView.offset(from: textView.beginningOfDocument, to: marked.start)
+            let end = textView.offset(from: textView.beginningOfDocument, to: marked.end)
+            let storage = textView.text as NSString
+            guard start >= 0, end >= start, end <= storage.length else { return textView.text }
+            return storage.replacingCharacters(in: NSRange(location: start, length: end - start), with: "")
+        }
+
+        func textViewDidBeginEditing(_ textView: UITextView) {
+            if !parent.isFocused { parent.onFocusChange(true) }
+        }
+
+        func textViewDidEndEditing(_ textView: UITextView) {
+            let committed = Self.committedText(in: textView)
+            if parent.text != committed { parent.text = committed }
+            if parent.isFocused { parent.onFocusChange(false) }
+        }
+    }
+}
+
+private enum EntryFormCopy {
+    static let destinationPickerTitle = "Destination"
+    static let delegateHeader = "Delegate"
+    static let patternHeader = "Pattern"
+    static let chooseHeader = "Choose"
+    static let scheduleHeader = "Schedule"
+    static let wantPrompt = "What do I want?"
+    static let whenPrompt = "When I am...I like to"
+    static let donePrompt = "Done looks like..."
+    static let stepsTitle = "Steps"
+    static let addStepTitle = "Add Step"
+    static let patternTitle = "Pattern"
+    static let themeHeader = "Theme"
+    static let themeTitle = "Theme"
+    static let decideHeader = "Decide"
+}
+
+// MARK: - Save (floppy disk) icon
+
+/// A classic floppy-disk "save" glyph drawn as line art — iOS has no built-in floppy symbol.
+/// Body with a beveled top-right corner, a shutter window up top, and a label at the bottom.
+struct FloppyDisk: Shape {
+    func path(in rect: CGRect) -> Path {
+        let s = min(rect.width, rect.height)
+        let ox = rect.midX - s / 2, oy = rect.midY - s / 2
+        func pt(_ x: CGFloat, _ y: CGFloat) -> CGPoint { CGPoint(x: ox + x / 24 * s, y: oy + y / 24 * s) }
+        var p = Path()
+        // Body outline (rounded corners, beveled top-right)
+        p.move(to: pt(3, 2))
+        p.addLine(to: pt(16, 2))
+        p.addLine(to: pt(22, 8))
+        p.addLine(to: pt(22, 21))
+        p.addQuadCurve(to: pt(21, 22), control: pt(22, 22))
+        p.addLine(to: pt(3, 22))
+        p.addQuadCurve(to: pt(2, 21), control: pt(2, 22))
+        p.addLine(to: pt(2, 3))
+        p.addQuadCurve(to: pt(3, 2), control: pt(2, 2))
+        p.closeSubpath()
+        // Shutter window (open at the top edge)
+        p.move(to: pt(8, 2))
+        p.addLine(to: pt(8, 9))
+        p.addLine(to: pt(15, 9))
+        p.addLine(to: pt(15, 2))
+        // Label (rounded top, open at the bottom edge)
+        p.move(to: pt(6, 22))
+        p.addLine(to: pt(6, 15))
+        p.addQuadCurve(to: pt(7, 14), control: pt(6, 14))
+        p.addLine(to: pt(17, 14))
+        p.addQuadCurve(to: pt(18, 15), control: pt(18, 14))
+        p.addLine(to: pt(18, 22))
+        return p
+    }
+}
+
+struct SaveDiskIcon: View {
+    var size: CGFloat = 24
+    var body: some View {
+        FloppyDisk()
+            .stroke(Color.black, style: StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round))
+            .frame(width: size, height: size)
+            .accessibilityHidden(true)
+    }
+}
