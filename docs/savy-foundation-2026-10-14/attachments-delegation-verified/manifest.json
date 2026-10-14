@@ -1,0 +1,44 @@
+[
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "D2BC1BBD-8375-4225-A9BE-F50C1D65E023",
+        "deviceName" : "CowboyAI-Recovery",
+        "exportedFileName" : "450DC56C-6822-4830-AD58-5BFE160548ED.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Recovered delegation keeps all questions and exact answers_0_EBF7DFFF-A08C-4072-A7E1-1297AA1F201C.png",
+        "timestamp" : 1792004365.572
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "D2BC1BBD-8375-4225-A9BE-F50C1D65E023",
+        "deviceName" : "CowboyAI-Recovery",
+        "exportedFileName" : "728F0689-DD1E-46E7-A6E9-E00F2C652071.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "DoneLooksLike keeps its question above the answer_0_1CB99F25-0D78-4FA9-9EE1-1647EA80B943.png",
+        "timestamp" : 1792004348.165
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "D2BC1BBD-8375-4225-A9BE-F50C1D65E023",
+        "deviceName" : "CowboyAI-Recovery",
+        "exportedFileName" : "1BD71AF4-4941-4D60-AFB4-CB240A133CEA.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "WhenIAm keeps its question above the answer_0_890AD2D0-7BD3-4CE7-8DC4-18FCC641A2A6.png",
+        "timestamp" : 1792004344.222
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "D2BC1BBD-8375-4225-A9BE-F50C1D65E023",
+        "deviceName" : "CowboyAI-Recovery",
+        "exportedFileName" : "CF17DD34-B100-470B-86CF-126A57B02B66.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Title keeps its question above the answer_0_50011ACC-5008-4FAA-A717-93E9B5607482.png",
+        "timestamp" : 1792004336.27
+      }
+    ],
+    "testIdentifier" : "CowboyFoundationUITests/testDelegationQuestionsStayAboveTheirAnswersAfterTypingAndRelaunch()",
+    "testIdentifierURL" : "test://com.apple.xcode/CowboyAITrial/SAVYUITests/CowboyFoundationUITests/testDelegationQuestionsStayAboveTheirAnswersAfterTypingAndRelaunch"
+  }
+]

@@ -36,7 +36,7 @@ final class CowboyFoundationTests: XCTestCase {
         XCTAssertEqual(ask.theme.question, entry.title)
         XCTAssertEqual(ask.theme.fields[0].prompt, "Edited question?")
         XCTAssertEqual(ask.theme.fields[0].answer, "  My answer.\nSecond line!  ")
-        XCTAssertEqual(ask.text, "  My question.\nExact line!  \n\nEdited question?\n  My answer.\nSecond line!  \n\nWhen I am...I like to\n My context. \n\nDone looks like...\nKeep this!\n\nNotes\nTwo\nlines.")
+        XCTAssertEqual(ask.text, "What do I want?\n  My question.\nExact line!  \n\nEdited question?\n  My answer.\nSecond line!  \n\nWhen I am...I like to\n My context. \n\nDone looks like...\nKeep this!\n\nNotes\nTwo\nlines.")
     }
 
     func testMultilineThemePromptIsKeptWholeAndDoesNotBecomeAnAnswer() throws {

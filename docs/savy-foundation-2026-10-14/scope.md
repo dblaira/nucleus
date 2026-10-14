@@ -27,3 +27,53 @@ Adam, verbatim, in the same chat on October 14, 2026:
 > In the simulator I see a floating cowboyai "ask" form but it is not active. Meaning, I cannot click on it to inspect.
 
 Base: `e68abb18b54f6f7d79ea326c71a2e2f7947293ec`, clean. Objective: make the added Ask control respond on an empty entry. Keep the original form and its content; an empty tap should focus its existing writing field, while a populated tap submits through the existing engine. Exclusive writer: this task, within the same trial and documentation scope. All original-app, cloud, phone and public-distribution prohibitions above continue. Acceptance: actual simulator click, typing into the focused field, live answer and return, draft recovery on failure, and the four original FAB destinations.
+
+## Delegation questions remain visible
+
+Adam, verbatim, in the same chat on October 14, 2026:
+
+> yes. when I click ask Cowboyai, it moves to the delegation first line.  I like that.  It did not do that before.
+
+> Yes, I can type normally
+
+> But, I want the questions to remain. So the cursor should begin below the questions in delegation
+
+Base: `02cf5e706f989a3c1719aa15324233c508deda61`, clean. Objective: keep the three existing delegation prompts visible with separate answer lines underneath, and preserve the approved empty Ask focus behavior. Exclusive writer and allowed/forbidden paths remain as above. Dependencies: the existing form bindings, focus and recovery. Acceptance: inspect the actual simulator with each prompt still visible after typing; verify the focused answer lies below its prompt; preserve exact answers through recovery and the live Ask/return/save flow. Before updating, preserve the trial's current Documents, Application Support and Preferences outside its container.
+
+Adam's next instruction, verbatim, in the same chat on October 14, 2026:
+
+> The answers should have the light brown background colors.  There should be a stylistic distiction between each area so it is easy to know what I am doing.
+
+The separate white-question/light-brown-answer treatment was an interim interpretation, superseded by Adam's grouped-component reference below. Keep the Ask button's existing appearance.
+
+Adam's correction, verbatim, in the same chat:
+
+> Oh my God, are you changing things again, man? Fuck, the ask button was fine. Why the fuck you change the color of that? God damn man
+
+Restore the Ask button's original light brown background and maroon label. Do not change any other controls or section styling as part of the delegation answer-field work.
+
+## Approved grouped delegation reference
+
+Adam, verbatim, in the same chat on October 14, 2026, with `IMG_2977.png`:
+
+> This is what the delegation section should look like. Without the bold text.  Just normal setting on the fonts, but all in the same component so the questions are included in the delegation. That makes it easier for agents to understand..and me when I go back to review.
+
+Match the reference's one light brown Delegate component with its three internal rows. Keep each question visible above its answer, use regular font weight, and retain the existing separators. Include the first question in the text sent to CowboyAI, as already happens for the other two delegation questions. Preserve the existing Ask button and the approved `Original CowboyAI response` label and link. No other form sections or controls change.
+
+Baseline remains `02cf5e7` plus this task's existing uncommitted question-field work and approved label rename. Preserve that work. Acceptance: actual simulator visual inspection, first answer below its question, typing and relaunch recovery for all three answers, exact question-and-answer payload, and the existing live Ask/return/save/reopen flow. Test storage stays separate. Current trial documents, support files and preferences were copied and all 27 file hashes verified at `/Users/adamblair/Documents/SAVY-preservation/cowboyai-trial-before-grouped-delegation-20261014-115525/`.
+
+
+## Approved Explanation background
+
+
+### 2026-10-14
+
+Said in: Codex task `01a13b35-d823-7d12-8533-fc906c3ec11f`, specifying the Explanation panel background in the separate simulator trial.
+
+> The explanation should be a different color you know that dumbass. The background, motherfucker, the background, goddamn
+
+Said in: the same task, answering “For the Explanation panel’s background, should I use SAVY’s existing light brown, with dark text?”
+
+> Yes—light brown for Explanation
+
+Use the existing SAVY `Brand.card` light brown behind Explanation and dark foreground text and feedback controls. Apply consistently to form and legacy Explanation rendering. Preserve the Answer panel, Ask button, original-response link and all behavior. Verify the actual recovery simulator screen.

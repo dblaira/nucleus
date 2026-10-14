@@ -8,7 +8,9 @@ struct EntryQuestion {
 
     init(entry: Reminder, draft: PostEntryDraft, subtasks: [Subtask]) {
         var parts: [String] = []
-        if !entry.title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { parts.append(entry.title) }
+        if !entry.title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            parts.append("What do I want?\n" + entry.title)
+        }
         var fields: [AskResponse.Theme.Field] = []
         for (index, writing) in draft.answers.enumerated() {
             let original = draft.theme.questions.indices.contains(index) ? draft.theme.questions[index] : nil

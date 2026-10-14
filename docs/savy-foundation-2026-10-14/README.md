@@ -58,3 +58,29 @@ Result: `test_sim_2026-10-14T18-08-09-242Z_pid34973_9949868e.xcresult` in the re
 After the tests, relaunched without fixture arguments, manually clicked Ask on the recovered blank entry, and visually confirmed the cursor in the revealed writing field. Left that active form open for Adam. Original SAVY source remains at `87f2b8c535fd7069d9748159a78d3770247f1a2c` with its same two untracked paths; no original app/data or physical-device access occurred.
 
 ![Active Ask and focused original writing field](ask-active-live.png)
+
+
+## Approved delegation and Explanation changes, October 14 follow-up
+
+The Delegate section is one SAVY light brown component with regular-weight questions, an answer field below each question, and the existing internal separators. The questions remain visible during typing and after recovery. The submitted text now includes `What do I want?` above the title answer, matching the question labels already carried for the other two delegation answers. User-authored spaces and newlines remain exact. The response link is retained with Adam's approved label, `Original CowboyAI response`.
+
+Explanation uses the existing `Brand.card` light brown with dark text and feedback controls. The normal form and legacy explanation renderer receive this same palette. Answer styling and the Ask button are unchanged by this follow-up. No original SAVY, phone, engine, meaning or graph changes were made.
+
+Verification:
+
+- Three exact-payload/template model tests passed.
+- The live empty-Ask/type/answer/return/save/relaunch/origin-reopen UI test passed.
+- The new all-three-delegation-fields typing/relaunch recovery UI test passed. Its first run exposed a test scrolling overshoot; the helper was corrected to scroll toward the field with a bounded stroke. Every assertion was retained.
+- Opened and visually inspected the actual simulator screenshots, including all three recovered answers in one regular-weight Delegate component.
+- Built the Explanation palette change successfully, launched the normal app without fixture arguments, and opened the existing original-response link through Device Hub. Visually confirmed the light brown Explanation with dark text, separate from the existing Answer panel. The initial Xcode semantic tap did not navigate; the native Device Hub button click did, and the resulting screen was captured. No application code was changed for this automation issue.
+- Left the saved response visible on CowboyAI-Recovery, preserving the user's underlying draft.
+
+Result bundles (same directory listed above):
+
+- `test_sim_2026-10-14T18-55-25-850Z_pid34973_62ea30f4.xcresult`: 3 model checks and live Ask flow passed; original scrolling-helper failure recorded.
+- `test_sim_2026-10-14T18-58-35-635Z_pid34973_ca7567c2.xcresult`: all-three-field recovery passed, 0 failures.
+- Build log: `build_run_sim_2026-10-14T19-03-15-118Z_pid34973_8414959b.log`.
+
+![Grouped delegation after typing and reopening](delegation-grouped-live.png)
+
+![Actual saved response with light brown Explanation](explanation-light-brown-live.png)

@@ -162,10 +162,10 @@ struct LiveAnswerSection: View {
         let narrative = current?.explanation?.status == "shown" ? current?.explanation?.text : nil
         if let explanation = narrative ?? m.explanation {
             VStack(alignment: .leading, spacing: 12) {
-                kicker("EXPLANATION", color: .white)
+                kicker("EXPLANATION", color: Brand.ink)
                 Text(explanation)
                     .font(CowboyTheme.readingSerif(22, relativeTo: .body))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(Brand.ink)
                     .lineSpacing(5)
                     .fixedSize(horizontal: false, vertical: true)
                     .textSelection(.enabled)
@@ -175,21 +175,21 @@ struct LiveAnswerSection: View {
                 if let framing = m.explanation, framing != explanation {
                     Text(framing)
                         .font(CowboyTheme.readingSerif(20, relativeTo: .body))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(Brand.ink)
                         .lineSpacing(5)
                         .fixedSize(horizontal: false, vertical: true)
                         .textSelection(.enabled)
                         .accessibilityIdentifier("middle-response-context")
                 }
                 if let ex = current?.explanation, ex.status == "shown" {
-                    Thumbs(state: model.explanationThumb ?? ex.thumb, disabled: model.isFrozen, tint: .white) { up in
+                    Thumbs(state: model.explanationThumb ?? ex.thumb, disabled: model.isFrozen, tint: Brand.ink) { up in
                         Task { await model.thumbExplanation(up: up) }
                     }
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(20)
-            .background(CowboyTheme.red, in: RoundedRectangle(cornerRadius: 8))
+            .background(Brand.card, in: RoundedRectangle(cornerRadius: 8))
             .padding(.horizontal, 18)
             .padding(.top, 24)
         }
@@ -295,22 +295,29 @@ struct LiveAnswerSection: View {
 
     @ViewBuilder
     private var explanation: some View {
-        if let ex = current?.explanation {
-            if ex.status == "pending" {
-                ProgressView("writing what this says about your question…")
-                    .tint(.white)
-            } else if ex.status == "shown", let text = ex.text {
-                Text(text)
-                    .font(CowboyTheme.readingSerif(22, relativeTo: .body))
-                    .foregroundStyle(.white)
-                    .lineSpacing(5)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .textSelection(.enabled)
-                    .accessibilityIdentifier("live-explanation-text")
-                Thumbs(state: model.explanationThumb ?? ex.thumb, disabled: model.isFrozen, tint: .white) { up in
-                    Task { await model.thumbExplanation(up: up) }
+        if let ex = current?.explanation,
+           ex.status == "pending" || (ex.status == "shown" && ex.text != nil) {
+            VStack(alignment: .leading, spacing: 14) {
+                if ex.status == "pending" {
+                    ProgressView("writing what this says about your question…")
+                        .tint(Brand.ink)
+                } else if let text = ex.text {
+                    Text(text)
+                        .font(CowboyTheme.readingSerif(22, relativeTo: .body))
+                        .foregroundStyle(Brand.ink)
+                        .lineSpacing(5)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .textSelection(.enabled)
+                        .accessibilityIdentifier("live-explanation-text")
+                    Thumbs(state: model.explanationThumb ?? ex.thumb, disabled: model.isFrozen, tint: Brand.ink) { up in
+                        Task { await model.thumbExplanation(up: up) }
+                    }
                 }
             }
+            .foregroundStyle(Brand.ink)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(16)
+            .background(Brand.card, in: RoundedRectangle(cornerRadius: 8))
         }
     }
 

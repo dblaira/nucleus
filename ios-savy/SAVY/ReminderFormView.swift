@@ -100,7 +100,7 @@ struct ReminderFormView: View {
                 }
 
                 if let source = r.origin {
-                    Section("From this conversation") {
+                    Section("Original CowboyAI response") {
                         Button { showingOrigin = source } label: {
                             Label(source.question, systemImage: "arrow.uturn.backward")
                                 .lineLimit(3).foregroundStyle(Brand.crimson)
@@ -245,27 +245,11 @@ struct ReminderFormView: View {
         }
 
         Section {
-            // Grow with content so every character stays visible — no mid-word "..." cutoff.
-            TextField(EntryFormCopy.wantPrompt, text: $r.title, axis: .vertical)
-                .lineLimit(1...)
-                .textFieldStyle(.plain)
-                .fixedSize(horizontal: false, vertical: true)
-                .focused($focusedField, equals: .title)
-                .accessibilityIdentifier("Title")
+            delegationField(EntryFormCopy.wantPrompt, text: $r.title, field: .title, identifier: "Title")
                 .disabled(conversationID != nil)
-            TextField(EntryFormCopy.whenPrompt, text: whenIAmBinding, axis: .vertical)
-                .lineLimit(1...)
-                .textFieldStyle(.plain)
-                .fixedSize(horizontal: false, vertical: true)
-                .focused($focusedField, equals: .whenIAm)
-                .accessibilityIdentifier("WhenIAm")
-            TextField(EntryFormCopy.donePrompt, text: $r.outcome, axis: .vertical)
-                .lineLimit(1...)
-                .textFieldStyle(.plain)
-                .fixedSize(horizontal: false, vertical: true)
-                .focused($focusedField, equals: .doneLooksLike)
-                .accessibilityIdentifier("DoneLooksLike")
-        } header: { sectionHeader(EntryFormCopy.delegateHeader) }
+            delegationField(EntryFormCopy.whenPrompt, text: whenIAmBinding, field: .whenIAm, identifier: "WhenIAm")
+            delegationField(EntryFormCopy.donePrompt, text: $r.outcome, field: .doneLooksLike, identifier: "DoneLooksLike")
+        } header: { sectionHeader(EntryFormCopy.delegateHeader, weight: .regular) }
         .listRowBackground(Brand.card)
 
         stepsSection
@@ -309,6 +293,27 @@ struct ReminderFormView: View {
             imageRow
         } header: { sectionHeader("Details") }
         .listRowBackground(Brand.card)
+    }
+
+    /// Keep each question visible while its answer is written on the line below it.
+    private func delegationField(_ prompt: String, text: Binding<String>, field: EntryField, identifier: String) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(prompt)
+                .font(.body)
+                .foregroundStyle(.black)
+                .accessibilityIdentifier(identifier + "Prompt")
+            TextField("", text: text, axis: .vertical)
+                .lineLimit(1...)
+                .font(.body)
+                .textFieldStyle(.plain)
+                .fixedSize(horizontal: false, vertical: true)
+                .focused($focusedField, equals: field)
+                .accessibilityLabel(prompt)
+                .accessibilityIdentifier(identifier)
+                .frame(maxWidth: .infinity, minHeight: 24, alignment: .topLeading)
+                .contentShape(Rectangle())
+                .onTapGesture { moveCursor(to: field) }
+        }
     }
 
     private var entryQuestion: EntryQuestion {
@@ -549,9 +554,9 @@ struct ReminderFormView: View {
 
     // MARK: - Reusable field groups
 
-    private func sectionHeader(_ title: String) -> some View {
+    private func sectionHeader(_ title: String, weight: Font.Weight = .semibold) -> some View {
         Text(title)
-            .font(.system(size: 15, weight: .semibold))
+            .font(.system(size: 15, weight: weight))
             .foregroundStyle(SavyTheme.deepNavy.opacity(0.72))
     }
 

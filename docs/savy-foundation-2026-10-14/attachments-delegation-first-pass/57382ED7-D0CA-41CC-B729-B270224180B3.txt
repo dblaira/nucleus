@@ -1,0 +1,642 @@
+Failed to synthesize event: Neither element nor any descendant has keyboard focus. Event dispatch snapshot: Application, pid: 96717, label: 'CowboyAI Trial'
+Element debug description:
+Attributes: Application, 0x10ec07340, pid: 96717, label: 'CowboyAI Trial'
+Element subtree:
+ →Application, 0x10ec07340, pid: 96717, label: 'CowboyAI Trial'
+    Window (Main), 0x10ec07480, {{0.0, 0.0}, {440.0, 956.0}}
+      Other, 0x10ec075c0, {{0.0, 0.0}, {440.0, 956.0}}
+        Other, 0x10ec05180, {{0.0, 0.0}, {440.0, 956.0}}
+          Other, 0x10ec052c0, {{-440.0, -956.0}, {1320.0, 2868.0}}
+          Other, 0x10ec05400, {{0.0, 0.0}, {440.0, 956.0}}
+            Other, 0x10ec05540, {{0.0, 0.0}, {440.0, 956.0}}
+              Other, 0x10ec070c0, {{0.0, 0.0}, {440.0, 956.0}}
+                Other, 0x10ec07200, {{0.0, 0.0}, {440.0, 956.0}}
+                  Other, 0x10ec05680, {{0.0, 0.0}, {440.0, 956.0}}
+                    Other, 0x10ec057c0, {{0.0, 0.0}, {440.0, 956.0}}
+                      Other, 0x10ec05900, {{0.0, 0.0}, {440.0, 956.0}}
+                        ScrollView, 0x10ec05a40, {{0.0, 0.0}, {440.0, 794.0}}, identifier: 'editorialHomeScroll'
+                          Other, 0x10ec05b80, {{0.0, 0.0}, {440.0, 794.0}}
+                            Other, 0x10ec06e40, {{0.0, 0.0}, {440.0, 102.0}}
+                          Other, 0x10ec06f80, {{0.0, 0.0}, {440.0, 794.0}}
+                          Other, 0x10ec06bc0, {{0.0, 0.0}, {440.0, 1130.7}}
+                            StaticText, 0x10ec06d00, {{24.0, 96.0}, {224.7, 67.3}}, label: 'CowboyAI'
+                            Button, 0x10ec06080, {{374.0, 110.3}, {42.0, 42.0}}, label: 'SAVY menu'
+                              Button, 0x10ec06a80, {{374.0, 110.3}, {42.0, 42.0}}
+                                Image, 0x10ec066c0, {{385.7, 126.0}, {18.7, 10.7}}, identifier: 'line.3.horizontal', label: 'Drag'
+                            ScrollView, 0x10ec06940, {{0.0, 204.0}, {440.0, 230.0}}, identifier: 'greatestLeverageCarousel'
+                              Other, 0x10ec06800, {{0.0, 204.0}, {2372.0, 230.0}}
+                                Button, 0x10ec06580, {{1.5, 227.5}, {283.0, 183.0}}, identifier: 'latest-f741f59e-1b28-4e59-9001-9e0af1e90d78', label: 'A clear next step., Theme: The 5 Ws'
+                                  StaticText, 0x10ec06440, {{16.0, 240.0}, {167.0, 31.3}}, label: 'A clear next step.'
+                                  Other, 0x10ec06300, {{16.0, 374.0}, {89.7, 24.0}}, identifier: 'carouselDetail-theme', label: 'Theme: The 5 Ws'
+                                    Image, 0x10ec061c0, {{25.7, 379.3}, {14.0, 13.3}}, identifier: 'bubble.left', label: 'Comment Left'
+                                    StaticText, 0x10ec05f40, {{44.3, 378.8}, {53.3, 14.3}}, label: 'The 5 Ws'
+                                Button, 0x10ec05cc0, {{299.5, 227.5}, {283.0, 183.0}}, identifier: 'latest-ui-source-3', label: 'A third sample question to swipe to., Theme: Sample theme, Pattern: Code the Pattern, Priority: High, Energy: Low'
+                                  StaticText, 0x10ec05e00, {{314.0, 240.0}, {235.0, 62.7}}, label: 'A third sample question to swipe to.'
+                                  Other, 0x10ec04f00, {{314.0, 346.0}, {116.3, 24.0}}, identifier: 'carouselDetail-theme', label: 'Theme: Sample theme'
+                                    Image, 0x10ec05040, {{323.7, 353.3}, {13.0, 9.3}}, identifier: 'list.bullet', label: 'List'
+                                    StaticText, 0x10ec04b40, {{341.3, 350.8}, {81.0, 14.3}}, label: 'Sample theme'
+                                  Other, 0x10ec04dc0, {{434.3, 346.0}, {131.7, 24.0}}, identifier: 'carouselDetail-pattern', label: 'Pattern: Code the Pattern'
+                                    Image, 0x10ec04c80, {{444.0, 352.7}, {13.0, 11.0}}, identifier: 'list.number', label: 'Numbered List'
+                                    StaticText, 0x10ec048c0, {{461.7, 350.8}, {96.3, 14.3}}, label: 'Code the Pattern'
+                                  Other, 0x10ec04a00, {{314.0, 374.0}, {103.7, 24.0}}, identifier: 'carouselDetail-priority', label: 'Priority: High'
+                                    Image, 0x10ec04640, {{323.7, 380.0}, {11.3, 12.3}}, identifier: 'exclamationmark.3', label: 'Triple Exclamation Mark'
+                                    StaticText, 0x10ec04780, {{339.7, 378.8}, {70.0, 14.3}}, label: 'High priority'
+                                  Other, 0x10ec04500, {{421.7, 374.0}, {96.3, 24.0}}, identifier: 'carouselDetail-energy', label: 'Energy: Low'
+                                    Image, 0x10ec043c0, {{431.3, 378.7}, {9.0, 15.0}}, identifier: 'bolt', label: 'Flash'
+                                    StaticText, 0x10ec04280, {{445.0, 378.8}, {65.0, 14.3}}, label: 'Low energy'
+                                Button, 0x10ec04140, {{597.5, 227.5}, {283.0, 183.0}}, identifier: 'latest-ui-source-2', label: 'Another sample question in the carousel., Theme: Sample theme, Pattern: Code the Pattern, Priority: High, Energy: Low'
+                                  StaticText, 0x10ec04000, {{612.0, 240.0}, {247.7, 62.7}}, label: 'Another sample question in the carousel.'
+                                  Other, 0x10ec07840, {{612.0, 346.0}, {116.3, 24.0}}, identifier: 'carouselDetail-theme', label: 'Theme: Sample theme'
+                                    Image, 0x10ec07980, {{621.7, 353.3}, {13.0, 9.3}}, identifier: 'list.bullet', label: 'List'
+                                    StaticText, 0x10ec07d40, {{639.3, 350.8}, {81.0, 14.3}}, label: 'Sample theme'
+                                  Other, 0x10ec07e80, {{732.3, 346.0}, {131.7, 24.0}}, identifier: 'carouselDetail-pattern', label: 'Pattern: Code the Pattern'
+                                    Image, 0x10ec07c00, {{742.0, 352.7}, {13.0, 11.0}}, identifier: 'list.number', label: 'Numbered List'
+                                    StaticText, 0x10ec07ac0, {{759.7, 350.8}, {96.3, 14.3}}, label: 'Code the Pattern'
+                                  Other, 0x106abaf80, {{612.0, 374.0}, {103.7, 24.0}}, identifier: 'carouselDetail-priority', label: 'Priority: High'
+                                    Image, 0x106abb480, {{621.7, 380.0}, {11.3, 12.3}}, identifier: 'exclamationmark.3', label: 'Triple Exclamation Mark'
+                                    StaticText, 0x106ab83c0, {{637.7, 378.8}, {70.0, 14.3}}, label: 'High priority'
+                                  Other, 0x106abbc00, {{719.7, 374.0}, {96.3, 24.0}}, identifier: 'carouselDetail-energy', label: 'Energy: Low'
+                                    Image, 0x106ab88c0, {{729.3, 378.7}, {9.0, 15.0}}, identifier: 'bolt', label: 'Flash'
+                                    StaticText, 0x106ab8640, {{743.0, 378.8}, {65.0, 14.3}}, label: 'Low energy'
+                                Button, 0x106aba800, {{895.5, 227.5}, {283.0, 183.0}}, identifier: 'latest-ui-source', label: 'A sample question for checking this screen., Theme: Sample theme, Pattern: Code the Pattern, Priority: High, Energy: Low'
+                                  StaticText, 0x106abb0c0, {{910.0, 240.0}, {215.7, 62.7}}, label: 'A sample question for checking this screen.'
+                                  Other, 0x106ab8500, {{910.0, 346.0}, {116.3, 24.0}}, identifier: 'carouselDetail-theme', label: 'Theme: Sample theme'
+                                    Image, 0x106abb980, {{919.7, 353.3}, {13.0, 9.3}}, identifier: 'list.bullet', label: 'List'
+                                    StaticText, 0x106abad00, {{937.3, 350.8}, {81.0, 14.3}}, label: 'Sample theme'
+                                  Other, 0x106abaa80, {{1030.3, 346.0}, {131.7, 24.0}}, identifier: 'carouselDetail-pattern', label: 'Pattern: Code the Pattern'
+                                    Image, 0x106abb5c0, {{1040.0, 352.7}, {13.0, 11.0}}, identifier: 'list.number', label: 'Numbered List'
+                                    StaticText, 0x106ababc0, {{1057.7, 350.8}, {96.3, 14.3}}, label: 'Code the Pattern'
+                                  Other, 0x106abae40, {{910.0, 374.0}, {103.7, 24.0}}, identifier: 'carouselDetail-priority', label: 'Priority: High'
+                                    Image, 0x106abbac0, {{919.7, 380.0}, {11.3, 12.3}}, identifier: 'exclamationmark.3', label: 'Triple Exclamation Mark'
+                                    StaticText, 0x106aba440, {{935.7, 378.8}, {70.0, 14.3}}, label: 'High priority'
+                                  Other, 0x106aba580, {{1017.7, 374.0}, {96.3, 24.0}}, identifier: 'carouselDetail-energy', label: 'Energy: Low'
+                                    Image, 0x106ab8b40, {{1027.3, 378.7}, {9.0, 15.0}}, identifier: 'bolt', label: 'Flash'
+                                    StaticText, 0x106aba300, {{1041.0, 378.8}, {65.0, 14.3}}, label: 'Low energy'
+                                Button, 0x106ab8a00, {{1193.5, 227.5}, {283.0, 183.0}}, identifier: 'greatestLeverageEntry', label: 'Focus on What's in Your Control'
+                                Button, 0x106aba940, {{1491.5, 227.5}, {283.0, 183.0}}, identifier: 'greatestLeverageEntry', label: 'The 10 minutes exporting your judgment builds a system'
+                                Button, 0x106abbd40, {{1789.5, 227.5}, {283.0, 54.3}}, identifier: 'greatestLeverageEntry', label: '13 categories, 4,873 extractions'
+                                Button, 0x106abbe80, {{2087.5, 227.5}, {283.0, 54.3}}, identifier: 'greatestLeverageEntry', label: 'Affect moves with Learning'
+                            Other, 0x106abb200, {{15.5, 527.5}, {409.0, 54.3}}, identifier: 'recent-f741f59e-1b28-4e59-9001-9e0af1e90d78', value: Unpinned
+                              Button, 0x106abb340, {{16.0, 528.0}, {64.0, 53.3}}, identifier: 'swipePin', label: 'Pin'
+                                Image, 0x106ab8140, {{41.7, 537.3}, {13.0, 19.3}}, identifier: 'pin', label: 'Pin'
+                                StaticText, 0x106ab8280, {{39.5, 561.2}, {17.0, 12.0}}, label: 'Pin'
+                              Other, 0x106aba6c0, {{16.0, 528.0}, {408.0, 53.3}}, identifier: 'responseSwipe-f741f59e-1b28-4e59-9001-9e0af1e90d78'
+                              Button, 0x106abb700, {{80.0, 528.0}, {64.0, 53.3}}, identifier: 'swipeEdit', label: 'Edit'
+                                Image, 0x106ab8780, {{105.0, 540.0}, {14.3, 14.3}}, identifier: 'pencil', label: 'Edit'
+                                StaticText, 0x106abb840, {{101.3, 558.7}, {21.3, 12.0}}, label: 'Edit'
+                              StaticText, 0x106ab8000, {{30.0, 536.0}, {167.0, 31.3}}, identifier: 'recentResponse-f741f59e-1b28-4e59-9001-9e0af1e90d78', label: 'A clear next step.'
+                            Other, 0x106059900, {{15.5, 590.8}, {409.0, 54.3}}, identifier: 'recent-ui-source-3', value: Unpinned
+                              Button, 0x10605af80, {{16.0, 591.3}, {64.0, 53.3}}, identifier: 'swipePin', label: 'Pin'
+                                Image, 0x106059b80, {{41.7, 601.0}, {13.0, 19.3}}, identifier: 'pin', label: 'Pin'
+                                StaticText, 0x10605b700, {{39.5, 624.5}, {17.0, 12.0}}, label: 'Pin'
+                              Other, 0x10605ad00, {{16.0, 591.3}, {408.0, 53.3}}, identifier: 'responseSwipe-ui-source-3'
+                              Button, 0x10605b0c0, {{80.0, 591.3}, {64.0, 53.3}}, identifier: 'swipeEdit', label: 'Edit'
+                                Image, 0x10605a940, {{105.0, 603.3}, {14.3, 14.3}}, identifier: 'pencil', label: 'Edit'
+                                StaticText, 0x1060592c0, {{101.3, 622.0}, {21.3, 12.0}}, label: 'Edit'
+                              StaticText, 0x10605b840, {{30.0, 599.3}, {346.7, 31.3}}, identifier: 'recentResponse-ui-source-3', label: 'A third sample question to swipe to.'
+                            Other, 0x10605bac0, {{15.5, 654.2}, {409.0, 54.3}}, identifier: 'recent-ui-source-2', value: Unpinned
+                              Button, 0x10605b200, {{16.0, 654.7}, {64.0, 53.3}}, identifier: 'swipePin', label: 'Pin'
+                                Image, 0x10605b480, {{41.7, 664.3}, {13.0, 19.3}}, identifier: 'pin', label: 'Pin'
+                                StaticText, 0x106059a40, {{39.5, 687.8}, {17.0, 12.0}}, label: 'Pin'
+                              Other, 0x10605bd40, {{16.0, 654.7}, {408.0, 53.3}}, identifier: 'responseSwipe-ui-source-2'
+                              Button, 0x1060597c0, {{80.0, 654.7}, {64.0, 53.3}}, identifier: 'swipeEdit', label: 'Edit'
+                                Image, 0x10605be80, {{105.0, 666.7}, {14.3, 14.3}}, identifier: 'pencil', label: 'Edit'
+                                StaticText, 0x106059400, {{101.3, 685.3}, {21.3, 12.0}}, label: 'Edit'
+                              StaticText, 0x106058a00, {{30.0, 662.7}, {370.0, 31.3}}, identifier: 'recentResponse-ui-source-2', label: 'Another sample question in the carousel.'
+                            Other, 0x10605b340, {{15.5, 717.5}, {409.0, 54.3}}, identifier: 'recent-ui-source', value: Unpinned
+                              Button, 0x10605bc00, {{16.0, 718.0}, {64.0, 53.3}}, identifier: 'swipePin', label: 'Pin'
+                                Image, 0x10605ae40, {{41.7, 727.7}, {13.0, 19.3}}, identifier: 'pin', label: 'Pin'
+                                StaticText, 0x10605b980, {{39.5, 751.2}, {17.0, 12.0}}, label: 'Pin'
+                              Other, 0x106059040, {{16.0, 718.0}, {408.0, 53.3}}, identifier: 'responseSwipe-ui-source'
+                              Button, 0x10605aa80, {{80.0, 718.0}, {64.0, 53.3}}, identifier: 'swipeEdit', label: 'Edit'
+                                Image, 0x106059180, {{105.0, 730.0}, {14.3, 14.3}}, identifier: 'pencil', label: 'Edit'
+                                StaticText, 0x106059f40, {{101.3, 748.7}, {21.3, 12.0}}, label: 'Edit'
+                              StaticText, 0x106059540, {{30.0, 726.0}, {379.3, 31.3}}, identifier: 'recentResponse-ui-source', label: 'A sample question for checking this screen.'
+                            Other, 0x10605abc0, {{15.5, 798.8}, {409.0, 86.3}}, identifier: 'homeContentSection-news-channel', value: Pinned
+                              Button, 0x10605a080, {{16.0, 799.3}, {64.0, 85.3}}, identifier: 'swipeUnpin', label: 'Unpin'
+                                Image, 0x106058f00, {{41.7, 824.7}, {13.0, 19.3}}, identifier: 'pin', label: 'Pin'
+                                StaticText, 0x10605a300, {{32.3, 848.5}, {31.3, 12.0}}, label: 'Unpin'
+                              Other, 0x106059680, {{16.0, 799.3}, {408.0, 85.3}}, identifier: 'homeReorder-news-channel'
+                              StaticText, 0x10605a800, {{30.0, 811.3}, {180.7, 31.3}}, identifier: 'homeCardTitle-news-channel', label: 'Social Media Posts'
+                              StaticText, 0x10605a440, {{30.0, 856.7}, {93.3, 16.0}}, identifier: 'homeCardDetail-count', label: '0 / 50 saved posts'
+                            Other, 0x102e77ac0, {{15.5, 894.2}, {409.0, 54.3}}, identifier: 'homeContentSection-beliefs', value: Unpinned
+                              Button, 0x102e77340, {{16.0, 894.7}, {64.0, 53.3}}, identifier: 'swipePin', label: 'Pin'
+                                Image, 0x102e77980, {{41.7, 904.3}, {13.0, 19.3}}, identifier: 'pin', label: 'Pin'
+                                StaticText, 0x102e77480, {{39.5, 927.8}, {17.0, 12.0}}, label: 'Pin'
+                              Other, 0x102e77c00, {{16.0, 894.7}, {408.0, 53.3}}, identifier: 'homeReorder-beliefs'
+                              StaticText, 0x102e77700, {{30.0, 902.7}, {116.0, 31.3}}, identifier: 'homeCardTitle-beliefs', label: 'Connection'
+                            Other, 0x102e752c0, {{15.5, 957.5}, {409.0, 54.3}}, identifier: 'homeContentSection-ontology', value: Unpinned
+                              Button, 0x102e77840, {{16.0, 958.0}, {64.0, 53.3}}, identifier: 'swipePin', label: 'Pin'
+                                Image, 0x102e75400, {{41.7, 967.7}, {13.0, 19.3}}, identifier: 'pin', label: 'Pin'
+                                StaticText, 0x102e77200, {{39.5, 991.2}, {17.0, 12.0}}, label: 'Pin'
+                              Other, 0x110878000, {{16.0, 958.0}, {408.0, 53.3}}, identifier: 'homeReorder-ontology'
+                              StaticText, 0x110878140, {{30.0, 966.0}, {172.7, 31.3}}, identifier: 'homeCardTitle-ontology', label: 'Adam's Ontology'
+                            Other, 0x110878280, {{15.5, 1020.8}, {409.0, 54.3}}, identifier: 'homeContentSection-field-essays', value: Unpinned
+                              Button, 0x1108783c0, {{16.0, 1021.3}, {64.0, 53.3}}, identifier: 'swipePin', label: 'Pin'
+                                Image, 0x110878500, {{41.7, 1031.0}, {13.0, 19.3}}, identifier: 'pin', label: 'Pin'
+                                StaticText, 0x110878640, {{39.5, 1054.5}, {17.0, 12.0}}, label: 'Pin'
+                              Other, 0x110878780, {{16.0, 1021.3}, {408.0, 53.3}}, identifier: 'homeReorder-field-essays'
+                              StaticText, 0x1108788c0, {{30.0, 1029.3}, {119.3, 31.3}}, identifier: 'homeCardTitle-field-essays', label: 'Field Essays'
+                          Other, 0x110878a00, {{407.0, 62.0}, {30.0, 732.0}}, label: 'Vertical scroll bar, 2 pages', value: 0%
+                            Other, 0x110878b40, {{434.0, 784.0}, {3.0, 7.0}}
+                          Other, 0x110878c80, {{407.0, 62.0}, {30.0, 732.0}}, label: 'Vertical scroll bar, 2 pages', value: 0%
+                            Other, 0x110878dc0, {{434.0, 784.0}, {3.0, 7.0}}
+                        Other, 0x110878f00, {{188.0, 830.0}, {64.0, 64.0}}, identifier: 'chargeFab', label: 'Open quick entry menu'
+                          Image, 0x110879040, {{208.7, 844.0}, {22.7, 36.3}}, identifier: 'bolt.fill', label: 'Flash'
+                          Image, 0x110879180, {{210.7, 847.0}, {19.0, 30.3}}, identifier: 'bolt.fill', label: 'Flash'
+                        Button, 0x1108792c0, {{0.0, 852.0}, {88.0, 104.0}}, label: 'Now'
+                          StaticText, 0x110879400, {{0.0, 852.0}, {88.0, 104.0}}, label: 'Now'
+                          Image, 0x110879540, {{29.3, 859.7}, {29.3, 25.7}}, identifier: 'house', label: 'Home'
+                        Button, 0x110879680, {{88.0, 852.0}, {88.0, 104.0}}, label: 'Reminders'
+                          StaticText, 0x1108797c0, {{88.0, 852.0}, {88.0, 104.0}}, label: 'Reminders'
+                          Image, 0x110879900, {{120.3, 860.0}, {23.3, 25.3}}, identifier: 'bell', label: 'Notifications'
+                        Button, 0x110879a40, {{264.0, 852.0}, {88.0, 104.0}}, label: 'Actions'
+                          StaticText, 0x110879b80, {{264.0, 852.0}, {88.0, 104.0}}, label: 'Actions'
+                          Image, 0x110879cc0, {{299.3, 858.3}, {17.3, 28.7}}, identifier: 'bolt', label: 'Flash'
+                        Button, 0x110879e00, {{352.0, 852.0}, {88.0, 104.0}}, label: 'Calendar'
+                          StaticText, 0x110879f40, {{352.0, 852.0}, {88.0, 104.0}}, label: 'Calendar'
+                          Image, 0x11087a080, {{384.0, 861.3}, {24.3, 22.7}}, identifier: 'calendar', label: 'Calendar'
+                Toolbar, 0x11087a1c0, {{0.0, 0.0}, {440.0, 956.0}}, identifier: 'Toolbar', label: 'Toolbar'
+                  Other, 0x11087a300, {{0.0, 0.0}, {440.0, 956.0}}
+      Other, 0x11087a440, {{0.0, 0.0}, {440.0, 956.0}}
+        Other, 0x11087a580, {{-440.0, -956.0}, {1320.0, 2868.0}}
+        Other, 0x11087a6c0, {{0.0, 62.0}, {440.0, 894.0}}
+          Other, 0x11087a800, {{0.0, 62.0}, {440.0, 894.0}}
+            Other, 0x11087a940, {{0.0, 62.0}, {440.0, 894.0}}
+              Other, 0x11087aa80, {{0.0, 62.0}, {440.0, 894.0}}
+                Other, 0x11087abc0, {{0.0, 62.0}, {440.0, 894.0}}
+                  NavigationBar, 0x11087ad00, {{0.0, 82.0}, {440.0, 54.0}}, identifier: 'A clear next step.'
+                    Other, 0x11087ae40, {{24.0, 86.0}, {36.7, 36.0}}
+                      Other, 0x11087af80, {{24.0, 86.0}, {36.7, 36.0}}
+                        Button, 0x11087b0c0, {{24.0, 86.0}, {36.7, 36.0}}, identifier: 'entryCancel', label: 'Cancel'
+                    StaticText, 0x11087b200, {{142.7, 89.3}, {154.3, 29.3}}, label: 'A clear next step.'
+                      Other, 0x11087b340, {{142.7, 89.3}, {154.3, 29.3}}
+                        StaticText, 0x11087b480, {{142.7, 89.5}, {154.3, 29.0}}, label: 'A clear next step.'
+                    Other, 0x11087b5c0, {{380.0, 86.0}, {36.0, 36.0}}
+                      Other, 0x11087b700, {{380.0, 86.0}, {36.0, 36.0}}
+                        Button, 0x11087b840, {{380.0, 86.0}, {36.0, 36.0}}, identifier: 'entrySave', label: 'Save'
+                          Other, 0x11087b980, {{380.0, 86.0}, {36.0, 36.0}}
+                  Other, 0x11087bac0, {{0.0, 62.0}, {440.0, 894.0}}
+                    Other, 0x11087bc00, {{0.0, 62.0}, {440.0, 894.0}}
+                      Other, 0x11087bd40, {{0.0, 62.0}, {440.0, 894.0}}
+                        Other, 0x11087be80, {{0.0, 62.0}, {440.0, 894.0}}
+                          CollectionView, 0x11086c000, {{0.0, 62.0}, {440.0, 894.0}}, identifier: 'sharedEntryForm'
+                            Other, 0x11086c140, {{-20.0, -83.3}, {480.0, 511.7}}
+                            Cell, 0x11086c280, {{20.0, 45.7}, {400.0, 91.0}}
+                              Other, 0x11086c3c0, {{20.0, 45.7}, {400.0, 91.0}}
+                                Other, 0x11086c500, {{20.0, 45.7}, {400.0, 91.0}}
+                                  Other, 0x11086c640, {{20.0, 45.7}, {400.0, 91.0}}
+                                    Other, 0x11086c780, {{20.0, 45.7}, {400.0, 91.0}}
+                              Other, 0x11086c8c0, {{20.0, 45.7}, {400.0, 91.0}}
+                                Other, 0x11086ca00, {{20.0, 45.7}, {400.0, 91.0}}
+                                  Other, 0x11086cb40, {{20.0, 45.7}, {400.0, 91.0}}
+                                    Image, 0x11086cc80, {{41.0, 64.0}, {23.0, 15.7}}, identifier: 'person.2', label: 'Two People'
+                                    TextView, 0x11086cdc0, {{74.0, 60.7}, {326.0, 61.0}}, identifier: 'DecideAnswer1', label: 'Who was involved?', value: Who was involved?
+
+                                      Other, 0x11086cf00, {{367.0, 60.7}, {30.0, 61.0}}, label: 'Vertical scroll bar, 1 page', value: 0%
+                                        Other, 0x11086d040, {{394.0, 63.7}, {3.0, 55.0}}
+                                      Other, 0x11086d180, {{74.0, 88.7}, {326.0, 30.0}}, label: 'Horizontal scroll bar, 1 page', value: 0%
+                                        Other, 0x11086d2c0, {{77.0, 115.7}, {320.0, 3.0}}
+                            Other, 0x11086d400, {{0.0, 62.0}, {440.0, 894.0}}
+                              Other, 0x11086d540, {{0.0, 62.0}, {440.0, 114.0}}
+                            Other, 0x11086d680, {{0.0, 62.0}, {440.0, 894.0}}
+                              Other, 0x11086d7c0, {{0.0, 62.0}, {440.0, 114.0}}
+                            Cell, 0x11086d900, {{20.0, 136.7}, {400.0, 92.0}}
+                              Other, 0x11086da40, {{20.0, 136.7}, {400.0, 92.0}}
+                                Other, 0x11086db80, {{20.0, 136.7}, {400.0, 92.0}}
+                                  Other, 0x11086dcc0, {{20.0, 136.7}, {400.0, 92.0}}
+                                    Other, 0x11086de00, {{20.0, 136.7}, {400.0, 92.0}}
+                              Other, 0x11086df40, {{20.0, 136.7}, {400.0, 92.0}}
+                                Other, 0x11086e080, {{20.0, 136.7}, {400.0, 92.0}}
+                                  Other, 0x11086e1c0, {{20.0, 136.7}, {400.0, 92.0}}
+                                    Image, 0x11086e300, {{44.7, 153.0}, {15.0, 18.7}}, identifier: 'mappin.and.ellipse', label: 'Remove Map Pin'
+                                    TextView, 0x11086e440, {{74.0, 152.7}, {326.0, 61.0}}, identifier: 'DecideAnswer2', label: 'When and where did it happen?', value: When and where did...
+                                      Other, 0x11086e580, {{367.0, 152.7}, {30.0, 61.0}}, label: 'Vertical scroll bar, 1 page', value: 0%
+                                        Other, 0x11086e6c0, {{394.0, 155.7}, {3.0, 55.0}}
+                                      Other, 0x11086e800, {{74.0, 180.7}, {326.0, 30.0}}, label: 'Horizontal scroll bar, 1 page', value: 0%
+                                        Other, 0x11086e940, {{77.0, 207.7}, {320.0, 3.0}}
+                            Other, 0x11086ea80, {{40.0, 135.7}, {360.0, 1.0}}
+                            Cell, 0x11086ebc0, {{20.0, 228.7}, {400.0, 91.0}}
+                              Other, 0x11086ed00, {{20.0, 228.7}, {400.0, 91.0}}
+                                Other, 0x11086ee40, {{20.0, 228.7}, {400.0, 91.0}}
+                                  Other, 0x11086ef80, {{20.0, 228.7}, {400.0, 91.0}}
+                                    Other, 0x11086f0c0, {{20.0, 228.7}, {400.0, 91.0}}
+                              Other, 0x11086f200, {{20.0, 228.7}, {400.0, 91.0}}
+                                Other, 0x11086f340, {{20.0, 228.7}, {400.0, 91.0}}
+                                  Other, 0x11086f480, {{20.0, 228.7}, {400.0, 91.0}}
+                                    Image, 0x11086f5c0, {{44.0, 246.3}, {16.0, 16.0}}, identifier: 'questionmark.circle', label: 'Question Mark In A Circle'
+                                    TextView, 0x11086f700, {{74.0, 243.7}, {326.0, 61.0}}, identifier: 'DecideAnswer3', label: 'Why did it happen?', value: Why did it happen?
+
+                                      Other, 0x11086f840, {{367.0, 243.7}, {30.0, 61.0}}, label: 'Vertical scroll bar, 1 page', value: 0%
+                                        Other, 0x11086f980, {{394.0, 246.7}, {3.0, 55.0}}
+                                      Other, 0x11086fac0, {{74.0, 271.7}, {326.0, 30.0}}, label: 'Horizontal scroll bar, 1 page', value: 0%
+                                        Other, 0x11086fc00, {{77.0, 298.7}, {320.0, 3.0}}
+                            Other, 0x11086fd40, {{40.0, 227.7}, {360.0, 1.0}}
+                            Cell, 0x11086fe80, {{20.0, 319.7}, {400.0, 91.0}}
+                              Other, 0x110870000, {{20.0, 319.7}, {400.0, 91.0}}
+                                Other, 0x110870140, {{20.0, 319.7}, {400.0, 91.0}}
+                                  Other, 0x110870280, {{20.0, 319.7}, {400.0, 91.0}}
+                                    Other, 0x1108703c0, {{20.0, 319.7}, {400.0, 91.0}}
+                              Other, 0x110870500, {{20.0, 319.7}, {400.0, 91.0}}
+                                Other, 0x110870640, {{20.0, 319.7}, {400.0, 91.0}}
+                                  Other, 0x110870780, {{20.0, 319.7}, {400.0, 91.0}}
+                                    Image, 0x1108708c0, {{44.0, 337.3}, {16.0, 16.0}}, identifier: 'arrow.triangle.turn.up.right.circle', label: 'Directions'
+                                    TextView, 0x110870a00, {{74.0, 334.7}, {326.0, 61.0}}, identifier: 'DecideAnswer4', label: 'How did it unfold?', value: How did it unfold?
+
+                                      Other, 0x110870b40, {{367.0, 334.7}, {30.0, 55.0}}, label: 'Vertical scroll bar, 1 page', value: 0%
+                                        Other, 0x110870c80, {{394.0, 337.7}, {3.0, 49.0}}
+                                      Other, 0x110870dc0, {{74.0, 362.7}, {320.0, 30.0}}, label: 'Horizontal scroll bar, 1 page', value: 0%
+                                        Other, 0x110870f00, {{77.0, 389.7}, {314.0, 3.0}}
+                            Other, 0x110871040, {{40.0, 318.7}, {360.0, 1.0}}
+                            Other, 0x110871180, {{-20.0, 428.0}, {480.0, 296.7}}
+                            Cell, 0x1108712c0, {{20.0, 428.0}, {400.0, 38.0}}
+                              Other, 0x110871400, {{20.0, 428.0}, {400.0, 38.0}}
+                              Other, 0x110871540, {{20.0, 428.0}, {400.0, 38.0}}
+                                Other, 0x110871680, {{20.0, 428.0}, {400.0, 38.0}}
+                                  Other, 0x1108717c0, {{20.0, 428.0}, {400.0, 38.0}}
+                                    StaticText, 0x110871900, {{20.0, 428.0}, {400.0, 38.0}}, label: 'Delegate'
+                            Cell, 0x110871a40, {{20.0, 466.0}, {400.0, 80.3}}
+                              Other, 0x110871b80, {{20.0, 466.0}, {400.0, 80.3}}
+                                Other, 0x110871cc0, {{20.0, 466.0}, {400.0, 80.3}}
+                                  Other, 0x110871e00, {{20.0, 466.0}, {400.0, 80.3}}
+                                    Other, 0x110871f40, {{20.0, 466.0}, {400.0, 80.3}}
+                              Other, 0x110872080, {{20.0, 466.0}, {400.0, 80.3}}
+                                Other, 0x1108721c0, {{20.0, 466.0}, {400.0, 80.3}}
+                                  Other, 0x110872300, {{20.0, 466.0}, {400.0, 80.3}}
+                                    StaticText, 0x110872440, {{40.0, 481.0}, {122.3, 20.3}}, identifier: 'TitlePrompt', label: 'What do I want?'
+                                    TextField, 0x110872580, {{40.0, 509.3}, {360.0, 22.0}}, identifier: 'Title', label: 'What do I want?', value: A clear next step.
+                                      Other, 0x1108726c0, {{40.0, 509.3}, {0.0, 0.0}}, identifier: '_UITextSelectionRangeAdjustmentContainerView'
+                                        Other, 0x110872800, {{40.0, 509.3}, {0.0, 0.0}}, identifier: 'com.apple.text.grabber.leading'
+                                          Other, 0x110872940, {{32.8, 495.8}, {16.5, 16.5}}
+                                          Other, 0x110872a80, {{40.0, 509.3}, {2.0, 0.0}}
+                                        Other, 0x110872bc0, {{40.0, 509.3}, {0.0, 0.0}}, identifier: 'com.apple.text.grabber.leading'
+                                          Other, 0x110872d00, {{32.8, 495.8}, {16.5, 16.5}}
+                                          Other, 0x110872e40, {{40.0, 509.3}, {2.0, 0.0}}
+                                      Other, 0x110872f80, {{40.0, 517.3}, {360.0, 11.0}}, label: 'Horizontal scroll bar, 1 page', value: 0%
+                                        Other, 0x1108730c0, {{49.0, 525.3}, {342.0, 3.0}}
+                            Cell, 0x110873200, {{20.0, 546.3}, {400.0, 80.3}}
+                              Other, 0x110873340, {{20.0, 546.3}, {400.0, 80.3}}
+                                Other, 0x110873480, {{20.0, 546.3}, {400.0, 80.3}}
+                                  Other, 0x1108735c0, {{20.0, 546.3}, {400.0, 80.3}}
+                                    Other, 0x110873700, {{20.0, 546.3}, {400.0, 80.3}}
+                              Other, 0x110873840, {{20.0, 546.3}, {400.0, 80.3}}
+                                Other, 0x110873980, {{20.0, 546.3}, {400.0, 80.3}}
+                                  Other, 0x110873ac0, {{20.0, 546.3}, {400.0, 80.3}}
+                                    StaticText, 0x110873c00, {{40.0, 561.3}, {148.0, 20.3}}, identifier: 'WhenIAmPrompt', label: 'When I am...I like to'
+                                    TextField, 0x110873d40, {{40.0, 589.7}, {360.0, 22.0}}, identifier: 'WhenIAm', label: 'When I am...I like to'
+                                      Other, 0x110873e80, {{40.0, 597.7}, {360.0, 11.0}}, label: 'Horizontal scroll bar, 1 page', value: 0%
+                                        Other, 0x110874000, {{43.0, 605.7}, {354.0, 3.0}}
+                            Other, 0x110874140, {{40.0, 545.3}, {360.0, 1.0}}
+                            Cell, 0x110874280, {{20.0, 626.7}, {400.0, 80.3}}
+                              Other, 0x1108743c0, {{20.0, 626.7}, {400.0, 80.3}}
+                                Other, 0x110874500, {{20.0, 626.7}, {400.0, 80.3}}
+                                  Other, 0x110874640, {{20.0, 626.7}, {400.0, 80.3}}
+                                    Other, 0x110874780, {{20.0, 626.7}, {400.0, 80.3}}
+                              Other, 0x1108748c0, {{20.0, 626.7}, {400.0, 80.3}}
+                                Other, 0x110874a00, {{20.0, 626.7}, {400.0, 80.3}}
+                                  Other, 0x110874b40, {{20.0, 626.7}, {400.0, 80.3}}
+                                    StaticText, 0x110874c80, {{40.0, 641.7}, {128.3, 20.3}}, identifier: 'DoneLooksLikePrompt', label: 'Done looks like...'
+                                    TextField, 0x110874dc0, {{40.0, 670.0}, {360.0, 22.0}}, identifier: 'DoneLooksLike', label: 'Done looks like...'
+                                      Other, 0x110874f00, {{46.0, 678.0}, {348.0, 11.0}}, label: 'Horizontal scroll bar, 1 page', value: 0%
+                                        Other, 0x110875040, {{49.0, 686.0}, {342.0, 3.0}}
+                            Other, 0x110875180, {{40.0, 625.7}, {360.0, 1.0}}
+                            Other, 0x1108752c0, {{-20.0, 724.7}, {480.0, 107.7}}
+                            Cell, 0x110875400, {{20.0, 724.7}, {400.0, 38.0}}
+                              Other, 0x110875540, {{20.0, 724.7}, {400.0, 38.0}}
+                              Other, 0x110875680, {{20.0, 724.7}, {400.0, 38.0}}
+                                Other, 0x1108757c0, {{20.0, 724.7}, {400.0, 38.0}}
+                                  Other, 0x110875900, {{20.0, 724.7}, {400.0, 38.0}}
+                                    StaticText, 0x110875a40, {{20.0, 724.7}, {400.0, 38.0}}, label: 'Steps'
+                            Cell, 0x110875b80, {{20.0, 762.7}, {400.0, 52.0}}
+                              Other, 0x110875cc0, {{20.0, 762.7}, {400.0, 52.0}}
+                                Other, 0x110875e00, {{20.0, 762.7}, {400.0, 52.0}}
+                                  Other, 0x110875f40, {{20.0, 762.7}, {400.0, 52.0}}
+                                    Other, 0x110876080, {{20.0, 762.7}, {400.0, 52.0}}
+                              Other, 0x1108761c0, {{20.0, 762.7}, {400.0, 52.0}}
+                                Other, 0x110876300, {{20.0, 762.7}, {400.0, 52.0}}
+                                  Other, 0x110876440, {{20.0, 762.7}, {400.0, 52.0}}
+                                    Button, 0x110876580, {{20.0, 762.7}, {400.0, 52.0}}, label: 'Add Step'
+                            Other, 0x1108766c0, {{-20.0, 832.0}, {480.0, 240.0}}
+                            Cell, 0x110876800, {{20.0, 832.0}, {400.0, 38.0}}
+                              Other, 0x110876940, {{20.0, 832.0}, {400.0, 38.0}}
+                              Other, 0x110876a80, {{20.0, 832.0}, {400.0, 38.0}}
+                                Other, 0x110876bc0, {{20.0, 832.0}, {400.0, 38.0}}
+                                  Other, 0x110876d00, {{20.0, 832.0}, {400.0, 38.0}}
+                                    StaticText, 0x110876e40, {{20.0, 832.0}, {400.0, 38.0}}, label: 'Pattern'
+                            Cell, 0x110876f80, {{20.0, 870.0}, {400.0, 52.0}}
+                              Other, 0x1108770c0, {{20.0, 870.0}, {400.0, 52.0}}
+                                Other, 0x110877200, {{20.0, 870.0}, {400.0, 52.0}}
+                                  Other, 0x110877340, {{20.0, 870.0}, {400.0, 52.0}}
+                                    Other, 0x110877480, {{20.0, 870.0}, {400.0, 52.0}}
+                              Other, 0x1108775c0, {{20.0, 870.0}, {400.0, 52.0}}
+                                Other, 0x110877700, {{20.0, 870.0}, {400.0, 52.0}}
+                                  Other, 0x110877840, {{20.0, 870.0}, {400.0, 52.0}}
+                                    Button, 0x110877980, {{41.3, 879.0}, {358.7, 34.3}}, label: 'Pattern, None'
+                                      StaticText, 0x110877ac0, {{343.0, 886.0}, {40.7, 20.3}}, label: 'None'
+                                    Image, 0x110877c00, {{41.3, 887.0}, {21.7, 18.0}}, identifier: 'list.number', label: 'Numbered List'
+                                    StaticText, 0x110877d40, {{80.0, 885.8}, {55.3, 20.3}}, label: 'Pattern'
+                            Cell, 0x110877e80, {{20.0, 922.0}, {400.0, 52.0}}
+                              Other, 0x106bbc000, {{20.0, 922.0}, {400.0, 52.0}}
+                                Other, 0x106bbc140, {{20.0, 922.0}, {400.0, 52.0}}
+                                  Other, 0x106bbc280, {{20.0, 922.0}, {400.0, 52.0}}
+                                    Other, 0x106bbc3c0, {{20.0, 922.0}, {400.0, 52.0}}
+                              Other, 0x106bbc500, {{20.0, 922.0}, {400.0, 52.0}}
+                                Other, 0x106bbc640, {{20.0, 922.0}, {400.0, 52.0}}
+                                  Other, 0x106bbc780, {{20.0, 922.0}, {400.0, 52.0}}
+                                    Button, 0x106bbc8c0, {{42.0, 931.0}, {358.0, 34.3}}, label: 'Lift, None'
+                                      StaticText, 0x106bbca00, {{343.0, 938.0}, {40.7, 20.3}}, label: 'None'
+                                    Image, 0x106bbcb40, {{42.0, 935.7}, {20.0, 24.7}}, identifier: 'sparkles', label: 'Sparkle'
+                                    StaticText, 0x106bbcc80, {{80.0, 937.8}, {24.7, 20.3}}, label: 'Lift'
+                            Other, 0x106bbcdc0, {{80.0, 921.0}, {320.0, 1.0}}
+                            Other, 0x106bbcf00, {{407.0, 136.0}, {30.0, 717.0}}, label: 'Vertical scroll bar, 3 pages', value: 50%
+                              Other, 0x106bbd040, {{434.0, 339.7}, {3.0, 340.0}}
+                            Other, 0x106bbd180, {{407.0, 136.0}, {30.0, 717.0}}, label: 'Vertical scroll bar, 3 pages', value: 50%
+                              Other, 0x106bbd2c0, {{434.0, 339.7}, {3.0, 340.0}}
+                          Button, 0x106bbd400, {{20.0, 861.0}, {400.0, 53.0}}, identifier: 'entryAskCowboyAI', label: 'Ask CowboyAI'
+                            StaticText, 0x106bbd540, {{41.3, 877.0}, {141.7, 20.3}}, label: 'Ask CowboyAI'
+                            Image, 0x106bbd680, {{41.3, 878.7}, {18.0, 18.0}}, identifier: 'paperplane', label: 'Send'
+                  Toolbar, 0x106bbd7c0, {{0.0, 62.0}, {440.0, 894.0}}, identifier: 'Toolbar', label: 'Toolbar'
+                    Other, 0x106bbd900, {{0.0, 62.0}, {440.0, 894.0}}
+      Other, 0x106bbda40, {{0.0, 0.0}, {440.0, 956.0}}
+        Other, 0x106bbdb80, {{0.0, 0.0}, {440.0, 956.0}}
+          Other, 0x106bbdcc0, {{0.0, 0.0}, {440.0, 956.0}}
+            Other, 0x106bbde00, {{0.0, 0.0}, {440.0, 956.0}}
+              Other, 0x106bbdf40, {{0.0, 0.0}, {440.0, 956.0}}
+                Other, 0x106bbe080, {{0.0, 0.0}, {440.0, 956.0}}
+                  Other, 0x106bbe1c0, {{0.0, 0.0}, {440.0, 956.0}}
+                    Other, 0x106bbe300, {{0.0, 0.0}, {440.0, 956.0}}
+                      ScrollView, 0x106bbe440, {{0.0, 0.0}, {440.0, 956.0}}, identifier: 'answerPage'
+                        Other, 0x106bbe580, {{0.0, 0.0}, {440.0, 956.0}}
+                          Other, 0x106bbe6c0, {{0.0, 0.0}, {440.0, 102.0}}
+                        Other, 0x106bbe800, {{0.0, 0.0}, {440.0, 956.0}}
+                        Other, 0x106bbe940, {{0.0, 62.0}, {440.0, 2578.7}}
+                          Button, 0x106bbea80, {{23.5, 69.5}, {49.0, 49.0}}, identifier: 'chevron.left', label: 'Back'
+                          StaticText, 0x106bbebc0, {{38.0, 162.0}, {72.3, 13.3}}, label: 'QUESTION'
+                          StaticText, 0x106bbed00, {{22.0, 171.3}, {191.7, 57.7}}, identifier: 'live-answer-question', label: 'A clear next step.'
+                          StaticText, 0x106bbee40, {{38.0, 225.0}, {59.3, 13.3}}, label: 'The 5 Ws'
+                          StaticText, 0x106bbef80, {{38.0, 314.3}, {99.0, 13.3}}, label: 'EXPLANATION'
+                          StaticText, 0x106bbf0c0, {{22.0, 323.7}, {396.0, 341.7}}, identifier: 'form-explanation', label: 'Your original reflection, 2026-10-13: “If this is the first step, talking to cowboy AI and finding out what’s online and what’s misaligned and getting my past clear thoughts on what is related to this. And then the second is to create some experiments, pay attention to it to remind myself of what I’m wanting and then to develop a a different type of articulation of around things, maybe or just a meaning behind”'
+                          Button, 0x106bbf200, {{38.0, 661.3}, {20.7, 21.7}}, identifier: 'hand.thumbsup', label: 'Thumbs up'
+                          Button, 0x106bbf340, {{72.7, 661.3}, {20.7, 21.7}}, identifier: 'hand.thumbsdown', label: 'Thumbs down'
+                          StaticText, 0x106bbf480, {{38.0, 747.0}, {59.7, 13.3}}, label: 'ANSWER'
+                          StaticText, 0x106bbf5c0, {{22.0, 758.3}, {163.3, 58.7}}, identifier: 'middle-answer', label: 'aligned and why'
+                          Image, 0x106bbf700, {{41.0, 829.3}, {17.7, 14.7}}, identifier: 'form-sections', label: 'Bookmark'
+                          StaticText, 0x106bbf840, {{72.0, 826.0}, {102.7, 20.3}}, identifier: 'form-sections', label: 'MOMENTUM'
+                          StaticText, 0x106bbf980, {{72.0, 846.3}, {330.0, 768.3}}, identifier: 'form-sections', label: '“It is important to feel pulled…interested without an obsessive desire to feel interested. This is how I would describe Taste. Taste is just one type of momentum, but for me it is the best kind. The essence of what I am describing here, is a definition of momentum. Momentum is the feeling of being pulled along without having to focus attention on moving. I feel momentum when a subject or moment has attracted my attention long enough that I don’t feel like I am making choices anymore, but reacting one moment after another in an environment. The lack of momentum would be trying to make a decision but finding that I can’t. For whatever reason I cannot seem to choose between two or more options. When this lingers for more than a few minutes, stress rises and momentum is lost. This usually signals a lack of confidence in my opinion on a subject which means I can’t access any dependable discerning criteria for judging next steps. When I can’t discern I lack any opinion. This is when I hope to remember one option I always have: a kill switch. From this point it usually helps to follow this rule: “If a process becomes a worry or burden kill it, and think BIGGER!” Much of my stress comes from letting my focus narrow too sharply. When this happens I will eventually lose touch with the bigger picture, and patterns once clear and important to me vanish, along with motivation.”'
+                          Image, 0x106bbfac0, {{41.3, 1638.7}, {17.7, 17.7}}, identifier: 'form-sections', label: 'Link'
+                          StaticText, 0x106bbfc00, {{72.0, 1637.0}, {279.7, 20.3}}, identifier: 'form-sections', label: 'MOMENTUM serves the purpose of'
+                          StaticText, 0x106bbfd40, {{72.0, 1657.3}, {330.0, 86.3}}, identifier: 'form-sections', label: '“Momentum is Adam's compass: what gives a feeling of momentum is worthwhile, what gives a feeling of stagnation is worth avoiding”'
+                          Image, 0x106bbfe80, {{41.3, 1767.7}, {17.7, 17.7}}, identifier: 'form-sections', label: 'Link'
+                          StaticText, 0x106bd4000, {{72.0, 1766.0}, {200.0, 20.3}}, identifier: 'form-sections', label: 'MOMENTUM depends on'
+                          StaticText, 0x106bd4140, {{72.0, 1786.3}, {330.0, 64.3}}, identifier: 'form-sections', label: '“Anything Adam doesn't understand while working with AI agents is a distraction from the project”'
+                          Image, 0x106bd4280, {{41.3, 1874.7}, {17.7, 17.7}}, identifier: 'form-sections', label: 'Link'
+                          StaticText, 0x106bd43c0, {{72.0, 1873.0}, {164.0, 20.3}}, identifier: 'form-sections', label: 'MOMENTUM prefers'
+                          StaticText, 0x106bd4500, {{72.0, 1893.3}, {330.0, 86.3}}, identifier: 'form-sections', label: '“My opinion matters, and too many suggestions of taking small steps grinds on my nerves. I response to big ideas and grand gestures.” — his words”'
+                          Image, 0x106bd4640, {{41.3, 2003.7}, {17.7, 17.7}}, identifier: 'form-sections', label: 'Link'
+                          StaticText, 0x106bd4780, {{72.0, 2002.0}, {178.3, 20.3}}, identifier: 'form-sections', label: 'MOMENTUM supports'
+                          StaticText, 0x106bd48c0, {{72.0, 2022.3}, {329.7, 152.3}}, identifier: 'form-sections', label: '“My kill switch is almost instant. An hour or two at most, but many times an idea / option for improvement lasts only a few minutes before the mismatch or destructive rather than constructive nature of the choice becomes obvious and is abandoned” — his words”'
+                          Image, 0x106bd4a00, {{41.3, 2198.7}, {17.7, 17.7}}, identifier: 'form-sections', label: 'Link'
+                          StaticText, 0x106bd4b40, {{72.0, 2197.0}, {225.3, 20.3}}, identifier: 'form-sections', label: 'MOMENTUM correlates with'
+                          StaticText, 0x106bd4c80, {{72.0, 2217.3}, {311.0, 42.3}}, identifier: 'form-sections', label: '“Whatever Adam is working on or jazzed about is what's important”'
+                          StaticText, 0x106bd4dc0, {{18.0, 2326.7}, {263.3, 24.0}}, label: 'HIS ROUTES SENT IT HERE'
+                          ScrollView, 0x106bd4f00, {{0.0, 2378.7}, {440.0, 182.0}}, identifier: 'liveRoutesCarousel'
+                            Other, 0x106bd5040, {{0.0, 2378.7}, {11014.0, 182.0}}
+                              Button, 0x106bd5180, {{2.0, 2378.7}, {282.0, 182.0}}, identifier: 'live-record-adam-words-20261010-bd2d1d6e82f616c9', label: 'MOMENTUM EXPLAINS, “It is important to feel pulled…interested without an obsessive desire to feel interested., you said MOMENTUM'
+                                StaticText, 0x106bd52c0, {{19.0, 2398.8}, {151.3, 13.3}}, label: 'MOMENTUM EXPLAINS'
+                                Button, 0x106bd5400, {{211.7, 2394.7}, {20.7, 21.7}}, identifier: 'hand.thumbsup', label: 'Thumbs up'
+                                Button, 0x106bd5540, {{246.3, 2394.7}, {20.7, 21.7}}, identifier: 'hand.thumbsdown', label: 'Thumbs down'
+                                StaticText, 0x106bd5680, {{19.0, 2424.3}, {248.0, 68.3}}, label: '“It is important to feel pulled…interested without an obsessive desire to feel interested.'
+                                StaticText, 0x106bd57c0, {{19.0, 2500.7}, {141.7, 17.0}}, label: 'you said MOMENTUM'
+                              Button, 0x106bd5900, {{300.0, 2378.7}, {282.0, 182.0}}, identifier: 'live-record-conn-obs-fable5-2026-07-10-affect-work-momentum-compass', label: 'MOMENTUM SERVES THE PURPOSE OF, Momentum is Adam's compass: what gives a feeling of momentum is worthwhile, what gives a feeling of stagnation is worth avoiding, 0.90 · 2026-07-10'
+                                StaticText, 0x106bd5a40, {{317.0, 2398.8}, {179.3, 13.3}}, label: 'MOMENTUM SERVES THE PURPOSE OF'
+                                Button, 0x106bd5b80, {{509.7, 2394.7}, {20.7, 21.7}}, identifier: 'hand.thumbsup', label: 'Thumbs up'
+                                Button, 0x106bd5cc0, {{544.3, 2394.7}, {20.7, 21.7}}, identifier: 'hand.thumbsdown', label: 'Thumbs down'
+                                StaticText, 0x106bd5e00, {{317.0, 2424.3}, {248.0, 68.3}}, label: 'Momentum is Adam's compass: what gives a feeling of momentum is worthwhile, what gives a feeling of stagnation is worth avoiding'
+                                StaticText, 0x106bd5f40, {{317.0, 2500.7}, {119.0, 17.0}}, label: '0.90 · 2026-07-10'
+                              Button, 0x106bd6080, {{598.0, 2378.7}, {282.0, 182.0}}, identifier: 'live-record-conn-obs-fable5-2026-07-10-belief-work-distraction-rule', label: 'MOMENTUM DEPENDS ON, Anything Adam doesn't understand while working with AI agents is a distraction from the project, 0.90 · 2026-07-10'
+                                StaticText, 0x106bd61c0, {{615.0, 2398.8}, {170.3, 13.3}}, label: 'MOMENTUM DEPENDS ON'
+                                Button, 0x106bd6300, {{807.7, 2394.7}, {20.7, 21.7}}, identifier: 'hand.thumbsup', label: 'Thumbs up'
+                                Button, 0x106bd6440, {{842.3, 2394.7}, {20.7, 21.7}}, identifier: 'hand.thumbsdown', label: 'Thumbs down'
+                                StaticText, 0x106bd6580, {{615.0, 2424.3}, {244.3, 68.3}}, label: 'Anything Adam doesn't understand while working with AI agents is a distraction from the project'
+                                StaticText, 0x106bd66c0, {{615.0, 2500.7}, {119.0, 17.0}}, label: '0.90 · 2026-07-10'
+                              Button, 0x106bd6800, {{896.0, 2378.7}, {282.0, 182.0}}, identifier: 'live-record-cand-hiswords-2026-07-10-grand-gestures-not-small-steps', label: 'MOMENTUM PREFERS, “My opinion matters, and too many suggestions of taking small steps grinds on my nerves. I response to big ideas and grand gestures.” — his words, Momentum prefers thinking bigger when narrow incremental choices create friction instead of pull.'
+                                StaticText, 0x106bd6940, {{913.0, 2398.8}, {144.0, 13.3}}, label: 'MOMENTUM PREFERS'
+                                Button, 0x106bd6a80, {{1105.7, 2394.7}, {20.7, 21.7}}, identifier: 'hand.thumbsup', label: 'Thumbs up'
+                                Button, 0x106bd6bc0, {{1140.3, 2394.7}, {20.7, 21.7}}, identifier: 'hand.thumbsdown', label: 'Thumbs down'
+                                StaticText, 0x106bd6d00, {{913.0, 2424.3}, {247.3, 68.3}}, label: '“My opinion matters, and too many suggestions of taking small steps grinds on my nerves. I response to big ideas and grand gestures.” — his words'
+                                StaticText, 0x106bd6e40, {{913.0, 2500.7}, {243.7, 33.7}}, label: 'Momentum prefers thinking bigger when narrow incremental choices create friction instead of pull.'
+                              Button, 0x106bd6f80, {{1194.0, 2378.7}, {282.0, 182.0}}, identifier: 'live-record-cand-hiswords-2026-07-10-instant-kill-switch-two-week-verdict', label: 'MOMENTUM SUPPORTS, “My kill switch is almost instant. An hour or two at most, but many times an idea / option for improvement lasts only a few minutes before the mismatch or destructive rather than constructive nature of the choice becomes obvious and is abandoned” — his words, Momentum supports using a kill switch within minutes when mismatch, indecision, or stress replaces forward pull.'
+                                StaticText, 0x106bd70c0, {{1211.0, 2398.8}, {156.3, 13.3}}, label: 'MOMENTUM SUPPORTS'
+                                Button, 0x106bd7200, {{1403.7, 2394.7}, {20.7, 21.7}}, identifier: 'hand.thumbsup', label: 'Thumbs up'
+                                Button, 0x106bd7340, {{1438.3, 2394.7}, {20.7, 21.7}}, identifier: 'hand.thumbsdown', label: 'Thumbs down'
+                                StaticText, 0x106bd7480, {{1211.0, 2424.3}, {242.7, 68.3}}, label: '“My kill switch is almost instant. An hour or two at most, but many times an idea / option for improvement lasts only a few minutes before the mismatch or destructive rather than constructive nature of the choice becomes obvious and is abandoned” — his words'
+                                StaticText, 0x106bd75c0, {{1211.0, 2500.7}, {247.0, 33.7}}, label: 'Momentum supports using a kill switch within minutes when mismatch, indecision, or stress replaces forward pull.'
+                              Button, 0x106bd7700, {{1492.0, 2378.7}, {282.0, 182.0}}, identifier: 'live-record-conn-obs-fable5-2026-07-10-affect-ambition-jazzed-is-important', label: 'MOMENTUM CORRELATES WITH, Whatever Adam is working on or jazzed about is what's important, 0.80 · 2026-07-10'
+                                StaticText, 0x106bd7840, {{1509.0, 2398.8}, {184.3, 13.3}}, label: 'MOMENTUM CORRELATES WITH'
+                                Button, 0x106bd7980, {{1701.7, 2394.7}, {20.7, 21.7}}, identifier: 'hand.thumbsup', label: 'Thumbs up'
+                                Button, 0x106bd7ac0, {{1736.3, 2394.7}, {20.7, 21.7}}, identifier: 'hand.thumbsdown', label: 'Thumbs down'
+                                StaticText, 0x106bd7c00, {{1509.0, 2424.3}, {241.0, 80.0}}, label: 'Whatever Adam is working on or jazzed about is what's important'
+                                StaticText, 0x106bd7d40, {{1509.0, 2512.3}, {119.0, 17.0}}, label: '0.80 · 2026-07-10'
+                              Button, 0x106bd7e80, {{1790.0, 2378.7}, {282.0, 182.0}}, identifier: 'live-record-conn-obs-fable5-2026-07-10-affect-insight-capture-then-calm', label: 'MOMENTUM SUPPORTS, captures ideas in the moment on his phone, then returns when calm to judge them, 0.80 · 2026-07-10'
+                                StaticText, 0x106be8000, {{1807.0, 2398.8}, {156.3, 13.3}}, label: 'MOMENTUM SUPPORTS'
+                                Button, 0x106be8140, {{1999.7, 2394.7}, {20.7, 21.7}}, identifier: 'hand.thumbsup', label: 'Thumbs up'
+                                Button, 0x106be8280, {{2034.3, 2394.7}, {20.7, 21.7}}, identifier: 'hand.thumbsdown', label: 'Thumbs down'
+                                StaticText, 0x106be83c0, {{1807.0, 2424.3}, {248.0, 70.7}}, label: 'captures ideas in the moment on his phone, then returns when calm to judge them'
+                                StaticText, 0x106be8500, {{1807.0, 2503.0}, {119.0, 17.0}}, label: '0.80 · 2026-07-10'
+                              Button, 0x106be8640, {{2088.0, 2378.7}, {282.0, 182.0}}, identifier: 'live-record-conn-obs-hiswords-2026-07-10-compounding-filter-strong-yes', label: 'MOMENTUM REQUIRES, “so I have a clear filter... Done is a confident, clear internal framework of what matters vs what doesn't.  The evidence shows in my behavior and results.  Strong yes or nothing!” — his words, reminders.json, This supplies the dependable discerning criteria whose absence causes indecision and lost momentum.'
+                                StaticText, 0x106be8780, {{2105.0, 2398.8}, {151.7, 13.3}}, label: 'MOMENTUM REQUIRES'
+                                Button, 0x106be88c0, {{2297.7, 2394.7}, {20.7, 21.7}}, identifier: 'hand.thumbsup', label: 'Thumbs up'
+                                Button, 0x106be8a00, {{2332.3, 2394.7}, {20.7, 21.7}}, identifier: 'hand.thumbsdown', label: 'Thumbs down'
+                                StaticText, 0x106be8b40, {{2105.0, 2424.3}, {245.7, 68.3}}, label: '“so I have a clear filter... Done is a confident, clear internal framework of what matters vs what doesn't.  The evidence shows in my behavior and results.  Strong yes or nothing!” — his words, reminders.json'
+                                StaticText, 0x106be8c80, {{2105.0, 2500.7}, {243.0, 33.7}}, label: 'This supplies the dependable discerning criteria whose absence causes indecision and lost momentum.'
+                              Button, 0x106be8dc0, {{2386.0, 2378.7}, {282.0, 182.0}}, identifier: 'live-record-conn-obs-mined-2026-07-10-numbers-and-patterns-not-space', label: 'MOMENTUM PREFERS, Adam thinks in numbers and patterns, not in space or sequence, This connects momentum to preserving the patterns that disappear when his focus narrows too sharply.'
+                                StaticText, 0x106be8f00, {{2403.0, 2398.8}, {144.0, 13.3}}, label: 'MOMENTUM PREFERS'
+                                Button, 0x106be9040, {{2595.7, 2394.7}, {20.7, 21.7}}, identifier: 'hand.thumbsup', label: 'Thumbs up'
+                                Button, 0x106be9180, {{2630.3, 2394.7}, {20.7, 21.7}}, identifier: 'hand.thumbsdown', label: 'Thumbs down'
+                                StaticText, 0x106be92c0, {{2403.0, 2424.3}, {244.3, 78.3}}, label: 'Adam thinks in numbers and patterns, not in space or sequence'
+                                StaticText, 0x106be9400, {{2403.0, 2510.7}, {246.7, 33.7}}, label: 'This connects momentum to preserving the patterns that disappear when his focus narrows too sharply.'
+                              Button, 0x106be9540, {{2684.0, 2378.7}, {282.0, 182.0}}, identifier: 'live-record-conn-obs-claude-2026-07-02-belief-insight-stated-relationship', label: 'MOMENTUM REJECTS, 'Borrowed motivation' is a warning sign Adam acts on: when the drive behind a project isn't his own, he pauses or kills it, 0.75 · 2026-07-02'
+                                StaticText, 0x106be9680, {{2701.0, 2398.8}, {144.3, 13.3}}, label: 'MOMENTUM REJECTS'
+                                Button, 0x106be97c0, {{2893.7, 2394.7}, {20.7, 21.7}}, identifier: 'hand.thumbsup', label: 'Thumbs up'
+                                Button, 0x106be9900, {{2928.3, 2394.7}, {20.7, 21.7}}, identifier: 'hand.thumbsdown', label: 'Thumbs down'
+                                StaticText, 0x106be9a40, {{2701.0, 2424.3}, {239.7, 68.3}}, label: ''Borrowed motivation' is a warning sign Adam acts on: when the drive behind a project isn't his own, he pauses or kills it'
+                                StaticText, 0x106be9b80, {{2701.0, 2500.7}, {119.7, 17.0}}, label: '0.75 · 2026-07-02'
+                              Button, 0x106be9cc0, {{2982.0, 2378.7}, {282.0, 182.0}}, identifier: 'live-record-conn-obs-mined-2026-07-10-forward-wired-review-is-friction', label: 'MOMENTUM INHIBITS, Adam moves forward by default and experiences looking back as friction, 0.75 · 2026-07-10'
+                                StaticText, 0x106be9e00, {{2999.0, 2398.8}, {145.0, 13.3}}, label: 'MOMENTUM INHIBITS'
+                                Button, 0x106be9f40, {{3191.7, 2394.7}, {20.7, 21.7}}, identifier: 'hand.thumbsup', label: 'Thumbs up'
+                                Button, 0x106bea080, {{3226.3, 2394.7}, {20.7, 21.7}}, identifier: 'hand.thumbsdown', label: 'Thumbs down'
+                                StaticText, 0x106bea1c0, {{2999.0, 2424.3}, {245.3, 80.0}}, label: 'Adam moves forward by default and experiences looking back as friction'
+                                StaticText, 0x106bea300, {{2999.0, 2512.3}, {117.7, 17.0}}, label: '0.75 · 2026-07-10'
+                              Button, 0x106bea440, {{3280.0, 2378.7}, {282.0, 182.0}}, identifier: 'live-record-conn-obs-claude-2026-07-02-affect-work-stated-relationship', label: 'MOMENTUM CORRELATES WITH, Adam's mood drops hardest when tooling or setup blocks building, and lifts when something ships, This connects blocked forward movement with lost momentum and shipping with restored momentum.'
+                                StaticText, 0x106bea580, {{3297.0, 2398.8}, {184.3, 13.3}}, label: 'MOMENTUM CORRELATES WITH'
+                                Button, 0x106bea6c0, {{3489.7, 2394.7}, {20.7, 21.7}}, identifier: 'hand.thumbsup', label: 'Thumbs up'
+                                Button, 0x106bea800, {{3524.3, 2394.7}, {20.7, 21.7}}, identifier: 'hand.thumbsdown', label: 'Thumbs down'
+                                StaticText, 0x106bea940, {{3297.0, 2424.3}, {242.0, 68.3}}, label: 'Adam's mood drops hardest when tooling or setup blocks building, and lifts when something ships'
+                                StaticText, 0x106beaa80, {{3297.0, 2500.7}, {241.7, 33.7}}, label: 'This connects blocked forward movement with lost momentum and shipping with restored momentum.'
+                              Button, 0x106beabc0, {{3578.0, 2378.7}, {282.0, 182.0}}, identifier: 'live-record-conn-obs-hiswords-2026-07-10-eighty-twenty-reverse-engineer', label: 'MOMENTUM SUPPORTS, “I think about it like the 8020 principle... reverse engineer it into what are the behaviors that are allowing that 80%... stay in that area and that thought. processing and use my creativity in that area.” — his words, reminders.json, This connects thinking bigger with returning attention to the larger pattern that produces meaningful forward movement.'
+                                StaticText, 0x106bead00, {{3595.0, 2398.8}, {156.3, 13.3}}, label: 'MOMENTUM SUPPORTS'
+                                Button, 0x106beae40, {{3787.7, 2394.7}, {20.7, 21.7}}, identifier: 'hand.thumbsup', label: 'Thumbs up'
+                                Button, 0x106beaf80, {{3822.3, 2394.7}, {20.7, 21.7}}, identifier: 'hand.thumbsdown', label: 'Thumbs down'
+                                StaticText, 0x106beb0c0, {{3595.0, 2424.3}, {248.0, 68.3}}, label: '“I think about it like the 8020 principle... reverse engineer it into what are the behaviors that are allowing that 80%... stay in that area and that thought. processing and use my creativity in that area.” — his words, reminders.json'
+                                StaticText, 0x106beb200, {{3595.0, 2500.7}, {243.7, 33.7}}, label: 'This connects thinking bigger with returning attention to the larger pattern that produces meaningful forward movement.'
+                              Button, 0x106beb340, {{3876.0, 2378.7}, {282.0, 182.0}}, identifier: 'live-record-conn-obs-mined-2026-07-10-easy-innocent-changes-stick', label: 'MOMENTUM DEPENDS ON, any change that feels effortful will not be adopted, 0.65 · 2026-07-10'
+                                StaticText, 0x106beb480, {{3893.0, 2398.8}, {170.3, 13.3}}, label: 'MOMENTUM DEPENDS ON'
+                                Button, 0x106beb5c0, {{4085.7, 2394.7}, {20.7, 21.7}}, identifier: 'hand.thumbsup', label: 'Thumbs up'
+                                Button, 0x106beb700, {{4120.3, 2394.7}, {20.7, 21.7}}, identifier: 'hand.thumbsdown', label: 'Thumbs down'
+                                StaticText, 0x106beb840, {{3893.0, 2424.3}, {208.0, 80.0}}, label: 'any change that feels effortful will not be adopted'
+                                StaticText, 0x106beb980, {{3893.0, 2512.3}, {118.7, 17.0}}, label: '0.65 · 2026-07-10'
+                              Button, 0x106bebac0, {{4174.0, 2378.7}, {282.0, 182.0}}, identifier: 'live-record-adam-words-20261010-257d9e3ea6331eb0', label: 'MOMENTUM IS DIFFERENT FROM, “Then one of those modes again that feels apathetic, but I know it's not apathy.  It's  a familiar feeling. In the past, this sense of being pulled two different directions at the same time happened after I shared progress with others.  These summarizations feel like promises. They're rigid, and slow me down.   I've had some recent breakthroughs with how I defined cowboy AI. Those have been highs, filled with gratitude and wonder. But today I can't seem to get going. I think it's because I'm trying to go the same direction and I slept and wait and woke up to some new connections? Not sure.” — his words, Momentum is different from being pulled in competing directions by rigid promises that slow movement and prevent a clear next reaction.'
+                                StaticText, 0x106bebc00, {{4191.0, 2398.8}, {179.7, 13.3}}, label: 'MOMENTUM IS DIFFERENT FROM'
+                                Button, 0x106bebd40, {{4383.7, 2394.7}, {20.7, 21.7}}, identifier: 'hand.thumbsup', label: 'Thumbs up'
+                                Button, 0x106bebe80, {{4418.3, 2394.7}, {20.7, 21.7}}, identifier: 'hand.thumbsdown', label: 'Thumbs down'
+                                StaticText, 0x106bfc000, {{4191.0, 2424.3}, {245.0, 68.3}}, label: '“Then one of those modes again that feels apathetic, but I know it's not apathy.  It's  a familiar feeling. In the past, this sense of being pulled two different directions at the same time happened after I shared progress with others.  These summarizations feel like promises. They're rigid, and slow me down.   I've had some recent breakthroughs with how I defined cowboy AI. Those have been highs, filled with gratitude and wonder. But today I can't seem to get going. I think it's because I'm trying to go the same direction and I slept and wait and woke up to some new connections? Not sure.” — his words'
+                                StaticText, 0x106bfc140, {{4191.0, 2500.7}, {246.3, 33.7}}, label: 'Momentum is different from being pulled in competing directions by rigid promises that slow movement and prevent a clear next reaction.'
+                              Button, 0x106bfc280, {{4472.0, 2378.7}, {282.0, 182.0}}, identifier: 'live-record-adam-words-20261010-bd2d1d6e82f616c9', label: 'MOMENTUM EXPLAINS, “It is important to feel pulled…interested without an obsessive desire to feel interested., This record directly explains momentum as feeling pulled by interest without forcing or obsessing over that interest.'
+                                StaticText, 0x106bfc3c0, {{4489.0, 2398.8}, {151.3, 13.3}}, label: 'MOMENTUM EXPLAINS'
+                                Button, 0x106bfc500, {{4681.7, 2394.7}, {20.7, 21.7}}, identifier: 'hand.thumbsup', label: 'Thumbs up'
+                                Button, 0x106bfc640, {{4716.3, 2394.7}, {20.7, 21.7}}, identifier: 'hand.thumbsdown', label: 'Thumbs down'
+                                StaticText, 0x106bfc780, {{4489.0, 2424.3}, {248.0, 68.3}}, label: '“It is important to feel pulled…interested without an obsessive desire to feel interested.'
+                                StaticText, 0x106bfc8c0, {{4489.0, 2500.7}, {245.7, 33.7}}, label: 'This record directly explains momentum as feeling pulled by interest without forcing or obsessing over that interest.'
+                              Button, 0x106bfca00, {{4770.0, 2378.7}, {282.0, 182.0}}, identifier: 'live-record-adam-words-20261010-2dd13b3e6d6fe0c4', label: 'MOMENTUM IS DIFFERENT FROM, “This is weird. I’ve lost my momentum and my motivation, and I know I should think bigger, but I don’t know what to think about” — his words, Momentum is different from the stalled condition where motivation is gone and no larger direction can be discerned.'
+                                StaticText, 0x106bfcb40, {{4787.0, 2398.8}, {179.7, 13.3}}, label: 'MOMENTUM IS DIFFERENT FROM'
+                                Button, 0x106bfcc80, {{4979.7, 2394.7}, {20.7, 21.7}}, identifier: 'hand.thumbsup', label: 'Thumbs up'
+                                Button, 0x106bfcdc0, {{5014.3, 2394.7}, {20.7, 21.7}}, identifier: 'hand.thumbsdown', label: 'Thumbs down'
+                                StaticText, 0x106bfcf00, {{4787.0, 2424.3}, {247.3, 68.3}}, label: '“This is weird. I’ve lost my momentum and my motivation, and I know I should think bigger, but I don’t know what to think about” — his words'
+                                StaticText, 0x106bfd040, {{4787.0, 2500.7}, {246.7, 33.7}}, label: 'Momentum is different from the stalled condition where motivation is gone and no larger direction can be discerned.'
+                              Button, 0x106bfd180, {{5068.0, 2378.7}, {282.0, 182.0}}, identifier: 'live-record-adam-words-20261010-296f9e542cd84392', label: 'MOMENTUM DEPENDS ON, “Curiosity wins over confidence, so that’s been my real source of speed and momentum., Momentum depends on curiosity focusing attention on the task and removing worries that would otherwise interrupt flow.'
+                                StaticText, 0x106bfd2c0, {{5085.0, 2398.8}, {170.3, 13.3}}, label: 'MOMENTUM DEPENDS ON'
+                                Button, 0x106bfd400, {{5277.7, 2394.7}, {20.7, 21.7}}, identifier: 'hand.thumbsup', label: 'Thumbs up'
+                                Button, 0x106bfd540, {{5312.3, 2394.7}, {20.7, 21.7}}, identifier: 'hand.thumbsdown', label: 'Thumbs down'
+                                StaticText, 0x106bfd680, {{5085.0, 2424.3}, {248.0, 68.3}}, label: '“Curiosity wins over confidence, so that’s been my real source of speed and momentum.'
+                                StaticText, 0x106bfd7c0, {{5085.0, 2500.7}, {248.0, 33.7}}, label: 'Momentum depends on curiosity focusing attention on the task and removing worries that would otherwise interrupt flow.'
+                              Button, 0x106bfd900, {{5366.0, 2378.7}, {282.0, 182.0}}, identifier: 'live-record-adam-words-20261010-bdbfc20552b0e962', label: 'MOMENTUM IS DIFFERENT FROM, “Contemplation replaced action which felt like lost momentum…” — his words, Momentum is different from contemplation replacing action and making forward movement feel lost.'
+                                StaticText, 0x106bfda40, {{5383.0, 2398.8}, {179.7, 13.3}}, label: 'MOMENTUM IS DIFFERENT FROM'
+                                Button, 0x106bfdb80, {{5575.7, 2394.7}, {20.7, 21.7}}, identifier: 'hand.thumbsup', label: 'Thumbs up'
+                                Button, 0x106bfdcc0, {{5610.3, 2394.7}, {20.7, 21.7}}, identifier: 'hand.thumbsdown', label: 'Thumbs down'
+                                StaticText, 0x106bfde00, {{5383.0, 2424.3}, {247.3, 72.3}}, label: '“Contemplation replaced action which felt like lost momentum…” — his words'
+                                StaticText, 0x106bfdf40, {{5383.0, 2504.7}, {238.3, 33.7}}, label: 'Momentum is different from contemplation replacing action and making forward movement feel lost.'
+                              Button, 0x106bfe080, {{5664.0, 2378.7}, {282.0, 182.0}}, identifier: 'live-record-adam-words-20261010-6c77ce004896617e', label: 'MOMENTUM CONSTRAINS, “Questions asked by AI qualifies as a moment that triggers a kill switch.” — his words, Momentum constrains AI questioning by making it a kill switch when questions interrupt discernment and forward movement.'
+                                StaticText, 0x106bfe1c0, {{5681.0, 2398.8}, {172.7, 13.3}}, label: 'MOMENTUM CONSTRAINS'
+                                Button, 0x106bfe300, {{5873.7, 2394.7}, {20.7, 21.7}}, identifier: 'hand.thumbsup', label: 'Thumbs up'
+                                Button, 0x106bfe440, {{5908.3, 2394.7}, {20.7, 21.7}}, identifier: 'hand.thumbsdown', label: 'Thumbs down'
+                                StaticText, 0x106bfe580, {{5681.0, 2424.3}, {244.0, 68.3}}, label: '“Questions asked by AI qualifies as a moment that triggers a kill switch.” — his words'
+                                StaticText, 0x106bfe6c0, {{5681.0, 2500.7}, {246.0, 33.7}}, label: 'Momentum constrains AI questioning by making it a kill switch when questions interrupt discernment and forward movement.'
+                              Button, 0x106bfe800, {{5962.0, 2378.7}, {282.0, 182.0}}, identifier: 'live-record-adam-words-20261010-799b59d68b47e9f1', label: 'MOMENTUM DEPENDS ON, “I have neutral moments many times per day that I don't have a plan for how to react.  I want a plan. Done, looks like me knowing what to do, and doing it because the alternative to getting myself back in flow is such a useless alternative.” — his words, Momentum depends on having a dependable reaction when neutral moments interrupt the feeling of being pulled along.'
+                                StaticText, 0x106bfe940, {{5979.0, 2398.8}, {170.3, 13.3}}, label: 'MOMENTUM DEPENDS ON'
+                                Button, 0x106bfea80, {{6171.7, 2394.7}, {20.7, 21.7}}, identifier: 'hand.thumbsup', label: 'Thumbs up'
+                                Button, 0x106bfebc0, {{6206.3, 2394.7}, {20.7, 21.7}}, identifier: 'hand.thumbsdown', label: 'Thumbs down'
+                                StaticText, 0x106bfed00, {{5979.0, 2424.3}, {239.7, 68.3}}, label: '“I have neutral moments many times per day that I don't have a plan for how to react.  I want a plan. Done, looks like me knowing what to do, and doing it because the alternative to getting myself back in flow is such a useless alternative.” — his words'
+                                StaticText, 0x106bfee40, {{5979.0, 2500.7}, {247.0, 33.7}}, label: 'Momentum depends on having a dependable reaction when neutral moments interrupt the feeling of being pulled along.'
+                              Button, 0x106bfef80, {{6260.0, 2378.7}, {282.0, 182.0}}, identifier: 'live-record-adam-words-20261010-77e19acda9a1f678', label: 'MOMENTUM IS DIFFERENT FROM, “Specialization is a kill switch for me. Always has been. Always will.” — his words, Momentum is different from specialization because narrowing focus too sharply removes the larger patterns that create pull.'
+                                StaticText, 0x106bff0c0, {{6277.0, 2398.8}, {179.7, 13.3}}, label: 'MOMENTUM IS DIFFERENT FROM'
+                                Button, 0x106bff200, {{6469.7, 2394.7}, {20.7, 21.7}}, identifier: 'hand.thumbsup', label: 'Thumbs up'
+                                Button, 0x106bff340, {{6504.3, 2394.7}, {20.7, 21.7}}, identifier: 'hand.thumbsdown', label: 'Thumbs down'
+                                StaticText, 0x106bff480, {{6277.0, 2424.3}, {237.0, 68.3}}, label: '“Specialization is a kill switch for me. Always has been. Always will.” — his words'
+                                StaticText, 0x106bff5c0, {{6277.0, 2500.7}, {242.0, 33.7}}, label: 'Momentum is different from specialization because narrowing focus too sharply removes the larger patterns that create pull.'
+                              Button, 0x106bff700, {{6558.0, 2378.7}, {282.0, 182.0}}, identifier: 'live-record-adam-words-20261010-ad383caf2b6a77ae', label: 'MOMENTUM REQUIRES, “It wasn't until I paused to consider why I felt blah that the reason occurred to me.  I did not have strong Yes reason to do what I did today.” — his words, Momentum requires a dependable strong Yes criterion so the next action can be discerned instead of merely chosen.'
+                                StaticText, 0x106bff840, {{6575.0, 2398.8}, {151.7, 13.3}}, label: 'MOMENTUM REQUIRES'
+                                Button, 0x106bff980, {{6767.7, 2394.7}, {20.7, 21.7}}, identifier: 'hand.thumbsup', label: 'Thumbs up'
+                                Button, 0x106bffac0, {{6802.3, 2394.7}, {20.7, 21.7}}, identifier: 'hand.thumbsdown', label: 'Thumbs down'
+                                StaticText, 0x106bffc00, {{6575.0, 2424.3}, {237.7, 68.3}}, label: '“It wasn't until I paused to consider why I felt blah that the reason occurred to me.  I did not have strong Yes reason to do what I did today.” — his words'
+                                StaticText, 0x106bffd40, {{6575.0, 2500.7}, {247.7, 33.7}}, label: 'Momentum requires a dependable strong Yes criterion so the next action can be discerned instead of merely chosen.'
+                              Button, 0x106bffe80, {{6856.0, 2378.7}, {282.0, 182.0}}, identifier: 'live-record-adam-words-20261010-10f6f52726724de4', label: 'MOMENTUM DEPENDS ON, “Curiosity is the fuel. That is the new pattern that’s emerged., Momentum depends on curiosity as the fuel that sustains pull and forward movement.'
+                                StaticText, 0x10ec10000, {{6873.0, 2398.8}, {170.3, 13.3}}, label: 'MOMENTUM DEPENDS ON'
+                                Button, 0x10ec10140, {{7065.7, 2394.7}, {20.7, 21.7}}, identifier: 'hand.thumbsup', label: 'Thumbs up'
+                                Button, 0x10ec10280, {{7100.3, 2394.7}, {20.7, 21.7}}, identifier: 'hand.thumbsdown', label: 'Thumbs down'
+                                StaticText, 0x10ec103c0, {{6873.0, 2424.3}, {221.3, 78.3}}, label: '“Curiosity is the fuel. That is the new pattern that’s emerged.'
+                                StaticText, 0x10ec10500, {{6873.0, 2510.7}, {246.0, 33.7}}, label: 'Momentum depends on curiosity as the fuel that sustains pull and forward movement.'
+                              Button, 0x10ec10640, {{7154.0, 2378.7}, {282.0, 182.0}}, identifier: 'live-record-adam-words-20261010-9e41893caf6bc8c9', label: 'MOMENTUM REQUIRES, “I’ve been spending more time working and what I’m confident in rather than what I’m curious about, and so now I understand that sure what I’m confident in is important, but what part of that am I curious about? so I wanna learn within these realms” — his words, Momentum requires curiosity inside areas where Adam has enough confidence to access dependable discerning criteria.'
+                                StaticText, 0x10ec10780, {{7171.0, 2398.8}, {151.7, 13.3}}, label: 'MOMENTUM REQUIRES'
+                                Button, 0x10ec108c0, {{7363.7, 2394.7}, {20.7, 21.7}}, identifier: 'hand.thumbsup', label: 'Thumbs up'
+                                Button, 0x10ec10a00, {{7398.3, 2394.7}, {20.7, 21.7}}, identifier: 'hand.thumbsdown', label: 'Thumbs down'
+                                StaticText, 0x10ec10b40, {{7171.0, 2424.3}, {242.7, 68.3}}, label: '“I’ve been spending more time working and what I’m confident in rather than what I’m curious about, and so now I understand that sure what I’m confident in is important, but what part of that am I curious about? so I wanna learn within these realms” — his words'
+                                StaticText, 0x10ec10c80, {{7171.0, 2500.7}, {245.0, 33.7}}, label: 'Momentum requires curiosity inside areas where Adam has enough confidence to access dependable discerning criteria.'
+                              Button, 0x10ec10dc0, {{7452.0, 2378.7}, {282.0, 182.0}}, identifier: 'live-record-adam-words-20261010-9dd7ba38b45fa6f6', label: 'MOMENTUM PREFERS, “I lose momentum when I think too much about low-level, hands-on execution.  The opposite is also true.  I gain momentum when I think too much about high-level, hands-off execution.” — his words, Momentum prefers high-level hands-off execution because it preserves the broader view and patterns that pull Adam forward.'
+                                StaticText, 0x10ec10f00, {{7469.0, 2398.8}, {144.0, 13.3}}, label: 'MOMENTUM PREFERS'
+                                Button, 0x10ec11040, {{7661.7, 2394.7}, {20.7, 21.7}}, identifier: 'hand.thumbsup', label: 'Thumbs up'
+                                Button, 0x10ec11180, {{7696.3, 2394.7}, {20.7, 21.7}}, identifier: 'hand.thumbsdown', label: 'Thumbs down'
+                                StaticText, 0x10ec112c0, {{7469.0, 2424.3}, {236.0, 68.3}}, label: '“I lose momentum when I think too much about low-level, hands-on execution.  The opposite is also true.  I gain momentum when I think too much about high-level, hands-off execution.” — his words'
+                                StaticText, 0x10ec11400, {{7469.0, 2500.7}, {242.0, 33.7}}, label: 'Momentum prefers high-level hands-off execution because it preserves the broader view and patterns that pull Adam forward.'
+                              Button, 0x10ec11540, {{7750.0, 2378.7}, {282.0, 182.0}}, identifier: 'live-record-adam-words-20261010-7d8a275a40a8aa4e', label: 'MOMENTUM REQUIRES, “Satisfying results, or kill it.” — his words, Momentum requires satisfying results or the process should be stopped with a kill switch.'
+                                StaticText, 0x10ec11680, {{7767.0, 2398.8}, {151.7, 13.3}}, label: 'MOMENTUM REQUIRES'
+                                Button, 0x10ec117c0, {{7959.7, 2394.7}, {20.7, 21.7}}, identifier: 'hand.thumbsup', label: 'Thumbs up'
+                                Button, 0x10ec11900, {{7994.3, 2394.7}, {20.7, 21.7}}, identifier: 'hand.thumbsdown', label: 'Thumbs down'
+                                StaticText, 0x10ec11a40, {{7767.0, 2424.3}, {248.0, 53.3}}, label: '“Satisfying results, or kill it.” — his words'
+                                StaticText, 0x10ec11b80, {{7767.0, 2485.7}, {246.7, 33.7}}, label: 'Momentum requires satisfying results or the process should be stopped with a kill switch.'
+                              Button, 0x10ec11cc0, {{8048.0, 2378.7}, {282.0, 182.0}}, identifier: 'live-record-adam-words-20261010-70bd47abc1e69076', label: 'MOMENTUM REJECTS, “I want to know with a passion that specialization is a kill switch for me.” — his words, Momentum rejects specialization because narrowed focus separates Adam from the bigger picture and patterns that sustain pull.'
+                                StaticText, 0x10ec11e00, {{8065.0, 2398.8}, {144.3, 13.3}}, label: 'MOMENTUM REJECTS'
+                                Button, 0x10ec11f40, {{8257.7, 2394.7}, {20.7, 21.7}}, identifier: 'hand.thumbsup', label: 'Thumbs up'
+                                Button, 0x10ec12080, {{8292.3, 2394.7}, {20.7, 21.7}}, identifier: 'hand.thumbsdown', label: 'Thumbs down'
+                                StaticText, 0x10ec121c0, {{8065.0, 2424.3}, {241.0, 68.3}}, label: '“I want to know with a passion that specialization is a kill switch for me.” — his words'
+                                StaticText, 0x10ec12300, {{8065.0, 2500.7}, {237.0, 33.7}}, label: 'Momentum rejects specialization because narrowed focus separates Adam from the bigger picture and patterns that sustain pull.'
+                              Button, 0x10ec12440, {{8346.0, 2378.7}, {282.0, 182.0}}, identifier: 'live-record-adam-words-20261010-10de909cf043a79d', label: 'MOMENTUM DEPENDS ON, “Feels like confidence is more important than ever right now., Momentum depends on confidence because Adam loses it when he cannot access dependable discerning criteria for choosing what happens next.'
+                                StaticText, 0x10ec12580, {{8363.0, 2398.8}, {170.3, 13.3}}, label: 'MOMENTUM DEPENDS ON'
+                                Button, 0x10ec126c0, {{8555.7, 2394.7}, {20.7, 21.7}}, identifier: 'hand.thumbsup', label: 'Thumbs up'
+                                Button, 0x10ec12800, {{8590.3, 2394.7}, {20.7, 21.7}}, identifier: 'hand.thumbsdown', label: 'Thumbs down'
+                                StaticText, 0x10ec12940, {{8363.0, 2424.3}, {244.3, 78.3}}, label: '“Feels like confidence is more important than ever right now.'
+                                StaticText, 0x10ec12a80, {{8363.0, 2510.7}, {241.3, 33.7}}, label: 'Momentum depends on confidence because Adam loses it when he cannot access dependable discerning criteria for choosing what happens next.'
+                              Button, 0x10ec12bc0, {{8644.0, 2378.7}, {282.0, 182.0}}, identifier: 'live-record-adam-words-20261010-bab6628030057825', label: 'MOMENTUM CONTAINS, “10pm check in. Great day today.  Real progress. A kill switch trigger mid-day., This account contains lost motivation, a kill switch, regained motivation, and momentum continuing through the day.'
+                                StaticText, 0x10ec12d00, {{8661.0, 2398.8}, {154.0, 13.3}}, label: 'MOMENTUM CONTAINS'
+                                Button, 0x10ec12e40, {{8853.7, 2394.7}, {20.7, 21.7}}, identifier: 'hand.thumbsup', label: 'Thumbs up'
+                                Button, 0x10ec12f80, {{8888.3, 2394.7}, {20.7, 21.7}}, identifier: 'hand.thumbsdown', label: 'Thumbs down'
+                                StaticText, 0x10ec130c0, {{8661.0, 2424.3}, {248.0, 75.7}}, label: '“10pm check in. Great day today.  Real progress. A kill switch trigger mid-day.'
+                                StaticText, 0x10ec13200, {{8661.0, 2508.0}, {248.0, 33.7}}, label: 'This account contains lost motivation, a kill switch, regained motivation, and momentum continuing through the day.'
+                              Button, 0x10ec13340, {{8942.0, 2378.7}, {282.0, 182.0}}, identifier: 'live-record-adam-words-20261010-ab98c17dd9cdae94', label: 'MOMENTUM IS SIMILAR TO, “This really helped. I had not considered how it felt to work on Cowboyai.  It can best be described as "pulling at me"., The experience of CowboyAI pulling at Adam matches momentum as attention sustained without forced choice.'
+                                StaticText, 0x10ec13480, {{8959.0, 2398.8}, {180.3, 13.3}}, label: 'MOMENTUM IS SIMILAR TO'
+                                Button, 0x10ec135c0, {{9151.7, 2394.7}, {20.7, 21.7}}, identifier: 'hand.thumbsup', label: 'Thumbs up'
+                                Button, 0x10ec13700, {{9186.3, 2394.7}, {20.7, 21.7}}, identifier: 'hand.thumbsdown', label: 'Thumbs down'
+                                StaticText, 0x10ec13840, {{8959.0, 2424.3}, {248.0, 68.3}}, label: '“This really helped. I had not considered how it felt to work on Cowboyai.  It can best be described as "pulling at me".'
+                                StaticText, 0x10ec13980, {{8959.0, 2500.7}, {248.0, 33.7}}, label: 'The experience of CowboyAI pulling at Adam matches momentum as attention sustained without forced choice.'
+                              Button, 0x10ec13ac0, {{9240.0, 2378.7}, {282.0, 182.0}}, identifier: 'live-record-adam-words-20261010-85713fb2b0422d42', label: 'MOMENTUM ENABLES, “Working with AI confirms every day that the more I work with it, the smarter I get and how to work with it. It feels like the Adam pattern has completed, and my only job is to let it compound” — his words, Momentum enables the established skill and process to continue compounding without Adam forcing each next step.'
+                                StaticText, 0x10ec13c00, {{9257.0, 2398.8}, {145.3, 13.3}}, label: 'MOMENTUM ENABLES'
+                                Button, 0x10ec13d40, {{9449.7, 2394.7}, {20.7, 21.7}}, identifier: 'hand.thumbsup', label: 'Thumbs up'
+                                Button, 0x10ec13e80, {{9484.3, 2394.7}, {20.7, 21.7}}, identifier: 'hand.thumbsdown', label: 'Thumbs down'
+                                StaticText, 0x110860000, {{9257.0, 2424.3}, {234.7, 68.3}}, label: '“Working with AI confirms every day that the more I work with it, the smarter I get and how to work with it. It feels like the Adam pattern has completed, and my only job is to let it compound” — his words'
+                                StaticText, 0x110860140, {{9257.0, 2500.7}, {243.3, 33.7}}, label: 'Momentum enables the established skill and process to continue compounding without Adam forcing each next step.'
+                              Button, 0x110860280, {{9538.0, 2378.7}, {282.0, 182.0}}, identifier: 'live-record-adam-words-20261010-72834f2ef02b3565', label: 'MOMENTUM SUPPORTS, “I’m amazed how I am able to keep my motivation and focus with AI, even when it can sometimes hallucinate.” — his words, Sustained motivation and focus despite mistakes shows attention remaining pulled toward the work.'
+                                StaticText, 0x1108603c0, {{9555.0, 2398.8}, {156.3, 13.3}}, label: 'MOMENTUM SUPPORTS'
+                                Button, 0x110860500, {{9747.7, 2394.7}, {20.7, 21.7}}, identifier: 'hand.thumbsup', label: 'Thumbs up'
+                                Button, 0x110860640, {{9782.3, 2394.7}, {20.7, 21.7}}, identifier: 'hand.thumbsdown', label: 'Thumbs down'
+                                StaticText, 0x110860780, {{9555.0, 2424.3}, {247.3, 68.3}}, label: '“I’m amazed how I am able to keep my motivation and focus with AI, even when it can sometimes hallucinate.” — his words'
+                                StaticText, 0x1108608c0, {{9555.0, 2500.7}, {242.7, 33.7}}, label: 'Sustained motivation and focus despite mistakes shows attention remaining pulled toward the work.'
+                              Button, 0x110860a00, {{9836.0, 2378.7}, {282.0, 182.0}}, identifier: 'live-record-adam-words-20261010-e62354c7998cac68', label: 'MOMENTUM REQUIRES, “Exactly.  The mantra I use to remind myself of this is "Think Bigger" Here is newly refined defintion of "Thinking Bigger": Think broader., When narrowed attention destroys momentum, restoring it requires thinking broader so larger patterns become visible again.'
+                                StaticText, 0x110860b40, {{9853.0, 2398.8}, {151.7, 13.3}}, label: 'MOMENTUM REQUIRES'
+                                Button, 0x110860c80, {{10045.7, 2394.7}, {20.7, 21.7}}, identifier: 'hand.thumbsup', label: 'Thumbs up'
+                                Button, 0x110860dc0, {{10080.3, 2394.7}, {20.7, 21.7}}, identifier: 'hand.thumbsdown', label: 'Thumbs down'
+                                StaticText, 0x110860f00, {{9853.0, 2424.3}, {248.0, 68.3}}, label: '“Exactly.  The mantra I use to remind myself of this is "Think Bigger" Here is newly refined defintion of "Thinking Bigger": Think broader.'
+                                StaticText, 0x110861040, {{9853.0, 2500.7}, {246.3, 33.7}}, label: 'When narrowed attention destroys momentum, restoring it requires thinking broader so larger patterns become visible again.'
+                              Button, 0x110861180, {{10134.0, 2378.7}, {282.0, 182.0}}, identifier: 'live-record-adam-words-20261010-5014c245eead9fda', label: 'MOMENTUM VALUES, “OK. Everything is set up. and now I will share with you some rambling of how I plan to execute the strategy., The recorded strategy values speed and momentum as the condition that keeps execution happening.'
+                                StaticText, 0x1108612c0, {{10151.0, 2398.8}, {136.7, 13.3}}, label: 'MOMENTUM VALUES'
+                                Button, 0x110861400, {{10343.7, 2394.7}, {20.7, 21.7}}, identifier: 'hand.thumbsup', label: 'Thumbs up'
+                                Button, 0x110861540, {{10378.3, 2394.7}, {20.7, 21.7}}, identifier: 'hand.thumbsdown', label: 'Thumbs down'
+                                StaticText, 0x110861680, {{10151.0, 2424.3}, {248.0, 68.3}}, label: '“OK. Everything is set up. and now I will share with you some rambling of how I plan to execute the strategy.'
+                                StaticText, 0x1108617c0, {{10151.0, 2500.7}, {243.3, 33.7}}, label: 'The recorded strategy values speed and momentum as the condition that keeps execution happening.'
+                              Button, 0x110861900, {{10432.0, 2378.7}, {282.0, 182.0}}, identifier: 'live-record-adam-words-20261010-a4c642429246f68e', label: 'MOMENTUM DEPENDS ON, “The value of engaging in curiosity constrained within what I’m confident in will out will have more value than just pure curiosity alone whenever I see some type of whenever I experience satisfaction at the end of a build and during a build, what as my satisfaction rises, that’s when I’ll know., This makes confidence and satisfaction observable criteria for whether curiosity is producing momentum rather than undirected activity.'
+                                StaticText, 0x110861a40, {{10449.0, 2398.8}, {170.3, 13.3}}, label: 'MOMENTUM DEPENDS ON'
+                                Button, 0x110861b80, {{10641.7, 2394.7}, {20.7, 21.7}}, identifier: 'hand.thumbsup', label: 'Thumbs up'
+                                Button, 0x110861cc0, {{10676.3, 2394.7}, {20.7, 21.7}}, identifier: 'hand.thumbsdown', label: 'Thumbs down'
+                                StaticText, 0x110861e00, {{10449.0, 2424.3}, {236.0, 68.3}}, label: '“The value of engaging in curiosity constrained within what I’m confident in will out will have more value than just pure curiosity alone whenever I see some type of whenever I experience satisfaction at the end of a build and during a build, what as my satisfaction rises, that’s when I’ll know.'
+                                StaticText, 0x110861f40, {{10449.0, 2500.7}, {246.0, 33.7}}, label: 'This makes confidence and satisfaction observable criteria for whether curiosity is producing momentum rather than undirected activity.'
+                              Button, 0x110862080, {{10730.0, 2378.7}, {282.0, 182.0}}, identifier: 'live-record-adam-words-20261010-dde64eb92ece1cd6', label: 'MOMENTUM EXPLAINS, “I am happy with this step of the system, however something about this feels thin.  I am energized by the thought of architecting a system to create context.” — his words, Architecting the larger system restores the broad context and energized pull that support momentum.'
+                                StaticText, 0x1108621c0, {{10747.0, 2398.8}, {151.3, 13.3}}, label: 'MOMENTUM EXPLAINS'
+                                Button, 0x110862300, {{10939.7, 2394.7}, {20.7, 21.7}}, identifier: 'hand.thumbsup', label: 'Thumbs up'
+                                Button, 0x110862440, {{10974.3, 2394.7}, {20.7, 21.7}}, identifier: 'hand.thumbsdown', label: 'Thumbs down'
+                                StaticText, 0x110862580, {{10747.0, 2424.3}, {246.0, 68.3}}, label: '“I am happy with this step of the system, however something about this feels thin.  I am energized by the thought of architecting a system to create context.” — his words'
+                                StaticText, 0x1108626c0, {{10747.0, 2500.7}, {242.7, 33.7}}, label: 'Architecting the larger system restores the broad context and energized pull that support momentum.'
+                          Other, 0x110862800, {{0.0, 0.0}, {0.0, 0.0}}, identifier: 'theme-fields'
+                        Other, 0x110862940, {{407.0, 62.0}, {30.0, 832.0}}, label: 'Vertical scroll bar, 3 pages', value: 0%
+                          Other, 0x110862a80, {{434.0, 607.0}, {3.0, 284.0}}
+                        Other, 0x110862bc0, {{407.0, 62.0}, {30.0, 832.0}}, label: 'Vertical scroll bar, 3 pages', value: 0%
+                          Other, 0x110862d00, {{434.0, 607.0}, {3.0, 284.0}}
+              Toolbar, 0x110862e40, {{0.0, 0.0}, {440.0, 956.0}}, identifier: 'Toolbar', label: 'Toolbar'
+                Other, 0x110862f80, {{0.0, 0.0}, {440.0, 956.0}}
+    Window, 0x1108630c0, {{0.0, 0.0}, {440.0, 956.0}}
+      Other, 0x110863200, {{0.0, 0.0}, {440.0, 956.0}}
+        Other, 0x110863340, {{0.0, 0.0}, {440.0, 956.0}}
+Path to element:
+ →Application, 0x10ec07340, pid: 96717, label: 'CowboyAI Trial'
+Query chain:
+ →Find: Target Application 'com.adamblair.cowboyai.savytrial'
+  Output: {
+    Application, 0x110863480, pid: 96717, label: 'CowboyAI Trial'
+  }

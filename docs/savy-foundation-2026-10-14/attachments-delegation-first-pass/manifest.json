@@ -1,0 +1,283 @@
+[
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "D2BC1BBD-8375-4225-A9BE-F50C1D65E023",
+        "deviceName" : "CowboyAI-Recovery",
+        "exportedFileName" : "A108898B-1FEC-47F8-870C-78511895824B",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-10-14 at 11.30.12 AM",
+        "timestamp" : 1792002612.935
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "D2BC1BBD-8375-4225-A9BE-F50C1D65E023",
+        "deviceName" : "CowboyAI-Recovery",
+        "exportedFileName" : "D4A3850B-80F3-4D0B-8DF2-8CC908D7B5F2.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "App UI hierarchy for com.adamblair.cowboyai_1_8E2868BD-7974-4972-B65C-E16782243B06.savytrial",
+        "timestamp" : 1792002614.582
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "D2BC1BBD-8375-4225-A9BE-F50C1D65E023",
+        "deviceName" : "CowboyAI-Recovery",
+        "exportedFileName" : "EFBEC7A3-B0E9-49B8-A136-A8E9245F8FFD",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-10-14 at 11.30.14 AM",
+        "timestamp" : 1792002614.583
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "D2BC1BBD-8375-4225-A9BE-F50C1D65E023",
+        "deviceName" : "CowboyAI-Recovery",
+        "exportedFileName" : "F51DCC99-37A8-40D0-976A-49AD38660B58",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-10-14 at 11.30.10 AM",
+        "timestamp" : 1792002610.805
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "D2BC1BBD-8375-4225-A9BE-F50C1D65E023",
+        "deviceName" : "CowboyAI-Recovery",
+        "exportedFileName" : "C2DAB4C6-8AC8-4C0B-BE71-62F5DB075650.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "App UI hierarchy for com.adamblair.cowboyai_1_56E18CA3-D21F-43EE-BF27-8DDB15B21859.savytrial",
+        "timestamp" : 1792002611.758
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "D2BC1BBD-8375-4225-A9BE-F50C1D65E023",
+        "deviceName" : "CowboyAI-Recovery",
+        "exportedFileName" : "F31921C0-3E42-4E6D-9CAD-C9AB363C0376",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-10-14 at 11.30.11 AM",
+        "timestamp" : 1792002611.758
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "D2BC1BBD-8375-4225-A9BE-F50C1D65E023",
+        "deviceName" : "CowboyAI-Recovery",
+        "exportedFileName" : "CC070A42-1AD3-4114-9DB3-804187E60A7C",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-10-14 at 11.30.08 AM",
+        "timestamp" : 1792002608.743
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "D2BC1BBD-8375-4225-A9BE-F50C1D65E023",
+        "deviceName" : "CowboyAI-Recovery",
+        "exportedFileName" : "E3A3EF6C-5703-40A6-883E-BB40AB2F0B08.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "App UI hierarchy for com.adamblair.cowboyai_1_EA6C6516-0E8A-4A03-AE0E-4293639E2DE1.savytrial",
+        "timestamp" : 1792002609.705
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "D2BC1BBD-8375-4225-A9BE-F50C1D65E023",
+        "deviceName" : "CowboyAI-Recovery",
+        "exportedFileName" : "E2544D59-D3C6-42EE-84E1-18F30EA10809",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-10-14 at 11.30.09 AM",
+        "timestamp" : 1792002609.705
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "D2BC1BBD-8375-4225-A9BE-F50C1D65E023",
+        "deviceName" : "CowboyAI-Recovery",
+        "exportedFileName" : "2A5D8D86-6D8C-4C11-A04D-CFA685E67D33",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-10-14 at 11.30.07 AM",
+        "timestamp" : 1792002607.97
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "D2BC1BBD-8375-4225-A9BE-F50C1D65E023",
+        "deviceName" : "CowboyAI-Recovery",
+        "exportedFileName" : "50618987-6B3B-4D28-9F5D-3C9B96729C27",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-10-14 at 11.30.08 AM",
+        "timestamp" : 1792002608.26
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "D2BC1BBD-8375-4225-A9BE-F50C1D65E023",
+        "deviceName" : "CowboyAI-Recovery",
+        "exportedFileName" : "80D5CD7A-142F-4A4C-9F19-772147CC3CC0.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Title keeps its question above the answer_0_E4343726-4AC4-48A5-97EB-0A027571AC33.png",
+        "timestamp" : 1792002606.389
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "D2BC1BBD-8375-4225-A9BE-F50C1D65E023",
+        "deviceName" : "CowboyAI-Recovery",
+        "exportedFileName" : "BAB0A466-A953-45C8-8172-F2C40449BCC8",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-10-14 at 11.30.04 AM",
+        "timestamp" : 1792002604.894
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "D2BC1BBD-8375-4225-A9BE-F50C1D65E023",
+        "deviceName" : "CowboyAI-Recovery",
+        "exportedFileName" : "C2FBA5EE-9736-4685-84D3-84B0A935F6B0",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-10-14 at 11.30.05 AM",
+        "timestamp" : 1792002605.445
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "D2BC1BBD-8375-4225-A9BE-F50C1D65E023",
+        "deviceName" : "CowboyAI-Recovery",
+        "exportedFileName" : "A05CCDCE-B768-4F73-AC74-FA0C2944F3CC",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-10-14 at 11.30.04 AM",
+        "timestamp" : 1792002604.006
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "D2BC1BBD-8375-4225-A9BE-F50C1D65E023",
+        "deviceName" : "CowboyAI-Recovery",
+        "exportedFileName" : "83F8C754-04D6-4B75-8C5F-7B154AA8E82B",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-10-14 at 11.30.04 AM",
+        "timestamp" : 1792002604.296
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "D2BC1BBD-8375-4225-A9BE-F50C1D65E023",
+        "deviceName" : "CowboyAI-Recovery",
+        "exportedFileName" : "521CCDDA-9C0B-493F-AB1C-90EB977B378F",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-10-14 at 11.29.59 AM",
+        "timestamp" : 1792002599.696
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "D2BC1BBD-8375-4225-A9BE-F50C1D65E023",
+        "deviceName" : "CowboyAI-Recovery",
+        "exportedFileName" : "366E9FE9-4543-4C39-9B25-443D93ADE188",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-10-14 at 11.30.00 AM",
+        "timestamp" : 1792002600.183
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "D2BC1BBD-8375-4225-A9BE-F50C1D65E023",
+        "deviceName" : "CowboyAI-Recovery",
+        "exportedFileName" : "BA35FDF3-019C-4B55-B0CF-18E7521385EB",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-10-14 at 11.29.58 AM",
+        "timestamp" : 1792002598.304
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "D2BC1BBD-8375-4225-A9BE-F50C1D65E023",
+        "deviceName" : "CowboyAI-Recovery",
+        "exportedFileName" : "ABED3A19-1C23-441C-B45E-65C423852305",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-10-14 at 11.29.56 AM",
+        "timestamp" : 1792002596.68
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "D2BC1BBD-8375-4225-A9BE-F50C1D65E023",
+        "deviceName" : "CowboyAI-Recovery",
+        "exportedFileName" : "FB3D78D7-7A8E-4EDA-80AA-07AD1147FE3B",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-10-14 at 11.29.55 AM",
+        "timestamp" : 1792002595.283
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "D2BC1BBD-8375-4225-A9BE-F50C1D65E023",
+        "deviceName" : "CowboyAI-Recovery",
+        "exportedFileName" : "3A0381B3-2756-45A2-A688-CC96BB2BAD0A.mp4",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Screen Recording 2026-10-14 at 11.29.47 AM.mp4",
+        "timestamp" : 1792002587.545
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "D2BC1BBD-8375-4225-A9BE-F50C1D65E023",
+        "deviceName" : "CowboyAI-Recovery",
+        "exportedFileName" : "57382ED7-D0CA-41CC-B729-B270224180B3.txt",
+        "isAssociatedWithFailure" : true,
+        "suggestedHumanReadableName" : "Complete Issue Description.txt"
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "D2BC1BBD-8375-4225-A9BE-F50C1D65E023",
+        "deviceName" : "CowboyAI-Recovery",
+        "exportedFileName" : "9B8604FC-F1B4-43FC-A4D8-0F77BD35B1B9.txt",
+        "isAssociatedWithFailure" : true,
+        "suggestedHumanReadableName" : "App UI hierarchy for com.adamblair.cowboyai_0_8FC60F16-7D0E-4D7F-B47A-A801FC938413.savytrial",
+        "timestamp" : 1792002614.726
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "D2BC1BBD-8375-4225-A9BE-F50C1D65E023",
+        "deviceName" : "CowboyAI-Recovery",
+        "exportedFileName" : "33E1F7D8-DF6F-4680-9828-E0672D75A560",
+        "isAssociatedWithFailure" : true,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-10-14 at 11.30.14 AM",
+        "timestamp" : 1792002614.726
+      }
+    ],
+    "testIdentifier" : "CowboyFoundationUITests/testDelegationQuestionsStayAboveTheirAnswersAfterTypingAndRelaunch()",
+    "testIdentifierURL" : "test://com.apple.xcode/CowboyAITrial/SAVYUITests/CowboyFoundationUITests/testDelegationQuestionsStayAboveTheirAnswersAfterTypingAndRelaunch"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "D2BC1BBD-8375-4225-A9BE-F50C1D65E023",
+        "deviceName" : "CowboyAI-Recovery",
+        "exportedFileName" : "B3A78AC4-926F-409F-B544-A4C0A6529373.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Saved entry reopens its exact response after relaunch_0_85B21FA6-5BF2-49C6-86D7-2217708732DA.png",
+        "timestamp" : 1792002673.331
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "D2BC1BBD-8375-4225-A9BE-F50C1D65E023",
+        "deviceName" : "CowboyAI-Recovery",
+        "exportedFileName" : "989C615A-3290-4869-B58F-180B880F9B78.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Actual dictionary evidence from the live response_0_02BBA64F-97C6-41B7-AC36-D782A09262AD.png",
+        "timestamp" : 1792002639.848
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "D2BC1BBD-8375-4225-A9BE-F50C1D65E023",
+        "deviceName" : "CowboyAI-Recovery",
+        "exportedFileName" : "0C5520B4-D4B2-4AFD-86E3-A5C27950A747.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Live FLOW response from the normal SAVY entry_0_30054B9C-7016-493A-BAC8-1FFB8F1ED518.png",
+        "timestamp" : 1792002629.348
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "D2BC1BBD-8375-4225-A9BE-F50C1D65E023",
+        "deviceName" : "CowboyAI-Recovery",
+        "exportedFileName" : "5277A75C-D8A4-44F1-BBC6-4E169EAD395E.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Original SAVY entry with writing and Ask_0_F5D4A2F5-B682-4550-9034-E2D8238AFC65.png",
+        "timestamp" : 1792002627.088
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "D2BC1BBD-8375-4225-A9BE-F50C1D65E023",
+        "deviceName" : "CowboyAI-Recovery",
+        "exportedFileName" : "0C88250B-7FEA-42D9-BD94-FFEC4E3A4C31.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Empty Ask focuses the original writing field_0_0588C1D7-FC69-4A5C-8868-6DF2D75E91E8.png",
+        "timestamp" : 1792002625.719
+      }
+    ],
+    "testIdentifier" : "CowboyFoundationUITests/testSharedEntryAsksLiveCowboyAIAndReopensItsExactSavedAnswer()",
+    "testIdentifierURL" : "test://com.apple.xcode/CowboyAITrial/SAVYUITests/CowboyFoundationUITests/testSharedEntryAsksLiveCowboyAIAndReopensItsExactSavedAnswer"
+  }
+]

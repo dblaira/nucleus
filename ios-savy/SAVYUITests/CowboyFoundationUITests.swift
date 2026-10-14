@@ -76,10 +76,16 @@ final class CowboyFoundationUITests: XCTestCase {
         XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 5))
         XCTAssertTrue(app.staticTexts["entryAskWritingHint"].exists)
         XCTAssertTrue(title.isHittable, "Empty Ask must reveal and focus the existing writing field")
+        let prompt = app.staticTexts["TitlePrompt"]
+        XCTAssertTrue(prompt.isHittable)
+        XCTAssertEqual(prompt.label, "What do I want?")
+        XCTAssertGreaterThan(title.frame.minY, prompt.frame.maxY, "The cursor must start below the question")
         XCTAssertFalse(app.staticTexts["live-answer-question"].exists, "An empty entry must not submit the template prompts")
         attach("Empty Ask focuses the original writing field")
         app.typeText("What is FLOW?")
         XCTAssertEqual(title.value as? String, "What is FLOW?", "Typing after Ask must go into the existing field")
+        XCTAssertTrue(prompt.isHittable, "The question must remain visible while typing")
+        XCTAssertEqual(prompt.label, "What do I want?")
         XCTAssertFalse(app.staticTexts["entryAskWritingHint"].exists)
         XCTAssertTrue(ask.isHittable, "Ask must remain reachable above the keyboard")
         attach("Original SAVY entry with writing and Ask")
@@ -110,10 +116,45 @@ final class CowboyFoundationUITests: XCTestCase {
         reveal(saved); saved.tap()
         let origin = app.buttons["entryOrigin"]
         XCTAssertTrue(origin.waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["Original CowboyAI response"].exists)
+        XCTAssertEqual(origin.label, "What do I want?\nWhat is FLOW?")
         origin.tap()
         XCTAssertEqual(app.staticTexts["live-answer-question"].label, "What is FLOW?")
         XCTAssertTrue(app.staticTexts["form-explanation"].label.contains("FLOW"))
         attach("Saved entry reopens its exact response after relaunch")
+    }
+
+    func testDelegationQuestionsStayAboveTheirAnswersAfterTypingAndRelaunch() {
+        launch()
+        openEntry("Action")
+        app.buttons["entryAskCowboyAI"].tap()
+        let fields = [
+            ("Title", "What do I want?", "A clear next step."),
+            ("WhenIAm", "When I am...I like to", "When I am ready, I like to begin."),
+            ("DoneLooksLike", "Done looks like...", "One finished step.\nMy words stay here.")
+        ]
+        for (id, question, answer) in fields {
+            let field = element(id)
+            let prompt = app.staticTexts[id + "Prompt"]
+            revealEntryField(field)
+            field.tap()
+            app.typeText(answer)
+            XCTAssertEqual(field.value as? String, answer)
+            XCTAssertTrue(prompt.isHittable, "The question must stay visible for \(id)")
+            XCTAssertEqual(prompt.label, question)
+            XCTAssertGreaterThan(field.frame.minY, prompt.frame.maxY)
+            attach("\(id) keeps its question above the answer")
+        }
+        app.buttons["KeyboardRowDone"].tap()
+        app.terminate(); launch(reset: false)
+        XCTAssertTrue(element("sharedEntryForm").waitForExistence(timeout: 5))
+        for (id, question, answer) in fields {
+            revealEntryField(element(id))
+            XCTAssertEqual(element(id).value as? String, answer)
+            XCTAssertEqual(app.staticTexts[id + "Prompt"].label, question)
+        }
+        attach("Recovered delegation keeps all questions and exact answers")
+        app.buttons["entryCancel"].tap()
     }
 
     func testConnectionFailureRetainsTheWholeEntryForRetry() {
@@ -159,6 +200,27 @@ final class CowboyFoundationUITests: XCTestCase {
 
     private func element(_ id: String) -> XCUIElement {
         app.descendants(matching: .any).matching(identifier: id).firstMatch
+    }
+
+    private func revealEntryField(_ target: XCUIElement) {
+        let form = element("sharedEntryForm")
+        let ask = app.buttons["entryAskCowboyAI"]
+        for _ in 0..<12 {
+            let top = app.buttons["entrySave"].frame.maxY + 20
+            let bottom = ask.frame.minY - 16
+            let targetFrame = target.exists ? target.frame : nil
+            if let targetFrame, target.isHittable,
+               targetFrame.minY > top + 40, targetFrame.maxY < bottom { return }
+            let moveDown = targetFrame.map { $0.minY <= top + 40 } ?? false
+            let distance = min(120, (bottom - top) / 2)
+            let startY = moveDown ? top + 30 : bottom - 20
+            let start = app.coordinate(withNormalizedOffset: .zero)
+                .withOffset(CGVector(dx: form.frame.midX, dy: startY))
+            let end = app.coordinate(withNormalizedOffset: .zero)
+                .withOffset(CGVector(dx: form.frame.midX, dy: startY + (moveDown ? distance : -distance)))
+            start.press(forDuration: 0.05, thenDragTo: end)
+        }
+        XCTFail("Could not reveal the delegation answer above Ask and the keyboard")
     }
 
     private func reveal(_ target: XCUIElement, up: Bool = true) {
