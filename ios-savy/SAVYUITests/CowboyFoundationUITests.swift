@@ -127,6 +127,91 @@ final class CowboyFoundationUITests: XCTestCase {
         attach("Pinned response reopens after relaunch")
     }
 
+    func testDoneDeleteAndReopenSurviveRelaunchWithoutReturningToTheCarousel() {
+        launch()
+        setPinned("ui-source", true)
+        reveal(element("responseSwipe-ui-source"))
+        element("responseSwipe-ui-source").swipeRight()
+        let first = element("recent-ui-source")
+        for action in ["swipeDone", "swipeUnpin", "swipeDelete"] {
+            XCTAssertTrue(first.buttons[action].firstMatch.isHittable, "The original three swipe controls must be reachable")
+        }
+        attach("CowboyAI right swipe with Done Unpin and Delete")
+        first.buttons["swipeDone"].firstMatch.tap()
+        XCTAssertTrue(first.waitForNonExistence(timeout: 5))
+        XCTAssertFalse(app.buttons["latest-ui-source"].exists)
+        let completed = app.buttons["completedResponsesToggle"].firstMatch
+        reveal(completed)
+        XCTAssertEqual(completed.value as? String, "1")
+        XCTAssertFalse(element("completedResponse-ui-source").exists, "Completed starts collapsed")
+        attach("Done moves the answer into the collapsed Completed list")
+
+        reveal(element("responseSwipe-ui-source-2"), up: false)
+        element("responseSwipe-ui-source-2").swipeRight()
+        let deleted = element("recent-ui-source-2")
+        XCTAssertTrue(deleted.buttons["swipeDelete"].firstMatch.isHittable)
+        deleted.buttons["swipeDelete"].firstMatch.tap()
+        XCTAssertTrue(deleted.waitForNonExistence(timeout: 5))
+        XCTAssertFalse(app.buttons["latest-ui-source-2"].exists)
+
+        // Fixtures capture the same identities on every launch, like a server refresh.
+        app.terminate(); launch(reset: false)
+        XCTAssertFalse(element("recent-ui-source").exists)
+        XCTAssertFalse(element("recent-ui-source-2").exists)
+        XCTAssertFalse(app.buttons["latest-ui-source"].exists)
+        XCTAssertFalse(app.buttons["latest-ui-source-2"].exists)
+        XCTAssertTrue(app.buttons["latest-ui-source-3"].exists)
+        reveal(completed)
+        XCTAssertEqual(completed.value as? String, "1")
+        completed.tap()
+        let completedRow = element("completedResponse-ui-source")
+        reveal(completedRow)
+        attach("Completed answer is available after restarting")
+        XCTAssertTrue(completedRow.buttons["Reopen"].firstMatch.isHittable, app.debugDescription)
+        completedRow.buttons["A sample question for checking this screen."].firstMatch.tap()
+        XCTAssertTrue(app.staticTexts["live-answer-question"].waitForExistence(timeout: 5))
+        XCTAssertEqual(app.staticTexts["live-answer-question"].label, "A sample question for checking this screen.")
+        XCTAssertFalse(app.staticTexts["live-answer-error"].exists)
+        attach("Completed answer opens its original question and response")
+        app.buttons["Back"].firstMatch.tap()
+        reveal(completedRow)
+        completedRow.buttons["Reopen"].firstMatch.tap()
+        XCTAssertTrue(completedRow.waitForNonExistence(timeout: 5))
+        reveal(element("responseSwipe-ui-source"), up: false)
+        XCTAssertEqual(element("recent-ui-source").value as? String, "Pinned")
+        XCTAssertFalse(element("recent-ui-source-2").exists)
+        XCTAssertFalse(completed.exists)
+        attach("Reopened answer retains its pin and deleted entry stays gone")
+        app.terminate(); launch(reset: false)
+        XCTAssertTrue(app.buttons["latest-ui-source"].exists)
+        XCTAssertFalse(app.buttons["latest-ui-source-2"].exists)
+    }
+
+    func testCompletedResponseCanBeDeletedFromItsMenu() {
+        launch()
+        let gesture = element("responseSwipe-ui-source")
+        reveal(gesture)
+        gesture.swipeRight()
+        element("recent-ui-source").buttons["swipeDone"].firstMatch.tap()
+        let completed = app.buttons["completedResponsesToggle"].firstMatch
+        reveal(completed)
+        completed.tap()
+        let row = element("completedResponse-ui-source")
+        reveal(row)
+        row.press(forDuration: 1)
+        let delete = app.buttons["Delete"].firstMatch
+        XCTAssertTrue(delete.waitForExistence(timeout: 5))
+        attach("Completed response offers Reopen and Delete")
+        delete.tap()
+        XCTAssertTrue(row.waitForNonExistence(timeout: 5))
+        XCTAssertFalse(completed.exists)
+        app.terminate(); launch(reset: false)
+        XCTAssertFalse(element("recent-ui-source").exists)
+        XCTAssertFalse(app.buttons["latest-ui-source"].exists)
+        XCTAssertFalse(completed.exists)
+        XCTAssertTrue(app.buttons["latest-ui-source-2"].exists)
+    }
+
     func testSharedEntryAsksLiveCowboyAIAndReopensItsExactSavedAnswer() {
         launch()
         openEntry("Reminder")

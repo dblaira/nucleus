@@ -881,6 +881,7 @@ struct SavyCompletedReminderRow: View {
             Button("Reopen") { onToggle() }
             Button("Delete", role: .destructive) { onDelete() }
         }
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("completedReminderRow")
         .accessibilityLabel(reminder.title.isEmpty ? "Untitled" : reminder.title)
     }

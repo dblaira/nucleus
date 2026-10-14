@@ -217,13 +217,21 @@ final class ConversationArchive {
         }
     }
 
-    func records(for source: URL) -> [ArchivedConversation] {
+    func records(for source: URL, status: ReminderStatus = .active) -> [ArchivedConversation] {
         let source = ConversationOrigin.canonicalSource(source)
         return conversations.filter { $0.latest.source == source }
             .map { record in
                 (record: record, metadata: metadata(for: record.displayed, in: record))
             }
-            .sorted { compareUpNext($0.metadata, $1.metadata) }
+            .filter { $0.metadata.status == status }
+            .sorted {
+                if status == .completed {
+                    let left = $0.metadata.completedAt ?? .distantPast
+                    let right = $1.metadata.completedAt ?? .distantPast
+                    return left == right ? $0.record.id < $1.record.id : left > right
+                }
+                return compareUpNext($0.metadata, $1.metadata)
+            }
             .map { $0.record }
     }
 
@@ -265,6 +273,8 @@ final class ConversationArchive {
             let origin = try ConversationOrigin.capture(response, source: source)
             var next = conversations
             if let index = next.firstIndex(where: { $0.id == origin.conversationID }) {
+                // Keep the removed record intact when an already-running request returns.
+                if next[index].cardMetadata?.status == .deleted { return next[index].latest }
                 if next[index].latest.id == origin.id { return next[index].latest }
                 next[index].latest = origin
             } else {
@@ -291,10 +301,44 @@ final class ConversationArchive {
         value.origin = origin
         value.title = origin.question
         value.createdAt = previous.createdAt
+        value.status = previous.status
+        value.completedAt = previous.completedAt
         value.pinned = previous.pinned
         value.upNextOrder = previous.upNextOrder
         value.updatedAt = Date()
         value.needsSync = false
+        next[index].cardMetadata = value
+        return persist(next)
+    }
+
+    // Re_Call's complete / uncomplete / soft-delete lifecycle. The original pair stays
+    // under its existing identity so a history import or server refresh cannot revive it.
+    @discardableResult
+    func complete(_ origin: ConversationOrigin) -> Bool { setStatus(.completed, for: origin) }
+
+    @discardableResult
+    func uncomplete(_ origin: ConversationOrigin) -> Bool { setStatus(.active, for: origin) }
+
+    @discardableResult
+    func delete(_ origin: ConversationOrigin) -> Bool { setStatus(.deleted, for: origin) }
+
+    private func setStatus(_ status: ReminderStatus, for origin: ConversationOrigin) -> Bool {
+        guard let index = conversations.firstIndex(where: { $0.id == origin.conversationID }) else {
+            errorMessage = "This response could not be found in the saved conversations."
+            return false
+        }
+        let record = conversations[index]
+        var value = metadata(for: record.displayed, in: record)
+        guard value.status != status else { return true }
+        // A stale open page cannot reopen a deleted entry.
+        guard value.status != .deleted else { return false }
+        let now = Date()
+        value.status = status
+        if status == .completed { value.completedAt = now }
+        if status == .active { value.completedAt = nil }
+        value.updatedAt = now
+        value.needsSync = false
+        var next = conversations
         next[index].cardMetadata = value
         return persist(next)
     }
@@ -311,6 +355,7 @@ final class ConversationArchive {
         }
         var next = conversations
         var value = metadata(for: origin)
+        guard value.status == .active else { return false }
         value.pinned.toggle()
         value.updatedAt = Date()
         value.needsSync = false
@@ -319,7 +364,9 @@ final class ConversationArchive {
         next[index].pinnedAt = value.pinned ? Date() : nil
 
         // SAVY's togglePin ordering: insert at the front of the new pin group.
-        var group = next.compactMap(\.cardMetadata).filter { $0.origin?.source == origin.source && $0.pinned == value.pinned }
+        var group = next.compactMap(\.cardMetadata).filter {
+            $0.origin?.source == origin.source && $0.status == .active && $0.pinned == value.pinned
+        }
             .sorted(by: compareUpNext)
         group.removeAll { $0.id == value.id }
         group.insert(value, at: 0)

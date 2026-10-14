@@ -177,6 +177,103 @@ final class CowboyFoundationTests: XCTestCase {
         XCTAssertEqual(reloaded.record(questionID: "one", source: source)?.displayed.responseJSON, one.responseJSON)
     }
 
+    @MainActor func testCompletedResponseSurvivesRefreshAndReopensWithItsPinnedAnswerAndNotes() throws {
+        let file = try directory().appendingPathComponent("archive.json")
+        let source = URL(string: "http://127.0.0.1:8766")!
+        let archive = ConversationArchive(fileURL: file)
+        let origin = try XCTUnwrap(archive.capture(response(), source: source))
+        XCTAssertTrue(archive.togglePin(origin))
+        var details = archive.metadata(for: origin)
+        details.notes = "Keep my exact notes.\nAnd this line."
+        XCTAssertTrue(archive.saveMetadata(details, for: origin))
+        let before = try XCTUnwrap(archive.record(questionID: origin.questionID, source: source))
+
+        XCTAssertTrue(archive.complete(origin))
+        XCTAssertTrue(archive.records(for: source).isEmpty)
+        XCTAssertEqual(archive.records(for: source, status: .completed).map(\.displayed), [origin])
+        let completedAt = try XCTUnwrap(archive.metadata(for: origin).completedAt)
+        // An already-open editor, reimport, and a newer server answer must all respect Done.
+        XCTAssertTrue(archive.saveMetadata(details, for: origin))
+        XCTAssertTrue(archive.importHistory(try JSONEncoder().encode([before]), source: source))
+        let refreshed = try XCTUnwrap(archive.capture(response(text: "A later server answer."), source: source))
+        XCTAssertEqual(archive.metadata(for: origin).completedAt, completedAt)
+        XCTAssertTrue(archive.records(for: source).isEmpty)
+
+        let reloaded = ConversationArchive(fileURL: file)
+        XCTAssertEqual(reloaded.records(for: source, status: .completed).map(\.displayed), [origin])
+        XCTAssertTrue(reloaded.uncomplete(origin))
+        let reopened = try XCTUnwrap(reloaded.records(for: source).first)
+        XCTAssertEqual(reopened.displayed, origin)
+        XCTAssertEqual(reopened.latest, refreshed)
+        XCTAssertEqual(reopened.pinnedAt, before.pinnedAt)
+        XCTAssertEqual(reopened.cardMetadata?.notes, details.notes)
+        XCTAssertNil(reopened.cardMetadata?.completedAt)
+        XCTAssertTrue(reloaded.records(for: source, status: .completed).isEmpty)
+        XCTAssertEqual(ConversationArchive(fileURL: file).records(for: source).first, reopened)
+    }
+
+    @MainActor func testDeletedResponsesStayHiddenWithoutChangingOtherSourcesOrLinkedWriting() throws {
+        let folder = try directory()
+        let file = folder.appendingPathComponent("archive.json")
+        let source = URL(string: "http://127.0.0.1:8766")!
+        let otherSource = URL(string: "http://localhost:9999")!
+        let archive = ConversationArchive(fileURL: file)
+        let active = try XCTUnwrap(archive.capture(response("active"), source: source))
+        let completed = try XCTUnwrap(archive.capture(response("completed"), source: source))
+        let other = try XCTUnwrap(archive.capture(response("active"), source: otherSource))
+        XCTAssertTrue(archive.togglePin(active))
+        var staleDetails = archive.metadata(for: active)
+        staleDetails.notes = "My saved writing.\nKeep it intact."
+        XCTAssertTrue(archive.saveMetadata(staleDetails, for: active))
+        let originalRecords = archive.conversations
+        let entryFile = folder.appendingPathComponent("entries.json")
+        let entries = ReminderStore(cacheURL: entryFile)
+        var linked = Reminder(); linked.title = "My linked action."; linked.origin = active
+        XCTAssertTrue(entries.save(linked))
+        let linkedBytes = try Data(contentsOf: entryFile)
+
+        XCTAssertTrue(archive.complete(completed))
+        XCTAssertTrue(archive.delete(active))
+        XCTAssertTrue(archive.delete(completed))
+        XCTAssertTrue(archive.records(for: source).isEmpty)
+        XCTAssertTrue(archive.records(for: source, status: .completed).isEmpty)
+        XCTAssertEqual(archive.records(for: otherSource).map(\.displayed), [other])
+        XCTAssertTrue(archive.importHistory(try JSONEncoder().encode(originalRecords), source: source))
+        XCTAssertNotNil(archive.capture(try response("active", text: "Refreshed server answer."), source: source))
+        XCTAssertNotNil(archive.capture(try response("completed", text: "A different refreshed answer."), source: source))
+        XCTAssertTrue(archive.saveMetadata(staleDetails, for: active))
+        XCTAssertFalse(archive.uncomplete(active))
+        XCTAssertFalse(archive.togglePin(active))
+
+        let reloaded = ConversationArchive(fileURL: file)
+        XCTAssertTrue(reloaded.records(for: source).isEmpty)
+        XCTAssertTrue(reloaded.records(for: source, status: .completed).isEmpty)
+        XCTAssertEqual(reloaded.records(for: source, status: .deleted).count, 2)
+        XCTAssertEqual(reloaded.record(questionID: active.questionID, source: source)?.displayed, active)
+        XCTAssertEqual(reloaded.record(questionID: active.questionID, source: source)?.latest, active)
+        XCTAssertEqual(reloaded.record(questionID: completed.questionID, source: source)?.displayed, completed)
+        XCTAssertEqual(reloaded.metadata(for: active).notes, staleDetails.notes)
+        XCTAssertEqual(try Data(contentsOf: entryFile), linkedBytes)
+        XCTAssertEqual(ReminderStore(cacheURL: entryFile).reminders.first?.origin, active)
+    }
+
+    @MainActor func testFailedDeleteKeepsTheVisibleResponseAndItsSavedRecord() throws {
+        let folder = try directory()
+        let file = folder.appendingPathComponent("archive.json")
+        let source = URL(string: "http://127.0.0.1:8766")!
+        let archive = ConversationArchive(fileURL: file)
+        let origin = try XCTUnwrap(archive.capture(response(), source: source))
+        let original = try Data(contentsOf: file)
+        let backup = folder.appendingPathComponent("preserved.json")
+        try FileManager.default.moveItem(at: file, to: backup)
+        // Force an actual atomic-write failure, without changing the in-memory record.
+        try FileManager.default.createDirectory(at: file, withIntermediateDirectories: false)
+        XCTAssertFalse(archive.delete(origin))
+        XCTAssertNotNil(archive.errorMessage)
+        XCTAssertEqual(archive.records(for: source).map(\.displayed), [origin])
+        XCTAssertEqual(try Data(contentsOf: backup), original)
+    }
+
     @MainActor func testMetadataAndLinkedEntryRetainTheirExactOriginAndWriting() throws {
         let dir = try directory(); let source = URL(string: "http://127.0.0.1:8766")!
         let archive = ConversationArchive(fileURL: dir.appendingPathComponent("archive.json"))
