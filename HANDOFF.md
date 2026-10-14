@@ -36,6 +36,20 @@ Read this file, then `README.md`, then `AGENTS.md` in the Cowboyai repo for the 
 
 Tests: `.venv/bin/python -m pytest` — 108 pass.
 
+## 2026-10-14 — the model lane was dead since 2026-10-12: the raw nucleus passed Codex's input cap
+
+The 2026-10-12 grade showed two model calls failing "no rollout found for thread id". Cause: since 2026-10-10 the word
+sync (`com.adamblair.cowboyai-word-sync`, his standing approval "My words do not need approval") adds his exact words to
+the accepted graph — 896 records in four days, graph 218 KB → 1.47 MB, ledger 113 KB → 1.35 MB. The raw nucleus became
+2,849,256 characters; Codex refuses input over 1,048,576 ("input_too_large"), prints a session id anyway, writes no
+rollout, and the resume fails. Fix (`ask.py`, `CODEX_MAX_CHARS`): when the raw files pass the cap, the Codex lane takes
+the compact form (every accepted record one per line + his dictionary + routes, his words untouched; 427,946 chars
+today). Proven on a copy: "What is the capital of France?" → I don't know, codex, gate pass, 25.6 s.
+
+Eight tests in `test_narrative`, `test_middle`, `test_twopass` fail since the graph grew: they assert what his records
+said on 2026-10-07 (e.g. the doctor entry now reaches `cand-hiswords-…` records that the word sync accepted). They are
+about his data, not the code; whoever owns the word sync re-baselines them with him.
+
 ## 2026-10-14 — the daily grade note to Apple Notes is OFF
 
 Adam, 2026-10-14, on the "nucleus grade" notes: "Find out where this is coming from and stop the nightly feed." "They are

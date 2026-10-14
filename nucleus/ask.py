@@ -19,6 +19,8 @@ from . import narrative as narrative_module
 from . import phrases as phrases_module
 from . import prompt as prompt_module
 from .compact import compact_nucleus
+
+CODEX_MAX_CHARS = 1_000_000      # Codex refuses input over 1,048,576 characters; room is left for the question and contract
 from .graph import load_graph
 from .store import Store
 
@@ -181,6 +183,12 @@ def ask(question: str, store: Store | None = None, surface: str = "cli",
         nucleus, sizes = compact_nucleus(graph)
     else:
         nucleus, sizes = prompt_module.nucleus_text()
+        if len(nucleus) > CODEX_MAX_CHARS:
+            # Since 2026-10-10 his exact words flow into the accepted graph on his standing approval; the raw files passed
+            # Codex's input cap (1,048,576 chars) on 2026-10-12 and every model call failed "no rollout found". The
+            # compact form holds every accepted record and his dictionary, his words untouched, well under the cap.
+            nucleus, sizes = compact_nucleus(graph)
+            sizes = {**sizes, "compact because raw chars": len(prompt_module.nucleus_text()[0])}
     prompt = prompt_module.build(question, reading, nucleus, graph, hits)
     bytes_sent = len(prompt.encode("utf-8"))
     store.finish_step(question_id, STEP_NUCLEUS, note=f"{bytes_sent} bytes; " + ", ".join(f"{k} {v}" for k, v in sizes.items()))

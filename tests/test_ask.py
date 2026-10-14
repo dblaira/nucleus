@@ -20,7 +20,9 @@ def reading(outcome="no", **extra):
 
 def fake_model(payload):
     def call(prompt: str) -> ModelReply:
-        assert "===== graph:" in prompt and "===== meanings:" in prompt and "===== the contract =====" in prompt
+        # the raw files, or the compact form when the raw files pass Codex's input cap (2026-10-14)
+        assert ("===== graph:" in prompt and "===== meanings:" in prompt) or ("===== accepted records" in prompt and "===== meanings.txt" in prompt)
+        assert "===== the contract =====" in prompt
         assert "have no accepted decision in the ledger. Do not cite them." in prompt
         return ModelReply(provider="fake", model="fake", text=json.dumps(payload))
     return call
@@ -140,3 +142,17 @@ def test_a_refused_answer_is_not_reused(store):
     ask_module.ask("Anything?", store=store, model_call=counting, brief=lambda q: reading())
     ask_module.ask("Anything?", store=store, model_call=counting, brief=lambda q: reading())
     assert len(calls) == 2
+
+
+def test_a_nucleus_over_codex_cap_goes_compact(monkeypatch, tmp_path):
+    # 2026-10-12: the raw files passed Codex's 1,048,576-character cap and every model call failed
+    from nucleus import ask as ask_module
+    seen = {}
+    monkeypatch.setattr(ask_module.prompt_module, "nucleus_text", lambda: ("x" * 1_200_000, {"graph": 1_200_000}))
+    monkeypatch.setattr(ask_module, "compact_nucleus", lambda graph: ("compact", {"records": 7}))
+    monkeypatch.setattr(ask_module.prompt_module, "build", lambda q, r, n, g, h: seen.setdefault("nucleus", n) or "p")
+    monkeypatch.setattr(ask_module.model_module, "door", lambda: "codex")
+    raw = "x" * 1_200_000
+    assert len(raw) > ask_module.CODEX_MAX_CHARS
+    nucleus, sizes = (ask_module.compact_nucleus(None) if len(raw) > ask_module.CODEX_MAX_CHARS else (raw, {}))
+    assert nucleus == "compact"
