@@ -93,7 +93,12 @@ final class CowboyFoundationUITests: XCTestCase {
         let explanation = app.staticTexts["form-explanation"]
         XCTAssertTrue(explanation.waitForExistence(timeout: 45), app.debugDescription)
         XCTAssertTrue(explanation.label.contains("FLOW"))
-        XCTAssertEqual(app.staticTexts["live-answer-question"].label, "What is FLOW?")
+        let question = app.staticTexts["live-answer-question"]
+        let answer = app.staticTexts["middle-answer"]
+        XCTAssertEqual(question.label, "What is FLOW?")
+        XCTAssertTrue(answer.exists)
+        XCTAssertLessThan(question.frame.minY, answer.frame.minY)
+        XCTAssertLessThan(answer.frame.minY, explanation.frame.minY)
         attach("Live FLOW response from the normal SAVY entry")
         let word = app.buttons["live-meaning-FLOW"]
         reveal(word); word.tap()
@@ -121,6 +126,7 @@ final class CowboyFoundationUITests: XCTestCase {
         origin.tap()
         XCTAssertEqual(app.staticTexts["live-answer-question"].label, "What is FLOW?")
         XCTAssertTrue(app.staticTexts["form-explanation"].label.contains("FLOW"))
+        XCTAssertLessThan(app.staticTexts["middle-answer"].frame.minY, app.staticTexts["form-explanation"].frame.minY)
         attach("Saved entry reopens its exact response after relaunch")
     }
 

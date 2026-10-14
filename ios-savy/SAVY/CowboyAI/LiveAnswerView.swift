@@ -1,10 +1,8 @@
 import SwiftUI
 
-/// The answer arriving on the Decide home, built from the CowboyAI app's own pieces
-/// (Cowboyai/authority-hub/ios/CowboyAI/LiveAnswerView.swift): the cream question panel and red kicker, the
-/// cream answer panel, the home's section titles, the results carousel card. The meaning comes right under the
-/// question. Adam, 2026-09-14: "I don't wanna have to scroll past 60 fucking rows of my words to get down to
-/// the goddamn meaning."
+/// The question, short answer, and supporting explanation appear in reading order.
+/// Evidence carousels follow them. Adam, 2026-09-14: "I don't wanna have to scroll past 60 fucking rows of my
+/// words to get down to the goddamn meaning."
 struct LiveAnswerSection: View {
     var model: AskModel
     let selectRecord: (AnswerParts.Record) -> Void
@@ -97,7 +95,7 @@ struct LiveAnswerSection: View {
                     .background(CowboyTheme.red, in: RoundedRectangle(cornerRadius: 8))
                     .padding(.horizontal, 18)
                     .padding(.top, 24)
-                    .padding(.bottom, 8)
+                answerExplanation
             }
 
             if answered {
@@ -127,15 +125,6 @@ struct LiveAnswerSection: View {
                         .fixedSize(horizontal: false, vertical: true)
                         .textSelection(.enabled)
                         .accessibilityIdentifier("live-answer-text")
-                    explanation
-                    ForEach(Array(parts.other.enumerated()), id: \.offset) { _, block in
-                        Text(block)
-                            .font(CowboyTheme.readingSerif(22, relativeTo: .body))
-                            .foregroundStyle(.white)
-                            .lineSpacing(5)
-                            .fixedSize(horizontal: false, vertical: true)
-                            .textSelection(.enabled)
-                    }
                 } else {
                     kicker(a.status.replacingOccurrences(of: "_", with: " ").uppercased(), color: .white)
                     Text(a.text ?? a.gate_reason ?? "")
@@ -154,46 +143,11 @@ struct LiveAnswerSection: View {
         }
     }
 
-    /// Adam's own form for the middle answer, as he laid it out in "The Middle Answer" on 2026-10-07: EXPLANATION,
-    /// then ANSWER with its sections, then his question with room to write under it. The rows are drawn the way his
+    /// Keep the answer short, then show its supporting explanation and sections.
+    /// The rows are drawn the way his
     /// Decide card in SAVY draws a theme (ReminderFormView.postDecideSection): a crimson icon, 16 pt, in a 24 pt column.
     @ViewBuilder
     private func answerForm(_ m: AskResponse.Form) -> some View {
-        let narrative = current?.explanation?.status == "shown" ? current?.explanation?.text : nil
-        if let explanation = narrative ?? m.explanation {
-            VStack(alignment: .leading, spacing: 12) {
-                kicker("EXPLANATION", color: Brand.ink)
-                Text(explanation)
-                    .font(CowboyTheme.readingSerif(22, relativeTo: .body))
-                    .foregroundStyle(Brand.ink)
-                    .lineSpacing(5)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .textSelection(.enabled)
-                    .accessibilityIdentifier("form-explanation")
-                // The middle form's fixed wording must not hide the actual
-                // dictionary/ontology/graph explanation returned by Nucleus.
-                if let framing = m.explanation, framing != explanation {
-                    Text(framing)
-                        .font(CowboyTheme.readingSerif(20, relativeTo: .body))
-                        .foregroundStyle(Brand.ink)
-                        .lineSpacing(5)
-                        .fixedSize(horizontal: false, vertical: true)
-                        .textSelection(.enabled)
-                        .accessibilityIdentifier("middle-response-context")
-                }
-                if let ex = current?.explanation, ex.status == "shown" {
-                    Thumbs(state: model.explanationThumb ?? ex.thumb, disabled: model.isFrozen, tint: Brand.ink) { up in
-                        Task { await model.thumbExplanation(up: up) }
-                    }
-                }
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(20)
-            .background(Brand.card, in: RoundedRectangle(cornerRadius: 8))
-            .padding(.horizontal, 18)
-            .padding(.top, 24)
-        }
-
         VStack(alignment: .leading, spacing: 14) {
             kicker("ANSWER", color: .white)
             if let n = current?.asked_before, n > 0 {
@@ -209,51 +163,90 @@ struct LiveAnswerSection: View {
                 .fixedSize(horizontal: false, vertical: true)
                 .textSelection(.enabled)
                 .accessibilityIdentifier("middle-answer")
-            VStack(alignment: .leading, spacing: 0) {
-                ForEach(Array(m.sections.enumerated()), id: \.offset) { index, section in
-                    if index > 0 { Divider().padding(.leading, 34) }
-                    middleRow(symbol: section.symbol, onResponse: true) {
-                        Text(section.head)
-                            .font(.body.weight(.semibold))
-                            .foregroundStyle(.white)
-                            .fixedSize(horizontal: false, vertical: true)
-                        VStack(alignment: .leading, spacing: 10) {
-                            ForEach(Array(section.lines.enumerated()), id: \.offset) { _, line in
-                                Text(line)
-                                    .font(.body)
-                                    .foregroundStyle(.white)
-                                    .fixedSize(horizontal: false, vertical: true)
-                                    .textSelection(.enabled)
-                            }
-                        }
-                    }
-                }
-                if let ask = m.ask {
-                    Divider().padding(.leading, 34)
-                    middleRow(symbol: "arrow.turn.down.right", onResponse: true) {
-                        Text(ask)
-                            .font(.body.weight(.semibold))
-                            .foregroundStyle(.white)
-                            .fixedSize(horizontal: false, vertical: true)
-                        moreUnderTheQuestion
-                    }
-                }
-            }
-            .accessibilityIdentifier("form-sections")
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(20)
         .background(CowboyTheme.red, in: RoundedRectangle(cornerRadius: 8))
         .padding(.horizontal, 18)
         .padding(.top, 24)
-        .padding(.bottom, 8)
+
+        let narrative = current?.explanation?.status == "shown" ? current?.explanation?.text : nil
+        let shownExplanation = narrative ?? m.explanation
+        if shownExplanation != nil || !m.sections.isEmpty || m.ask != nil {
+            VStack(alignment: .leading, spacing: 12) {
+                kicker("EXPLANATION", color: Brand.ink)
+                if let explanation = shownExplanation {
+                    Text(explanation)
+                        .font(CowboyTheme.readingSerif(22, relativeTo: .body))
+                        .foregroundStyle(Brand.ink)
+                        .lineSpacing(5)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .textSelection(.enabled)
+                        .accessibilityIdentifier("form-explanation")
+                    // Preserve the form's wording beside the actual explanation.
+                    if let framing = m.explanation, framing != explanation {
+                        Text(framing)
+                            .font(CowboyTheme.readingSerif(20, relativeTo: .body))
+                            .foregroundStyle(Brand.ink)
+                            .lineSpacing(5)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .textSelection(.enabled)
+                            .accessibilityIdentifier("middle-response-context")
+                    }
+                    if let ex = current?.explanation, ex.status == "shown" {
+                        Thumbs(state: model.explanationThumb ?? ex.thumb, disabled: model.isFrozen, tint: Brand.ink) { up in
+                            Task { await model.thumbExplanation(up: up) }
+                        }
+                    }
+                }
+                if !m.sections.isEmpty || m.ask != nil {
+                    VStack(alignment: .leading, spacing: 0) {
+                        ForEach(Array(m.sections.enumerated()), id: \.offset) { index, section in
+                            if index > 0 { Divider().padding(.leading, 34) }
+                            middleRow(symbol: section.symbol) {
+                                Text(section.head)
+                                    .font(.body.weight(.semibold))
+                                    .foregroundStyle(Brand.ink)
+                                    .fixedSize(horizontal: false, vertical: true)
+                                VStack(alignment: .leading, spacing: 10) {
+                                    ForEach(Array(section.lines.enumerated()), id: \.offset) { _, line in
+                                        Text(line)
+                                            .font(.body)
+                                            .foregroundStyle(Brand.ink)
+                                            .fixedSize(horizontal: false, vertical: true)
+                                            .textSelection(.enabled)
+                                    }
+                                }
+                            }
+                        }
+                        if let ask = m.ask {
+                            Divider().padding(.leading, 34)
+                            middleRow(symbol: "arrow.turn.down.right") {
+                                Text(ask)
+                                    .font(.body.weight(.semibold))
+                                    .foregroundStyle(Brand.ink)
+                                    .fixedSize(horizontal: false, vertical: true)
+                                moreUnderTheQuestion
+                            }
+                        }
+                    }
+                    .accessibilityIdentifier("form-sections")
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(20)
+            .background(Brand.card, in: RoundedRectangle(cornerRadius: 8))
+            .padding(.horizontal, 18)
+            .padding(.top, 24)
+            .padding(.bottom, 8)
+        }
     }
 
-    private func middleRow<Content: View>(symbol: String, onResponse: Bool = false, @ViewBuilder content: () -> Content) -> some View {
+    private func middleRow<Content: View>(symbol: String, @ViewBuilder content: () -> Content) -> some View {
         HStack(alignment: .firstTextBaseline, spacing: 10) {
             Image(systemName: symbol)
                 .font(.system(size: 16))
-                .foregroundStyle(onResponse ? .white : CowboyTheme.red)
+                .foregroundStyle(CowboyTheme.red)
                 .frame(width: 24)
             VStack(alignment: .leading, spacing: 0) { content() }
                 .frame(minHeight: UIFont.preferredFont(forTextStyle: .body).lineHeight * 3, alignment: .top)
@@ -269,7 +262,7 @@ struct LiveAnswerSection: View {
             ForEach(current?.more ?? []) { entry in
                 Text(entry.text)
                     .font(.body)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(Brand.ink)
                     .fixedSize(horizontal: false, vertical: true)
                     .textSelection(.enabled)
             }
@@ -285,16 +278,46 @@ struct LiveAnswerSection: View {
                 }), axis: .vertical)
                 .lineLimit(3, reservesSpace: true)
                 .font(.body)
-                .foregroundStyle(.white)
-                .tint(.white)
+                .foregroundStyle(Brand.ink)
+                .tint(CowboyTheme.red)
                 .submitLabel(.send)
                 .disabled(model.loggingMore || model.isFrozen)
                 .accessibilityIdentifier("middle-more")
         }
     }
 
+    private var hasAnswerExplanation: Bool {
+        if !parts.other.isEmpty { return true }
+        guard let ex = current?.explanation else { return false }
+        return ex.status == "pending" || (ex.status == "shown" && ex.text != nil)
+    }
+
     @ViewBuilder
-    private var explanation: some View {
+    private var answerExplanation: some View {
+        if answered && hasAnswerExplanation {
+            VStack(alignment: .leading, spacing: 14) {
+                kicker("EXPLANATION", color: Brand.ink)
+                explanationContent
+                ForEach(Array(parts.other.enumerated()), id: \.offset) { _, block in
+                    Text(block)
+                        .font(CowboyTheme.readingSerif(22, relativeTo: .body))
+                        .foregroundStyle(Brand.ink)
+                        .lineSpacing(5)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .textSelection(.enabled)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(20)
+            .background(Brand.card, in: RoundedRectangle(cornerRadius: 8))
+            .padding(.horizontal, 18)
+            .padding(.top, 24)
+            .padding(.bottom, 8)
+        }
+    }
+
+    @ViewBuilder
+    private var explanationContent: some View {
         if let ex = current?.explanation,
            ex.status == "pending" || (ex.status == "shown" && ex.text != nil) {
             VStack(alignment: .leading, spacing: 14) {
@@ -316,8 +339,6 @@ struct LiveAnswerSection: View {
             }
             .foregroundStyle(Brand.ink)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(16)
-            .background(Brand.card, in: RoundedRectangle(cornerRadius: 8))
         }
     }
 
