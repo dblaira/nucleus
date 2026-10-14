@@ -38,4 +38,3 @@ struct EntryQuestion {
         theme = .init(id: draft.theme.id, name: draft.theme.name, question: entry.title, fields: fields)
     }
 }
-

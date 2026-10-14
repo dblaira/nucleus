@@ -45,4 +45,3 @@ struct SavyBackButton: View {
         .accessibilityLabel("Back")
     }
 }
-
