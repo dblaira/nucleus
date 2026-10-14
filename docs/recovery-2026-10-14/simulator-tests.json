@@ -1,0 +1,156 @@
+{
+  "summary": {
+    "status": "SUCCEEDED",
+    "durationMs": 269702,
+    "counts": {
+      "passed": 22,
+      "failed": 0,
+      "skipped": 0
+    },
+    "target": "simulator"
+  },
+  "testCases": [
+    {
+      "suite": "EntryPersistenceTests",
+      "test": "testCorruptFilesCannotBeOverwrittenAsEmpty",
+      "status": "passed",
+      "durationMs": 7
+    },
+    {
+      "suite": "EntryPersistenceTests",
+      "test": "testDownloadedHistoryUsesCompletionDatesNotImportOrder",
+      "status": "passed",
+      "durationMs": 5
+    },
+    {
+      "suite": "EntryPersistenceTests",
+      "test": "testDraftsKeepOriginAndCannotCrossConversations",
+      "status": "passed",
+      "durationMs": 3
+    },
+    {
+      "suite": "EntryPersistenceTests",
+      "test": "testEntryAnswerModelCannotOverwriteQuestionComposerDraft",
+      "status": "passed",
+      "durationMs": 3
+    },
+    {
+      "suite": "EntryPersistenceTests",
+      "test": "testEntryQuestionPreservesWritingAndExcludesUntouchedPrompts",
+      "status": "passed",
+      "durationMs": 0
+    },
+    {
+      "suite": "EntryPersistenceTests",
+      "test": "testHourlyAndPortableScheduleRules",
+      "status": "passed",
+      "durationMs": 0
+    },
+    {
+      "suite": "EntryPersistenceTests",
+      "test": "testOriginSurvivesEditKindCompletionAndReload",
+      "status": "passed",
+      "durationMs": 2
+    },
+    {
+      "suite": "EntryPersistenceTests",
+      "test": "testPhoneSizedArchiveLookupsStayResponsiveAndPreservePinOrder",
+      "status": "passed",
+      "durationMs": 18
+    },
+    {
+      "suite": "EntryPersistenceTests",
+      "test": "testPinRetainsOriginalWhileLatestResponseChanges",
+      "status": "passed",
+      "durationMs": 3
+    },
+    {
+      "suite": "EntryPersistenceTests",
+      "test": "testPreviewIncludesTheExplanationInsteadOfOnlyTheVerdict",
+      "status": "passed",
+      "durationMs": 1
+    },
+    {
+      "suite": "EntryPersistenceTests",
+      "test": "testReorderDoesNotMoveHiddenKindsOrEraseOrigin",
+      "status": "passed",
+      "durationMs": 2
+    },
+    {
+      "suite": "SavyFlowTests",
+      "test": "testCreateLinkedActionAndRetainAfterRelaunch",
+      "status": "passed",
+      "durationMs": 24771
+    },
+    {
+      "suite": "SavyFlowTests",
+      "test": "testEntryAsksLiveOntologyAndKeepsItsAnswer",
+      "status": "passed",
+      "durationMs": 31987
+    },
+    {
+      "suite": "SavyFlowTests",
+      "test": "testEntryConnectionFailureKeepsWritingAndAllowsRetry",
+      "status": "passed",
+      "durationMs": 17751
+    },
+    {
+      "suite": "SavyFlowTests",
+      "test": "testHomeAskReachesLiveDictionaryEvidenceAndSavedResponse",
+      "status": "passed",
+      "durationMs": 48733
+    },
+    {
+      "suite": "SavyFlowTests",
+      "test": "testHomeCarouselScrollsBetweenSavedPairs",
+      "status": "passed",
+      "durationMs": 9742
+    },
+    {
+      "suite": "SavyFlowTests",
+      "test": "testOriginalHowToFormWithAdamsExample",
+      "status": "passed",
+      "durationMs": 65000
+    },
+    {
+      "suite": "SavyFlowTests",
+      "test": "testPinKeepsCarouselMetadataAndUnpinReturnsToRecent",
+      "status": "passed",
+      "durationMs": 12779
+    },
+    {
+      "suite": "SavyFlowTests",
+      "test": "testSavyFabOpensArcAndCloses",
+      "status": "passed",
+      "durationMs": 9728
+    },
+    {
+      "suite": "SavyFlowTests",
+      "test": "testSavyPinnedCardHierarchyOnRemindersAndActions",
+      "status": "passed",
+      "durationMs": 7366
+    },
+    {
+      "suite": "SavyFlowTests",
+      "test": "testScheduleEditorAndCalendar",
+      "status": "passed",
+      "durationMs": 22008
+    },
+    {
+      "suite": "SavyFlowTests",
+      "test": "testTabsAndOriginReopen",
+      "status": "passed",
+      "durationMs": 10669
+    }
+  ],
+  "diagnostics": {
+    "warnings": [],
+    "errors": [],
+    "testFailures": []
+  },
+  "artifacts": {
+    "buildLogPath": "~/Library/Developer/XcodeBuildMCP/workspaces/Cowboyai-89a3407fd2e7/logs/test_sim_2026-10-14T15-52-22-770Z_pid35790_5634a632.log",
+    "xcresultPath": "/tmp/CowboyAI-Actual-Use-Final.xcresult",
+    "testProductsPath": "~/Library/Developer/XcodeBuildMCP/workspaces/Cowboyai-89a3407fd2e7/test-products/test_sim_2026-10-14T15-52-22-770Z_pid35790_38f64007.xctestproducts"
+  }
+}

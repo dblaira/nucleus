@@ -17,6 +17,7 @@ struct HomeView: View {
     let openOrigin: (ConversationOrigin) -> Void
     let openRoute: () -> Void
     let openAppearance: () -> Void
+    let openQuestion: () -> Void
     @State private var editingDetails: ConversationOrigin?
     @State private var armedConversationID: String?
 
@@ -57,6 +58,17 @@ struct HomeView: View {
                 VStack(alignment: .leading, spacing: 0) {
                     header(topInset: proxy.safeAreaInsets.top)
                     VStack(alignment: .leading, spacing: 0) {
+                        Button(action: openQuestion) {
+                            Label("Ask CowboyAI", systemImage: "paperplane")
+                                .font(.body.weight(.semibold))
+                                .foregroundStyle(CowboyTheme.red)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(18)
+                                .background(CowboyTheme.cream, in: RoundedRectangle(cornerRadius: 24))
+                        }
+                        .buttonStyle(.plain)
+                        .padding(.horizontal, 16).padding(.top, 20)
+                        .accessibilityIdentifier("homeAskCowboyAI")
                         carousel
                         Color.clear.frame(height: 28).accessibilityHidden(true)
                         recentResponses

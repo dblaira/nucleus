@@ -157,7 +157,8 @@ struct LiveAnswerSection: View {
     /// Decide card in SAVY draws a theme (ReminderFormView.postDecideSection): a crimson icon, 16 pt, in a 24 pt column.
     @ViewBuilder
     private func answerForm(_ m: AskResponse.Form) -> some View {
-        if let explanation = m.explanation {
+        let narrative = current?.explanation?.status == "shown" ? current?.explanation?.text : nil
+        if let explanation = narrative ?? m.explanation {
             VStack(alignment: .leading, spacing: 12) {
                 kicker("EXPLANATION", color: .white)
                 Text(explanation)
@@ -167,7 +168,18 @@ struct LiveAnswerSection: View {
                     .fixedSize(horizontal: false, vertical: true)
                     .textSelection(.enabled)
                     .accessibilityIdentifier("form-explanation")
-                if let ex = current?.explanation, ex.status == "shown", m.ask == nil {
+                // The middle form's fixed wording must not hide the actual
+                // dictionary/ontology/graph explanation returned by Nucleus.
+                if let framing = m.explanation, framing != explanation {
+                    Text(framing)
+                        .font(CowboyTheme.readingSerif(20, relativeTo: .body))
+                        .foregroundStyle(.white)
+                        .lineSpacing(5)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .textSelection(.enabled)
+                        .accessibilityIdentifier("middle-response-context")
+                }
+                if let ex = current?.explanation, ex.status == "shown" {
                     Thumbs(state: model.explanationThumb ?? ex.thumb, disabled: model.isFrozen, tint: .white) { up in
                         Task { await model.thumbExplanation(up: up) }
                     }

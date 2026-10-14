@@ -1,6 +1,135 @@
 import XCTest
 
 final class SavyFlowTests: XCTestCase {
+    @MainActor func testHomeAskReachesLiveDictionaryEvidenceAndSavedResponse() {
+        let app = launchApp()
+        let question = "What is FLOW?"
+        let homeAsk = app.buttons["homeAskCowboyAI"]
+        XCTAssertTrue(homeAsk.waitForExistence(timeout: 10))
+        homeAsk.tap()
+        let input = app.textViews["new-question-text"].firstMatch
+        let fallback = app.descendants(matching: .any).matching(identifier: "new-question-text").firstMatch
+        let field = input.exists ? input : fallback
+        field.tap(); field.typeText(question)
+        let ask = app.buttons["ask-nucleus"]
+        reveal(ask, app: app)
+        screenshot("Original question form ready to Ask", app: app)
+        ask.tap()
+        let explanation = app.staticTexts["form-explanation"]
+        XCTAssertTrue(explanation.waitForExistence(timeout: 30), app.debugDescription)
+        XCTAssertTrue(explanation.label.contains("FLOW"))
+        XCTAssertEqual(app.staticTexts["live-answer-question"].label, question)
+        screenshot("Real FLOW answer from visible Ask form", app: app)
+        let word = app.buttons["live-meaning-FLOW"]
+        reveal(word, app: app); word.tap()
+        XCTAssertTrue(app.staticTexts["meaning-detail-words"].waitForExistence(timeout: 5))
+        screenshot("Actual dictionary words opened from response", app: app)
+        app.buttons["meaning-detail-close"].tap()
+        let record = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "live-record-")).firstMatch
+        reveal(record, app: app); record.tap()
+        XCTAssertTrue(app.staticTexts["meaning-detail-words"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.staticTexts.matching(identifier: "meaning-detail-words").allElementsBoundByIndex.map(\.label).joined().isEmpty)
+        screenshot("Accepted graph record opened from response", app: app)
+        app.buttons["meaning-detail-close"].tap()
+        for _ in 0..<8 { if app.buttons["pinConversation"].isHittable { break }; app.swipeDown() }
+        app.buttons["pinConversation"].tap()
+        app.buttons["Back"].firstMatch.tap()
+        let card = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@ AND label CONTAINS %@", "latest-", question)).firstMatch
+        XCTAssertTrue(card.waitForExistence(timeout: 5))
+        print("LIVE_FLOW_QUESTION_ID=\(card.identifier)")
+        app.terminate()
+        app.launchArguments = ["COWBOYAI_UI_TEST", "COWBOYAI_UI_TEST_SEED"]
+        app.launch()
+        XCTAssertTrue(card.waitForExistence(timeout: 10))
+        card.tap()
+        XCTAssertEqual(app.staticTexts["live-answer-question"].label, question)
+        XCTAssertTrue(app.staticTexts["form-explanation"].label.contains("FLOW"))
+        screenshot("Real response reopened after app relaunch", app: app)
+    }
+
+    @MainActor func testEntryAsksLiveOntologyAndKeepsItsAnswer() {
+        let app = launchApp()
+        app.buttons["chargeFab"].tap(); app.buttons["Reminder"].tap()
+        let ask = app.buttons["entryAskCowboyAI"]
+        XCTAssertTrue(ask.waitForExistence(timeout: 5))
+        XCTAssertFalse(ask.isEnabled, "Untouched template prompts must not be submitted as personal writing.")
+        let question = "What are reasons I would avoid going to the doctor?"
+        let title = app.descendants(matching: .any).matching(identifier: "Title").firstMatch
+        reveal(title, app: app); title.tap(); title.typeText(question)
+        XCTAssertTrue(ask.isHittable, "Ask must remain reachable with the keyboard open.")
+        screenshot("Entry form with visible Ask and keyboard", app: app)
+        ask.tap()
+        let explanation = app.staticTexts["form-explanation"]
+        XCTAssertTrue(explanation.waitForExistence(timeout: 30), app.debugDescription)
+        XCTAssertTrue(explanation.label.contains("Health"))
+        XCTAssertTrue(explanation.label.contains("Belief"))
+        XCTAssertEqual(app.staticTexts["live-answer-question"].label, question)
+        screenshot("Entry request answered using actual ontology and graph", app: app)
+        app.buttons["Back"].firstMatch.tap()
+        XCTAssertTrue(app.buttons["entryAskCowboyAI"].waitForExistence(timeout: 5))
+        reveal(title, app: app)
+        XCTAssertEqual(title.value as? String, question)
+        app.buttons["entrySave"].tap()
+        XCTAssertTrue(app.buttons["chargeFab"].waitForExistence(timeout: 5))
+        app.terminate()
+        app.launchArguments = ["COWBOYAI_UI_TEST", "COWBOYAI_UI_TEST_SEED"]
+        app.launch()
+        app.buttons["tab-reminders"].tap()
+        let saved = app.staticTexts[question].firstMatch
+        reveal(saved, app: app); saved.tap()
+        let origin = app.buttons["entryOrigin"]
+        XCTAssertTrue(origin.waitForExistence(timeout: 5))
+        origin.tap()
+        XCTAssertEqual(app.staticTexts["live-answer-question"].label, question)
+        XCTAssertTrue(app.staticTexts["form-explanation"].label.contains("Health"))
+        screenshot("Saved reminder reopens its actual answer", app: app)
+    }
+
+    @MainActor func testOriginalHowToFormWithAdamsExample() {
+        let app = launchApp()
+        app.buttons["homeAskCowboyAI"].tap()
+        app.buttons["PostTheme"].tap()
+        app.buttons["How-To"].tap()
+        XCTAssertTrue(app.descendants(matching: .any).matching(identifier: "DecideAnswer3").firstMatch.exists)
+        let question = "I have neutral moments many times per day that I don't have a plan for how to react.  I want a plan. Done, looks like me knowing what to do, and doing it because the alternative to getting myself back in flow is such a useless alternative."
+        let field = app.descendants(matching: .any).matching(identifier: "new-question-text").firstMatch
+        reveal(field, app: app); field.tap(); field.typeText(question)
+        let ask = app.buttons["ask-nucleus"]
+        reveal(ask, app: app)
+        screenshot("Original How-To form with Adams example", app: app)
+        ask.tap()
+        let explanation = app.staticTexts["form-explanation"]
+        XCTAssertTrue(explanation.waitForExistence(timeout: 30), app.debugDescription)
+        XCTAssertFalse(explanation.label.isEmpty)
+        XCTAssertEqual(app.staticTexts["live-answer-question"].label, question)
+        screenshot("Actual answer to Adams How-To example", app: app)
+        let word = app.buttons["live-meaning-FLOW"]
+        reveal(word, app: app); word.tap()
+        XCTAssertTrue(app.staticTexts["meaning-detail-words"].waitForExistence(timeout: 5))
+        screenshot("Adams example reaches his FLOW meaning", app: app)
+    }
+
+    @MainActor func testEntryConnectionFailureKeepsWritingAndAllowsRetry() {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        app.launchArguments = ["COWBOYAI_UI_TEST", "COWBOYAI_UI_TEST_RESET", "COWBOYAI_UI_TEST_SEED"]
+        app.launchEnvironment["COWBOYAI_UI_TEST_BASE_URL"] = "http://127.0.0.1:1"
+        app.launch()
+        app.buttons["chargeFab"].tap(); app.buttons["Action"].tap()
+        let title = app.descendants(matching: .any).matching(identifier: "Title").firstMatch
+        reveal(title, app: app); title.tap(); title.typeText("Keep my unfinished writing.")
+        app.buttons["entryAskCowboyAI"].tap()
+        XCTAssertTrue(app.staticTexts["live-answer-error"].firstMatch.waitForExistence(timeout: 20))
+        XCTAssertFalse(app.staticTexts["form-explanation"].exists)
+        screenshot("Connection failure is visible", app: app)
+        app.buttons["Back"].firstMatch.tap()
+        XCTAssertTrue(app.buttons["entryAskCowboyAI"].waitForExistence(timeout: 5))
+        reveal(title, app: app)
+        XCTAssertEqual(title.value as? String, "Keep my unfinished writing.")
+        XCTAssertTrue(app.buttons["entryAskCowboyAI"].isEnabled)
+        screenshot("Writing preserved after connection failure", app: app)
+    }
+
     @MainActor private func launchApp(extraArguments: [String] = []) -> XCUIApplication {
         continueAfterFailure = false
         let app = XCUIApplication()
@@ -14,8 +143,12 @@ final class SavyFlowTests: XCTestCase {
     }
     @MainActor private func reveal(_ element: XCUIElement, app: XCUIApplication) {
         for _ in 0..<8 {
-            if element.isHittable { return }
-            app.swipeUp()
+            // UIKit may call a field hittable when a fixed footer covers it.
+            // Scroll it into the actual writing area before tapping or typing.
+            let bottom = app.keyboards.firstMatch.exists ? app.keyboards.firstMatch.frame.minY - 110 : app.frame.maxY - 210
+            if element.exists, element.isHittable, element.frame.minY > 130, element.frame.midY < bottom { return }
+            if element.exists, element.frame.minY < 130 { app.swipeDown() }
+            else { app.swipeUp() }
         }
         XCTAssertTrue(element.isHittable)
     }

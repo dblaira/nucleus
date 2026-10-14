@@ -18,6 +18,8 @@ struct ReminderFormView: View {
     private let conversationTheme: PostTheme?
     @Environment(ConversationArchive.self) private var archive
     @State private var showingOrigin: ConversationOrigin?
+    @State private var entryAskModel: AskModel?
+    @State private var showingEntryAnswer = false
     private let initialEntry: Reminder
     private let recoveryID: String
     var onSaveAttempt: ((Reminder) -> Bool)?
@@ -114,7 +116,21 @@ struct ReminderFormView: View {
             .tint(Brand.crimson)
             // The keyboard row sits on top of the keyboard while any box has the cursor.
             .safeAreaInset(edge: .bottom, spacing: 0) {
-                if Self.showsKeyboardRow, activeField != nil { keyboardRow }
+                VStack(spacing: 0) {
+                    Button(action: askCowboyAI) {
+                        Label("Ask CowboyAI", systemImage: "paperplane")
+                            .font(.body.weight(.semibold))
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.horizontal, 20).padding(.vertical, 16)
+                            .background(Brand.card, in: RoundedRectangle(cornerRadius: 24))
+                    }
+                    .buttonStyle(.plain).foregroundStyle(Brand.crimson)
+                    .disabled(entryQuestion.text.isEmpty || isSaving || entryAskModel?.working == true)
+                    .accessibilityIdentifier("entryAskCowboyAI")
+                    .padding(.horizontal, 20).padding(.vertical, 8)
+                    if Self.showsKeyboardRow, activeField != nil { keyboardRow }
+                }
+                .background(Color.white)
             }
             // Header mirrors the Title as you type — the type name until the first character, then
             // the live title at full size. Compact icon buttons leave it more room.
@@ -148,7 +164,10 @@ struct ReminderFormView: View {
                 if phase != .active { saveRecoveryDraft() }
             }
             // Auto-save: if the form is swiped away (not via Cancel) and has content, keep it.
-            .onDisappear { saveRecoveryDraft(); autosaveIfNeeded() }
+            .onDisappear {
+                saveRecoveryDraft()
+                if !showingEntryAnswer { autosaveIfNeeded() }
+            }
             .alert("Couldn't save \(entryLabel)", isPresented: $saveFailed) {
                 Button("OK", role: .cancel) { }
             } message: {
@@ -157,6 +176,11 @@ struct ReminderFormView: View {
         }
         .sheet(item: $showingOrigin) { source in
             NavigationStack { ArchivedAnswerPage(origin: source, archive: archive) }
+        }
+        .fullScreenCover(isPresented: $showingEntryAnswer) {
+            if let entryAskModel {
+                NavigationStack { AnswerPage(model: entryAskModel, id: nil) }
+            }
         }
         .sheet(isPresented: $showsSchedule) {
             ReminderScheduleView(entry: r, onSave: {
@@ -215,13 +239,17 @@ struct ReminderFormView: View {
 
         Section {
             // Grow with content so every character stays visible — no mid-word "..." cutoff.
-            TextField(EntryFormCopy.wantPrompt, text: $r.title, axis: .vertical)
+            TextField("What would you like to ask CowboyAI?", text: $r.title, axis: .vertical)
                 .lineLimit(1...)
                 .textFieldStyle(.plain)
                 .fixedSize(horizontal: false, vertical: true)
                 .focused($focusedField, equals: .title)
                 .accessibilityIdentifier("Title")
                 .disabled(conversationID != nil)
+        } header: { sectionHeader("Question or entry") }
+        .listRowBackground(Brand.card)
+
+        Section {
             TextField(EntryFormCopy.whenPrompt, text: whenIAmBinding, axis: .vertical)
                 .lineLimit(1...)
                 .textFieldStyle(.plain)
@@ -281,6 +309,28 @@ struct ReminderFormView: View {
     }
 
     // MARK: - Post: Theme + Decide
+
+    private var entryQuestion: EntryQuestion {
+        EntryQuestion(entry: r, draft: postDraft, subtasks: subtasks)
+    }
+
+    private func askCowboyAI() {
+        let question = entryQuestion
+        guard !question.text.isEmpty, entryAskModel?.working != true else { return }
+        moveCursor(to: nil)
+        saveRecoveryDraft(force: true)
+        let model = AskModel(archive: archive, keepsComposerDraft: false)
+        entryAskModel = model
+        showingEntryAnswer = true
+        Task { @MainActor in
+            await model.ask(entry: question)
+            // A new entry keeps its answer; an existing origin is never reassigned.
+            if existing == nil, r.origin == nil, let origin = model.currentOrigin {
+                r.origin = origin
+            }
+            saveRecoveryDraft(force: true)
+        }
+    }
 
     private var selectedPostTheme: PostTheme {
         postDraft.theme

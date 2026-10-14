@@ -1,0 +1,107 @@
+{
+  "checked_at_utc": "2026-10-14T15:56:01.643341+00:00",
+  "engine_health": {
+    "product": "Cowboy AI",
+    "engine_revision": "25d3c8a954ffb98d6eb361075c41d8b8415d8345",
+    "loaded_module_sha256": {
+      "serve.py": "10e3ce546a5cdbc2d26369e3be7e1b5cc363f4b5b6b8a105018e39d4e71a817d",
+      "graph.py": "723055edd82f462fec70c208210a862ab1d34d02fcee8eaab6f95d79f75a3654",
+      "narrative.py": "f9570d80e24cb1058ea177457b01289d17eef39f8a673e6283f4249e9b2d6175",
+      "phrases.py": "45e83e0bd4157720a5140e2cc6d7fd2f9bb763f0f556b87dbfe9b8f27100904d",
+      "links.py": "c626aa41925e7a1f346f567b7a5463a25d5e6d494b642105b5a1dc2d7a254776",
+      "ask.py": "2a482f77ff42a128b34eec69967a6ca6c73294f892fbecacafaf467de6ad73a8",
+      "middle.py": "c4e0725c482a4ec83e88bb2cbed2db378a8c69a8c1d00b2cad5bd01729fb2b79",
+      "contextual_sources.py": "e240f34f824c2fea6473488cc1d40d49eb874bce9e0bc03b8164428b735cdedc"
+    }
+  },
+  "loaded_modules_match_runtime_sources": {
+    "serve.py": true,
+    "graph.py": true,
+    "narrative.py": true,
+    "phrases.py": true,
+    "links.py": true,
+    "ask.py": true,
+    "middle.py": true,
+    "contextual_sources.py": true
+  },
+  "current_source_bundle_sha256": "6da11d5fd9d9be2ad55fa0f05aff8659c4679fbd71c4cd4f5e287c1909f7de5b",
+  "sources": {
+    "graph": {
+      "path": "/Users/adamblair/Documents/Main/Ontology/accepted/accepted-graph.ttl",
+      "sha256": "1e79678cbadf3e45e44aba55b515b4d9f7fb197ad1e2e9a922e6e3c88d85292b",
+      "bytes": 1487057
+    },
+    "ledger": {
+      "path": "/Users/adamblair/Documents/Main/Ontology/accepted/decision-ledger.json",
+      "sha256": "7bb3c3169919e4a0ae497aed4925dc89868f3184510290c6708a02c268054c58",
+      "bytes": 1356681
+    },
+    "shape": {
+      "path": "/Users/adamblair/Documents/Main/Ontology/shapes/connection-shape.ttl",
+      "sha256": "832bb1c101d0c5a784c90eac526394869879292ef2a4bc61ec075e4834c6ba96",
+      "bytes": 2256
+    },
+    "upper": {
+      "path": "/Users/adamblair/Documents/Main/Ontology/upper/bfo-bridge.ttl",
+      "sha256": "04e70158d1f498f43c684dd6c50e0ac327d232a6d4786dfdbe82c348e265ca74",
+      "bytes": 3747
+    },
+    "meanings": {
+      "path": "/Users/adamblair/Documents/adams-language/meanings.txt",
+      "sha256": "4750c8b380de094a02f7bcde0f116920f75e72241bf2e2da3a98b4cbfddfd85d",
+      "bytes": 36437
+    },
+    "routes": {
+      "path": "/Users/adamblair/Documents/adams-language/routes.txt",
+      "sha256": "cc78e4649fb86ba52a109b8a038fe41fb89022e44dc016aa914aac3739012e6d",
+      "bytes": 3860
+    }
+  },
+  "checks": [
+    {
+      "scenario": "flow",
+      "question_id": "e1be8760-1973-4c43-b385-9d52d3c40cbf",
+      "asked_at_utc": "2026-10-14T15:53:54.160964+00:00",
+      "question": "What is FLOW?",
+      "status": "answered",
+      "source_bundle_sha256": "6da11d5fd9d9be2ad55fa0f05aff8659c4679fbd71c4cd4f5e287c1909f7de5b",
+      "bundle_matches_current_files": true,
+      "graph_matches_current_files": true,
+      "checked_originals": 752,
+      "relationships_created": 0,
+      "model_calls": 0,
+      "provider": "code",
+      "model": "narrative"
+    },
+    {
+      "scenario": "ontology",
+      "question_id": "01384b09-1405-43bc-9788-a7f0d7f4ffd7",
+      "asked_at_utc": "2026-10-14T15:53:09.914258+00:00",
+      "question": "What are reasons I would avoid going to the doctor?",
+      "status": "answered",
+      "source_bundle_sha256": "6da11d5fd9d9be2ad55fa0f05aff8659c4679fbd71c4cd4f5e287c1909f7de5b",
+      "bundle_matches_current_files": true,
+      "graph_matches_current_files": true,
+      "checked_originals": 752,
+      "relationships_created": 0,
+      "model_calls": 0,
+      "provider": "code",
+      "model": "narrative"
+    },
+    {
+      "scenario": "how-to",
+      "question_id": "a0150ec8-afe6-4fe0-9c52-970ab1593186",
+      "asked_at_utc": "2026-10-14T15:55:28.233745+00:00",
+      "question": "I have neutral moments many times per day that I don't have a plan for how to react.  I want a plan. Done, looks like me knowing what to do, and doing it because the alternative to getting myself back in flow is such a useless alternative.",
+      "status": "answered",
+      "source_bundle_sha256": "6da11d5fd9d9be2ad55fa0f05aff8659c4679fbd71c4cd4f5e287c1909f7de5b",
+      "bundle_matches_current_files": true,
+      "graph_matches_current_files": true,
+      "checked_originals": 752,
+      "relationships_created": 0,
+      "model_calls": 0,
+      "provider": "code",
+      "model": "narrative"
+    }
+  ]
+}

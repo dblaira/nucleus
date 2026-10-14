@@ -51,7 +51,8 @@ struct RootView: View {
                                  openConnection: { sheet = .settings },
                                  openOrigin: { path.append(Page.origin($0)) },
                                  openRoute: { path.append(Page.route) },
-                                 openAppearance: { sheet = .appearance })
+                                 openAppearance: { sheet = .appearance },
+                                 openQuestion: { sheet = .question })
                     case .reminders: SavyReminderKindTabScreen(kind: .reminder)
                     case .actions: SavyReminderKindTabScreen(kind: .action)
                     case .calendar: SavyCalendarTabScreen()

@@ -5,10 +5,12 @@ import Observation
 @Observable
 final class AskModel {
     @ObservationIgnored let archive: ConversationArchive
+    @ObservationIgnored private let keepsComposerDraft: Bool
     var currentOrigin: ConversationOrigin?
     var isFrozen = false
     var question = UserDefaults.standard.string(forKey: CowboyStorage.preferenceKey("nucleus.draft")) ?? "" {
         didSet {
+            guard keepsComposerDraft else { return }
             // the draft is kept the moment it is typed, so nothing he wrote is ever lost to a reload
             UserDefaults.standard.set(question, forKey: CowboyStorage.preferenceKey("nucleus.draft"))
             print("nucleus: question now \(question.count) chars")
@@ -17,13 +19,13 @@ final class AskModel {
     /// The form he picked, from his SAVY themes (Themes.swift), and what he wrote in it. Kept the moment it is
     /// typed, like the question. Adam, 2026-10-07: "there can be choices of the questions that I have."
     var themeID: String? = UserDefaults.standard.string(forKey: CowboyStorage.preferenceKey("nucleus.theme")) {
-        didSet { UserDefaults.standard.set(themeID, forKey: CowboyStorage.preferenceKey("nucleus.theme")) }
+        didSet { if keepsComposerDraft { UserDefaults.standard.set(themeID, forKey: CowboyStorage.preferenceKey("nucleus.theme")) } }
     }
     var themeAnswers: [String: [String]] = {
         guard let data = UserDefaults.standard.data(forKey: CowboyStorage.preferenceKey("nucleus.themeAnswers")) else { return [:] }
         return (try? JSONDecoder().decode([String: [String]].self, from: data)) ?? [:]
     }() {
-        didSet { UserDefaults.standard.set(try? JSONEncoder().encode(themeAnswers), forKey: CowboyStorage.preferenceKey("nucleus.themeAnswers")) }
+        didSet { if keepsComposerDraft { UserDefaults.standard.set(try? JSONEncoder().encode(themeAnswers), forKey: CowboyStorage.preferenceKey("nucleus.themeAnswers")) } }
     }
     var theme: PostTheme? { PostThemeCatalog.theme(id: themeID) }
 
@@ -90,7 +92,11 @@ final class AskModel {
     static let stepNames = ["1 question in", "2 dictionary reads it", "3 your phrases found", "4 nucleus read whole",
                             "5 one model call", "6 the gate", "7 answer out"]
 
-    init(archive: ConversationArchive = ConversationArchive()) { self.archive = archive }
+    init(archive: ConversationArchive = ConversationArchive(), keepsComposerDraft: Bool = true) {
+        self.archive = archive
+        self.keepsComposerDraft = keepsComposerDraft
+        if !keepsComposerDraft { question = ""; themeID = nil; themeAnswers = [:] }
+    }
 
     func showSnapshot(_ origin: ConversationOrigin) {
         current = origin.response
@@ -101,13 +107,24 @@ final class AskModel {
 
     func ask() async {
         let text = entryText
+        let payload = themePayload.map { try? JSONSerialization.data(withJSONObject: $0) } ?? nil
+        await submit(text: text, themeData: payload, clearsComposer: true)
+    }
+
+    /// The entry form uses the same Nucleus request and answer path as Question.
+    /// Its draft belongs to that entry, never to the separate question composer.
+    func ask(entry: EntryQuestion) async {
+        question = entry.text
+        await submit(text: entry.text, themeData: try? JSONEncoder().encode(entry.theme), clearsComposer: false)
+    }
+
+    private func submit(text: String, themeData: Data?, clearsComposer: Bool) async {
         print("nucleus: ask() with \(text.count) chars, theme=\(themeID ?? "none"), working=\(working)")
         guard !text.isEmpty, !working else { return }
         working = true; problem = nil; current = nil; currentOrigin = nil; isFrozen = false; thumbs = [:]; explanationThumb = nil
         let source = NucleusAPI.base
         do {
-            let payload = themePayload.map { try? JSONSerialization.data(withJSONObject: $0) } ?? nil
-            let id = try await NucleusAPI.ask(text, themeData: payload)
+            let id = try await NucleusAPI.ask(text, themeData: themeData)
             while true {
                 let status = try await NucleusAPI.status(id)
                 current = status
@@ -119,8 +136,10 @@ final class AskModel {
             await loadRecent()
             // Adam, 2026-10-07: "The last answer sits in entry blank for some reason. make sure that doesn't happen
             // again." What was sent is the Mac's now; the entry page starts blank for the next one.
-            question = ""
-            if let theme { themeAnswers[theme.id] = nil }
+            if clearsComposer {
+                question = ""
+                if let theme { themeAnswers[theme.id] = nil }
+            }
         } catch {
             problem = "The Mac did not answer. \(error.localizedDescription)"
         }

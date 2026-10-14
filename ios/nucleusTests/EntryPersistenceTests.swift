@@ -2,6 +2,35 @@ import XCTest
 @testable import nucleus
 
 final class EntryPersistenceTests: XCTestCase {
+    func testEntryQuestionPreservesWritingAndExcludesUntouchedPrompts() {
+        var entry = Reminder()
+        var draft = PostEntryDraft(entry: entry)
+        XCTAssertTrue(EntryQuestion(entry: entry, draft: draft, subtasks: []).text.isEmpty)
+        entry.title = "  What is FLOW?\nKeep this line.  "
+        entry.whenIAm = "These are my words."
+        draft.setAnswer("My edited prompt?\nMy exact answer.\nSecond line!", at: 0)
+        let request = EntryQuestion(entry: entry, draft: draft, subtasks: [])
+        XCTAssertEqual(request.theme.question, entry.title)
+        XCTAssertEqual(request.theme.fields[0].prompt, "My edited prompt?")
+        XCTAssertEqual(request.theme.fields[0].answer, "My exact answer.\nSecond line!")
+        XCTAssertEqual(request.text, "  What is FLOW?\nKeep this line.  \n\nMy edited prompt?\nMy exact answer.\nSecond line!\n\nWhen I am...I like to\nThese are my words.")
+    }
+
+    @MainActor func testEntryAnswerModelCannotOverwriteQuestionComposerDraft() throws {
+        let composer = AskModel(archive: ConversationArchive(fileURL: try directory().appendingPathComponent("archive.json")))
+        composer.question = "My unfinished separate question."
+        composer.selectTheme(PostThemeCatalog.defaultTheme.id)
+        composer.setThemeField("Keep this unfinished answer.", at: 0)
+        let key = CowboyStorage.preferenceKey("nucleus.themeAnswers")
+        let before = UserDefaults.standard.data(forKey: key)
+        let entry = AskModel(archive: composer.archive, keepsComposerDraft: false)
+        entry.question = "An entry request."
+        entry.selectTheme(PostThemeCatalog.defaultTheme.id)
+        entry.setThemeField("Separate entry words.", at: 0)
+        XCTAssertEqual(UserDefaults.standard.string(forKey: CowboyStorage.preferenceKey("nucleus.draft")), "My unfinished separate question.")
+        XCTAssertEqual(UserDefaults.standard.data(forKey: key), before)
+    }
+
     private func fixture(_ answer: String = "The response stays exact.") throws -> AskResponse {
         let object: [String: Any] = [
             "question": ["id": "source-1", "question": "  Adam’s exact words.\nSecond line!  "],

@@ -57,6 +57,11 @@ enum NucleusAPI {
     }
 
     static var base: URL {
+        #if DEBUG
+        if CowboyRuntime.isTesting,
+           let value = ProcessInfo.processInfo.environment["COWBOYAI_UI_TEST_BASE_URL"],
+           let url = URL(string: value) { return url }
+        #endif
         let saved = UserDefaults.standard.string(forKey: "nucleus.base") ?? "http://100.111.154.126:8766"
         return URL(string: saved) ?? URL(string: "http://100.111.154.126:8766")!
     }
