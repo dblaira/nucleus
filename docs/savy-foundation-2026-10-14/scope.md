@@ -19,3 +19,11 @@ Isolation: the trial must have its own bundle identity and application container
 Distribution: keep this trial and its commits local. The Nucleus origin is a public repository; Adam has not authorized publishing SAVY source or its bundled personal material there.
 
 Acceptance: inspect the real simulator screens and use FAB choices, normal entry, Ask, response opening, right-swipe Pin/Unpin and pin ordering. Preserve exact writing, saved response origins and existing history. Test persistence and draft recovery in separate test storage. Recheck the original SAVY source, app and saved records against the preservation manifest. A test count alone does not establish visual parity.
+
+## Ask interaction follow-up
+
+Adam, verbatim, in the same chat on October 14, 2026:
+
+> In the simulator I see a floating cowboyai "ask" form but it is not active. Meaning, I cannot click on it to inspect.
+
+Base: `e68abb18b54f6f7d79ea326c71a2e2f7947293ec`, clean. Objective: make the added Ask control respond on an empty entry. Keep the original form and its content; an empty tap should focus its existing writing field, while a populated tap submits through the existing engine. Exclusive writer: this task, within the same trial and documentation scope. All original-app, cloud, phone and public-distribution prohibitions above continue. Acceptance: actual simulator click, typing into the focused field, live answer and return, draft recovery on failure, and the four original FAB destinations.

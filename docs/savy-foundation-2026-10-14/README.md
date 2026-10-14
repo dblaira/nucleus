@@ -44,3 +44,17 @@ Result bundles are under `/Users/adamblair/Library/Developer/XcodeBuildMCP/works
 ![Original Post form with added Ask](entry-live.png)
 
 The attachment manifests in `attachments-first-pass/` and `attachments-retest/` identify each captured state and its simulator test.
+
+## Empty Ask interaction, October 14 follow-up
+
+Reproduced on the actual recovery simulator: the added Ask button was disabled whenever the entry contained only empty template prompts. The rest of the form accepted input, but clicking Ask produced no response.
+
+Ask now remains active on an empty entry. Clicking it focuses and reveals the original “What do I want?” field and explains that writing in any box can be sent with Ask. It does not submit the untouched prompts. Once writing exists, the same button sends it through the unchanged engine. Saving and an in-progress request still prevent duplicate submission.
+
+Verification: 3 UI flows passed, 0 failed. The live flow now starts by clicking empty Ask, verifies the keyboard and focused visible field, types directly without tapping another control, receives the FLOW answer, inspects the exact dictionary words, returns to the same entry, saves, relaunches and reopens the saved response. The other flows cover all four original FAB choices and connection-failure recovery.
+
+Result: `test_sim_2026-10-14T18-08-09-242Z_pid34973_9949868e.xcresult` in the result-bundle directory above. Screenshots and their manifest are in `attachments-ask-interaction/`.
+
+After the tests, relaunched without fixture arguments, manually clicked Ask on the recovered blank entry, and visually confirmed the cursor in the revealed writing field. Left that active form open for Adam. Original SAVY source remains at `87f2b8c535fd7069d9748159a78d3770247f1a2c` with its same two untracked paths; no original app/data or physical-device access occurred.
+
+![Active Ask and focused original writing field](ask-active-live.png)

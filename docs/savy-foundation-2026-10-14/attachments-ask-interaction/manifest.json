@@ -1,0 +1,155 @@
+[
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "D2BC1BBD-8375-4225-A9BE-F50C1D65E023",
+        "deviceName" : "CowboyAI-Recovery",
+        "exportedFileName" : "42F8FFEA-EC7A-4C1D-854A-2E39B5AFD9EE.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Unsent writing recovered after relaunch_0_3FB08610-D764-42EE-8C0D-1C15DFA32CEA.png",
+        "timestamp" : 1792001320.872
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "D2BC1BBD-8375-4225-A9BE-F50C1D65E023",
+        "deviceName" : "CowboyAI-Recovery",
+        "exportedFileName" : "EAD441B5-B679-41E7-B86D-2DA3E3365BAE.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Connection failure leaves a return to the original writing_0_F6973B05-39DC-4E0C-9B7F-1AF48E337A10.png",
+        "timestamp" : 1792001311.368
+      }
+    ],
+    "testIdentifier" : "CowboyFoundationUITests/testConnectionFailureRetainsTheWholeEntryForRetry()",
+    "testIdentifierURL" : "test://com.apple.xcode/CowboyAITrial/SAVYUITests/CowboyFoundationUITests/testConnectionFailureRetainsTheWholeEntryForRetry"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "D2BC1BBD-8375-4225-A9BE-F50C1D65E023",
+        "deviceName" : "CowboyAI-Recovery",
+        "exportedFileName" : "A36525B3-222C-46E8-9A66-E05F19F76765.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Original Calendar form with added Ask_0_7D00892D-C6C3-4B52-9993-51123A9A34C8.png",
+        "timestamp" : 1792001361.561
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "D2BC1BBD-8375-4225-A9BE-F50C1D65E023",
+        "deviceName" : "CowboyAI-Recovery",
+        "exportedFileName" : "AA692318-E111-49EE-9FC9-B039D1483F36.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "SAVY fan with all four choices_0_A53AEB83-AA61-43BB-A0F6-E2DDA4AEDBD4.png",
+        "timestamp" : 1792001358.878
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "D2BC1BBD-8375-4225-A9BE-F50C1D65E023",
+        "deviceName" : "CowboyAI-Recovery",
+        "exportedFileName" : "600F4AF3-EEDE-4265-B5E5-E4D6A9D87185.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Original Post form with added Ask_0_EFD09B37-68CC-450A-8E57-5D167415512C.png",
+        "timestamp" : 1792001352.388
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "D2BC1BBD-8375-4225-A9BE-F50C1D65E023",
+        "deviceName" : "CowboyAI-Recovery",
+        "exportedFileName" : "1147244C-3409-41D2-AAC6-737229F66B52.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "SAVY fan with all four choices_0_F7F69502-A889-4C29-BF79-8A2006C0A207.png",
+        "timestamp" : 1792001349.715
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "D2BC1BBD-8375-4225-A9BE-F50C1D65E023",
+        "deviceName" : "CowboyAI-Recovery",
+        "exportedFileName" : "F5C4A620-A5E3-4F57-A87F-A3E1C771207C.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Original Action form with added Ask_0_A35D2C6B-085D-4D82-B1F6-636B3EBD2FCF.png",
+        "timestamp" : 1792001343.241
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "D2BC1BBD-8375-4225-A9BE-F50C1D65E023",
+        "deviceName" : "CowboyAI-Recovery",
+        "exportedFileName" : "38816901-357D-4E65-B727-1DBEEC645C89.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "SAVY fan with all four choices_0_014917A8-784D-4967-95A9-93B3D04990AA.png",
+        "timestamp" : 1792001340.632
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "D2BC1BBD-8375-4225-A9BE-F50C1D65E023",
+        "deviceName" : "CowboyAI-Recovery",
+        "exportedFileName" : "B74A46DB-DA86-48F8-A473-32CD8BA1D8C3.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Original Reminder form with added Ask_0_A628840F-60DD-423B-8236-37ED6C6288EA.png",
+        "timestamp" : 1792001334.171
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "D2BC1BBD-8375-4225-A9BE-F50C1D65E023",
+        "deviceName" : "CowboyAI-Recovery",
+        "exportedFileName" : "65BDAF21-E5A0-4741-921E-0F8B51233BF4.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "SAVY fan with all four choices_0_2D96DC8C-24D5-46BF-BDA5-5DC94E620B5F.png",
+        "timestamp" : 1792001331.884
+      }
+    ],
+    "testIdentifier" : "CowboyFoundationUITests/testFabRetainsAllFourSavyChoicesAndTheSameEntryForm()",
+    "testIdentifierURL" : "test://com.apple.xcode/CowboyAITrial/SAVYUITests/CowboyFoundationUITests/testFabRetainsAllFourSavyChoicesAndTheSameEntryForm"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "D2BC1BBD-8375-4225-A9BE-F50C1D65E023",
+        "deviceName" : "CowboyAI-Recovery",
+        "exportedFileName" : "BD232250-17F7-4C1B-8336-EB728379006F.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Saved entry reopens its exact response after relaunch_0_B9BAC0B3-3BC8-4CB4-BC43-8DFB912A8076.png",
+        "timestamp" : 1792001423.132
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "D2BC1BBD-8375-4225-A9BE-F50C1D65E023",
+        "deviceName" : "CowboyAI-Recovery",
+        "exportedFileName" : "02F54772-D095-4F45-BCAF-03AB72B6D206.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Actual dictionary evidence from the live response_0_39C9571E-BB3C-47EC-9E05-88E9DC04996B.png",
+        "timestamp" : 1792001389.82
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "D2BC1BBD-8375-4225-A9BE-F50C1D65E023",
+        "deviceName" : "CowboyAI-Recovery",
+        "exportedFileName" : "C43CFA64-A693-4056-8ECA-AE212C68D057.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Live FLOW response from the normal SAVY entry_0_917107A8-1B1A-4585-B8FE-0226FAE6A27E.png",
+        "timestamp" : 1792001379.273
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "D2BC1BBD-8375-4225-A9BE-F50C1D65E023",
+        "deviceName" : "CowboyAI-Recovery",
+        "exportedFileName" : "5B85E59D-6AD0-444C-A69F-57C248FD088B.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Original SAVY entry with writing and Ask_0_2DB716FA-8FF9-4E0B-941A-3B489930748C.png",
+        "timestamp" : 1792001374.959
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "D2BC1BBD-8375-4225-A9BE-F50C1D65E023",
+        "deviceName" : "CowboyAI-Recovery",
+        "exportedFileName" : "55E86780-FD3F-4DF5-961F-9B78BA0A1BEA.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Empty Ask focuses the original writing field_0_D2644425-97BC-4A15-8C5D-62876FF23736.png",
+        "timestamp" : 1792001373.851
+      }
+    ],
+    "testIdentifier" : "CowboyFoundationUITests/testSharedEntryAsksLiveCowboyAIAndReopensItsExactSavedAnswer()",
+    "testIdentifierURL" : "test://com.apple.xcode/CowboyAITrial/SAVYUITests/CowboyFoundationUITests/testSharedEntryAsksLiveCowboyAIAndReopensItsExactSavedAnswer"
+  }
+]

@@ -26,7 +26,7 @@ final class CowboyFoundationUITests: XCTestCase {
             XCTAssertTrue(element("sharedEntryForm").waitForExistence(timeout: 5))
             XCTAssertTrue(element("PostTheme").exists)
             XCTAssertTrue(element("DecideAnswer0").exists)
-            XCTAssertFalse(app.buttons["entryAskCowboyAI"].isEnabled)
+            XCTAssertTrue(app.buttons["entryAskCowboyAI"].isEnabled)
             for segment in ["Reminder", "Action", "Calendar", "Post"] {
                 XCTAssertTrue(app.segmentedControls.buttons[segment].exists)
             }
@@ -70,8 +70,17 @@ final class CowboyFoundationUITests: XCTestCase {
         launch()
         openEntry("Reminder")
         let title = element("Title")
-        reveal(title); title.tap(); title.typeText("What is FLOW?")
         let ask = app.buttons["entryAskCowboyAI"]
+        XCTAssertTrue(ask.isEnabled)
+        ask.tap()
+        XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["entryAskWritingHint"].exists)
+        XCTAssertTrue(title.isHittable, "Empty Ask must reveal and focus the existing writing field")
+        XCTAssertFalse(app.staticTexts["live-answer-question"].exists, "An empty entry must not submit the template prompts")
+        attach("Empty Ask focuses the original writing field")
+        app.typeText("What is FLOW?")
+        XCTAssertEqual(title.value as? String, "What is FLOW?", "Typing after Ask must go into the existing field")
+        XCTAssertFalse(app.staticTexts["entryAskWritingHint"].exists)
         XCTAssertTrue(ask.isHittable, "Ask must remain reachable above the keyboard")
         attach("Original SAVY entry with writing and Ask")
         ask.tap()

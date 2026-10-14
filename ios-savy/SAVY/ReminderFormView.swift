@@ -18,6 +18,7 @@ struct ReminderFormView: View {
     @State private var showingOrigin: ConversationOrigin?
     @State private var entryAskModel: AskModel?
     @State private var showingEntryAnswer = false
+    @State private var showingAskWritingHint = false
     private let initialEntry: Reminder
     private let recoveryID: String
     var onSaveAttempt: ((Reminder) -> Bool)?
@@ -124,9 +125,15 @@ struct ReminderFormView: View {
                                 .background(Brand.card, in: RoundedRectangle(cornerRadius: 24))
                         }
                         .buttonStyle(.plain).foregroundStyle(Brand.crimson)
-                        .disabled(entryQuestion.text.isEmpty || isSaving || entryAskModel?.working == true)
+                        .disabled(isSaving || entryAskModel?.working == true)
                         .accessibilityIdentifier("entryAskCowboyAI")
                         .padding(.horizontal, 20).padding(.vertical, 8)
+                        if showingAskWritingHint && entryQuestion.text.isEmpty {
+                            Text("Write in any box, then tap Ask CowboyAI.")
+                                .font(.footnote).foregroundStyle(.secondary)
+                                .accessibilityIdentifier("entryAskWritingHint")
+                                .padding(.horizontal, 20).padding(.bottom, 8)
+                        }
                     }
                     if Self.showsKeyboardRow, activeField != nil { keyboardRow }
                 }
@@ -309,8 +316,14 @@ struct ReminderFormView: View {
     }
 
     private func askCowboyAI() {
+        guard !isSaving, entryAskModel?.working != true else { return }
         let question = entryQuestion
-        guard !question.text.isEmpty, entryAskModel?.working != true else { return }
+        guard !question.text.isEmpty else {
+            showingAskWritingHint = true
+            moveCursor(to: .title)
+            return
+        }
+        showingAskWritingHint = false
         moveCursor(to: nil)
         saveRecoveryDraft(force: true)
         guard !saveFailed else { return }
