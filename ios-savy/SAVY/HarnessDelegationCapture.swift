@@ -1,0 +1,141 @@
+import SwiftUI
+
+/// Adam's three-sentence delegation, captured in SAVY and landed in the
+/// Harness Delegation queue at home via the suite's shared iCloud
+/// container. His words, verbatim: "I go into the savvy app because
+/// that's the area where I want to focus on things that I'm already
+/// good at ... when I enter that in I have the three step delegation
+/// when I press enter ... I would like for that to transfer
+/// automatically to the harness app and that way I can work on it more
+/// when I get home."
+enum HarnessDelegationWriter {
+    static let containerIdentifier = "iCloud.com.adamblair.harness"
+
+    /// Documents/Delegations inside the shared container; nil when
+    /// iCloud is unavailable (signed out, airplane-mode first launch).
+    static func delegationsDirectory() -> URL? {
+        guard let container = FileManager.default.url(forUbiquityContainerIdentifier: containerIdentifier) else {
+            return nil
+        }
+        let dir = container
+            .appendingPathComponent("Documents", isDirectory: true)
+            .appendingPathComponent("Delegations", isDirectory: true)
+        try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        return dir
+    }
+
+    /// Local fallback spool -- anything written here is moved into the
+    /// container on the next successful write (capture never fails
+    /// because the network did).
+    static func spoolDirectory() -> URL {
+        let dir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent("HarnessDelegationSpool", isDirectory: true)
+        try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        return dir
+    }
+
+    /// Writes the delegation card in the exact frontmatter contract the
+    /// Harness board parser validates (resource, rules_hit, fit, app,
+    /// sources). Adam's sentences go in verbatim -- title is his first
+    /// sentence, the body carries all three under his own labels.
+    @discardableResult
+    static func write(want: String, think: String, done: String, postContext: String? = nil) -> Bool {
+        // UI acceptance runs use synthetic entries on the connected phone, never its iCloud queue.
+        if ProcessInfo.processInfo.arguments.contains("SAVY_UI_TEST_UNLOCKED") { return true }
+        let stamp = Self.fileStampFormatter.string(from: Date())
+        let iso = ISO8601DateFormatter().string(from: Date())
+        let id = "DELEGATION-\(stamp)-SAVY"
+        let title = want
+            .components(separatedBy: .newlines).first?
+            .trimmingCharacters(in: .whitespaces) ?? want
+        let escapedTitle = title.replacingOccurrences(of: "\"", with: "\\\"")
+
+        var markdown = """
+        ---
+        type: delegation
+        title: "\(escapedTitle)"
+        resource: savy://delegation/\(stamp)
+        timestamp: \(iso)
+        opp_id: \(id)
+        fit: 0.8
+        rules_hit: [R-01]
+        app: SAVY
+        sources: 1
+        scout_id: adam-savy-capture
+        ---
+        WHAT DO I WANT?
+        \(want)
+
+        WHEN I AM...I LIKE TO
+        \(think)
+
+        DONE LOOKS LIKE...
+        \(done)
+        """
+        if let postContext, !postContext.isEmpty {
+            markdown += "\n\n" + postContext
+        }
+
+        let filename = "\(id).md"
+        if let dir = delegationsDirectory() {
+            drainSpool(into: dir)
+            do {
+                try markdown.write(to: dir.appendingPathComponent(filename), atomically: true, encoding: .utf8)
+                return true
+            } catch {
+                // fall through to spool
+            }
+        }
+        let spooled = spoolDirectory().appendingPathComponent(filename)
+        return (try? markdown.write(to: spooled, atomically: true, encoding: .utf8)) != nil
+    }
+
+    /// Move any offline captures into the container once it's reachable.
+    static func drainSpool(into directory: URL) {
+        let spool = spoolDirectory()
+        guard let files = try? FileManager.default.contentsOfDirectory(at: spool, includingPropertiesForKeys: nil) else { return }
+        for file in files where file.pathExtension == "md" {
+            try? FileManager.default.moveItem(at: file, to: directory.appendingPathComponent(file.lastPathComponent))
+        }
+    }
+
+    private static let fileStampFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyyMMdd-HHmmss"
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        return formatter
+    }()
+}
+
+/// Which reminders have ridden home -- the cowboy hat's memory. Local
+/// to this phone; being harnessed is a fact about THIS capture moment.
+/// The gateway can hand back a different id for the same reminder after
+/// a sync round trip, so the registry also remembers the capture by its
+/// own words -- the words survive; ids don't have to.
+enum HarnessedRegistry {
+    private static let key = "harnessedReminderIDs"
+    private static let wordsKey = "harnessedReminderWords"
+
+    private static func words(_ title: String) -> String {
+        title.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+    }
+
+    static func mark(_ reminder: Reminder) {
+        guard !ProcessInfo.processInfo.arguments.contains("SAVY_UI_TEST_UNLOCKED") else { return }
+        var ids = Set(UserDefaults.standard.stringArray(forKey: key) ?? [])
+        ids.insert(reminder.id.uuidString)
+        UserDefaults.standard.set(Array(ids), forKey: key)
+
+        var marked = Set(UserDefaults.standard.stringArray(forKey: wordsKey) ?? [])
+        marked.insert(words(reminder.title))
+        UserDefaults.standard.set(Array(marked), forKey: wordsKey)
+    }
+
+    static func isHarnessed(_ reminder: Reminder) -> Bool {
+        if (UserDefaults.standard.stringArray(forKey: key) ?? []).contains(reminder.id.uuidString) {
+            return true
+        }
+        return (UserDefaults.standard.stringArray(forKey: wordsKey) ?? [])
+            .contains(words(reminder.title))
+    }
+}

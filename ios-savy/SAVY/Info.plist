@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>$(DEVELOPMENT_LANGUAGE)</string>
+	<key>CFBundleDisplayName</key>
+	<string>SAVY</string>
+	<key>CFBundleExecutable</key>
+	<string>$(EXECUTABLE_NAME)</string>
+	<key>CFBundleIdentifier</key>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>$(PRODUCT_NAME)</string>
+	<key>CFBundlePackageType</key>
+	<string>$(PRODUCT_BUNDLE_PACKAGE_TYPE)</string>
+	<key>CFBundleShortVersionString</key>
+	<string>1.0</string>
+	<key>CFBundleVersion</key>
+	<string>1</string>
+	<key>LSRequiresIPhoneOS</key>
+	<true/>
+	<key>NSFaceIDUsageDescription</key>
+	<string>SAVY uses Face ID to unlock your private workspace after you sign in.</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+	</array>
+	<key>SAVY_CLOUDKIT_CONTAINER</key>
+	<string>iCloud.com.adamblair.harness</string>
+	<key>SAVY_CLOUDKIT_ENVIRONMENT</key>
+	<string>Development</string>
+	<key>NSCalendarsFullAccessUsageDescription</key>
+	<string>SAVY uses your calendars when you choose a calendar for a scheduled entry, so it can save and update that event.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>SAVY uses location only when a native entry needs place context.</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>SAVY connects to CowboyAI on Adam's private network for reasoning and natural voice.</string>
+	<key>NSBonjourServices</key>
+	<array>
+		<string>_cowboyai._tcp</string>
+	</array>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>SAVY lets you attach chosen images to native entries.</string>
+	<key>AWS_API_BASE_URL</key>
+	<string>$(AWS_API_BASE_URL)</string>
+	<key>AWS_API_KEY</key>
+	<string>$(AWS_API_KEY)</string>
+	<key>UIAppFonts</key>
+	<array>
+		<string>BodoniModa-Regular.ttf</string>
+		<string>Roboto-Medium.ttf</string>
+	</array>
+	<key>UILaunchScreen</key>
+	<dict>
+		<key>UIColorName</key>
+		<string>SAVYLaunchBackground</string>
+	</dict>
+	<key>UISupportedInterfaceOrientations</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+	</array>
+	<key>UISupportedInterfaceOrientations~ipad</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationPortraitUpsideDown</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+	<key>UIUserInterfaceStyle</key>
+	<string>Light</string>
+</dict>
+</plist>

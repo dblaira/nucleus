@@ -1,0 +1,360 @@
+import Combine
+import Foundation
+
+// MARK: - Post model
+//
+// Adam's words, 2026-09-01: "X posts are incredibly important, and any truncated
+// summarization of sources I visit is immediately discouraging. Details. Random
+// connections and details between what I consume each morning ... are interesting
+// when shared based on how seemingly disparate areas connect, or overlap in some way."
+//
+// Every field below holds one of those parts whole: the post in his words, the
+// source he is reacting to, the exact line that struck him, and where it touches
+// something else. Nothing posts on its own — Adam presses Post.
+
+/// Which account the post goes out under. Adam: "using different accounts" — his name,
+/// Cowboy AI, the Understood Suite, News Calm — "possible doors", opened one at a time.
+enum PostDoor: String, Codable, CaseIterable, Identifiable {
+    case adam, cowboyAI, understood, newsCalm
+    var id: String { rawValue }
+    var label: String {
+        switch self {
+        case .adam: return "Adam Blair"
+        case .cowboyAI: return "Cowboy AI"
+        case .understood: return "Understood Suite"
+        case .newsCalm: return "News Calm"
+        }
+    }
+}
+
+/// Where it is posted. X first; YouTube and Instagram enter with the posting phase.
+enum PostPlatform: String, Codable, CaseIterable, Identifiable {
+    case x, youtube, instagram
+    var id: String { rawValue }
+    var label: String {
+        switch self {
+        case .x: return "X"
+        case .youtube: return "YouTube"
+        case .instagram: return "Instagram"
+        }
+    }
+}
+
+/// Adam's words, 2026-09-03: "News" and "Advertising". News gives something and asks for
+/// nothing. Advertising is the ask. The raw values stay as stored so saved posts still load.
+enum PostMove: String, Codable, CaseIterable, Identifiable {
+    case jab, hook
+    var id: String { rawValue }
+    var label: String {
+        switch self {
+        case .jab: return "News"
+        case .hook: return "Advertising"
+        }
+    }
+}
+
+enum PostStatus: String, Codable, CaseIterable, Identifiable {
+    case draft, ready, posted
+    var id: String { rawValue }
+    var label: String {
+        switch self {
+        case .draft: return "Draft"
+        case .ready: return "Ready"
+        case .posted: return "Posted"
+        }
+    }
+}
+
+/// The areas Adam watches each morning, his words: "the persistent narrative surrounding
+/// peptides, a.i., entrepreneurship, and public perception in general (pace of change,
+/// opportunities for new college grads, etc.)"
+enum PostAreas {
+    static let suggested: [String] = [
+        "Peptides",
+        "AI",
+        "Entrepreneurship",
+        "Public perception",
+        "Pace of change",
+        "New college grads",
+    ]
+}
+
+struct SocialPost: Identifiable, Codable, Equatable {
+    var id: UUID = UUID()
+    var postNumber: Int? = nil
+
+    // The post — his point of view, word for word.
+    var text: String = ""
+
+    // The source he is reacting to.
+    var sourceLink: String = ""
+    var sourceName: String = ""     // who made it
+    var sourceLine: String = ""     // the specific line, the number, the name — verbatim
+
+    // The connection.
+    var connection: String = ""     // where this touches something else
+    var areas: [String] = []
+
+    // Choose.
+    var door: PostDoor = .adam
+    var platform: PostPlatform = .x
+    var move: PostMove = .jab
+    var pattern: SuccessStep = .none
+
+    // Status.
+    var status: PostStatus = .draft
+    var pinned: Bool = false
+    var postedAt: Date? = nil
+    var postLink: String = ""       // link to the live post
+    var clearSign: Bool = false     // Clear Sign: a creator he respects replied, unprompted
+    var replies: Int = 0
+    var likes: Int = 0
+    var profileTaps: Int = 0
+
+    var createdAt: Date = Date()
+    var updatedAt: Date = Date()
+
+    init() {}
+
+    /// Every key is optional on read so the form can grow without losing saved posts.
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decodeIfPresent(UUID.self, forKey: .id) ?? UUID()
+        postNumber = try c.decodeIfPresent(Int.self, forKey: .postNumber)
+        text = try c.decodeIfPresent(String.self, forKey: .text) ?? ""
+        sourceLink = try c.decodeIfPresent(String.self, forKey: .sourceLink) ?? ""
+        sourceName = try c.decodeIfPresent(String.self, forKey: .sourceName) ?? ""
+        sourceLine = try c.decodeIfPresent(String.self, forKey: .sourceLine) ?? ""
+        connection = try c.decodeIfPresent(String.self, forKey: .connection) ?? ""
+        areas = try c.decodeIfPresent([String].self, forKey: .areas) ?? []
+        door = try c.decodeIfPresent(PostDoor.self, forKey: .door) ?? .adam
+        platform = try c.decodeIfPresent(PostPlatform.self, forKey: .platform) ?? .x
+        move = try c.decodeIfPresent(PostMove.self, forKey: .move) ?? .jab
+        pattern = try c.decodeIfPresent(SuccessStep.self, forKey: .pattern) ?? .none
+        status = try c.decodeIfPresent(PostStatus.self, forKey: .status) ?? .draft
+        pinned = try c.decodeIfPresent(Bool.self, forKey: .pinned) ?? false
+        postedAt = try c.decodeIfPresent(Date.self, forKey: .postedAt)
+        postLink = try c.decodeIfPresent(String.self, forKey: .postLink) ?? ""
+        clearSign = try c.decodeIfPresent(Bool.self, forKey: .clearSign) ?? false
+        replies = try c.decodeIfPresent(Int.self, forKey: .replies) ?? 0
+        likes = try c.decodeIfPresent(Int.self, forKey: .likes) ?? 0
+        profileTaps = try c.decodeIfPresent(Int.self, forKey: .profileTaps) ?? 0
+        createdAt = try c.decodeIfPresent(Date.self, forKey: .createdAt) ?? Date()
+        updatedAt = try c.decodeIfPresent(Date.self, forKey: .updatedAt) ?? createdAt
+    }
+}
+
+extension SocialPost {
+    var trimmedText: String {
+        text.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    /// First line of the post — the row title and the form header.
+    var headline: String {
+        let first = trimmedText
+            .components(separatedBy: .newlines)
+            .first?
+            .trimmingCharacters(in: .whitespaces) ?? ""
+        return first.isEmpty ? "Post" : first
+    }
+
+    var hasContent: Bool {
+        if !trimmedText.isEmpty { return true }
+        if !sourceLink.isEmpty || !sourceName.isEmpty || !sourceLine.isEmpty { return true }
+        if !connection.isEmpty || !areas.isEmpty { return true }
+        return false
+    }
+
+    /// X's line for a post without Premium.
+    static let xCharacterLine = 280
+
+    var characterCount: Int {
+        trimmedText.count
+    }
+
+    /// Compact "Sep 2" / "Sep 2 1:14 PM" label for rows.
+    var whenLabel: String? {
+        guard let date = postedAt ?? (status == .posted ? updatedAt : nil) else { return nil }
+        let fmt = DateFormatter()
+        fmt.dateFormat = "MMM d h:mm a"
+        return fmt.string(from: date)
+    }
+
+    /// The X compose page with this post already in the box. Adam presses Post.
+    var xComposeURL: URL? {
+        let allowed = CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "-._~"))
+        guard let encoded = trimmedText.addingPercentEncoding(withAllowedCharacters: allowed) else {
+            return nil
+        }
+        return URL(string: "https://x.com/intent/post?text=\(encoded)")
+    }
+}
+
+// MARK: - Store
+//
+// Local-first: posts.json under Application Support/SAVY, the same pocket the technical
+// captures use. SavyDocumentSync carries the file to Adam's other signed-in devices.
+
+@MainActor
+final class SocialPostStore: ObservableObject {
+    @Published private(set) var posts: [SocialPost]
+    /// An unreadable posts.json is preserved and cannot become an empty synced collection.
+    private(set) var loadFailed = false
+    private(set) var lastWriteFailed = false
+
+    private let fileURL: URL
+    private var postNumberAllocator: PostNumberAllocator?
+
+    init(fileURL: URL) throws {
+        self.fileURL = fileURL
+        self.posts = try Self.load(from: fileURL)
+    }
+
+    static func live() -> SocialPostStore {
+        do {
+            return try SocialPostStore(fileURL: defaultFileURL)
+        } catch {
+            let store = SocialPostStore(posts: [], fileURL: defaultFileURL)
+            store.loadFailed = true
+            return store
+        }
+    }
+
+    /// Synced posts keep the numbers they were given; the ledger adopts them rather than renumbering.
+    @discardableResult
+    func applySynced(_ synced: [SocialPost]) -> Bool {
+        guard !loadFailed else { return false }
+        if synced != posts, !persist(synced) { return false }
+        if let allocator = postNumberAllocator {
+            for post in synced {
+                if let number = post.postNumber,
+                   !allocator.adopt(.socialPost, id: post.id, number: number) { return false }
+            }
+        }
+        return true
+    }
+
+    // MARK: Reading
+
+    var drafts: [SocialPost] {
+        posts.filter { $0.status == .draft }.sorted { $0.updatedAt > $1.updatedAt }
+    }
+
+    var ready: [SocialPost] {
+        posts.filter { $0.status == .ready }.sorted { $0.updatedAt > $1.updatedAt }
+    }
+
+    var posted: [SocialPost] {
+        posts.filter { $0.status == .posted }
+            .sorted { ($0.postedAt ?? $0.updatedAt) > ($1.postedAt ?? $1.updatedAt) }
+    }
+
+    /// News and Advertising among posted items.
+    var postedNewsCount: Int {
+        posted.filter { $0.move == .jab }.count
+    }
+
+    var postedAdvertisingCount: Int {
+        posted.filter { $0.move == .hook }.count
+    }
+
+    /// Kill switch input. Adam: "If I don't use something for two days, then it's not working."
+    var lastPostedAt: Date? {
+        posted.first.map { $0.postedAt ?? $0.updatedAt }
+    }
+
+    var clearSignCount: Int {
+        posted.filter(\.clearSign).count
+    }
+
+    /// Areas used before, most-used first, ahead of the standing suggestions.
+    var recentAreas: [String] {
+        let counts = Dictionary(grouping: posts.flatMap(\.areas), by: { $0 }).mapValues(\.count)
+        let used = counts.sorted { $0.value > $1.value }.map(\.key)
+        return used + PostAreas.suggested.filter { !used.contains($0) }
+    }
+
+    // MARK: Writing
+
+    /// Adds numbering metadata without treating the existing post as newly edited.
+    func configurePostNumbering(_ allocator: PostNumberAllocator) {
+        postNumberAllocator = allocator
+        allocator.seed(reminders: [], socialPosts: posts)
+        guard !loadFailed else { return }
+        var next = posts
+        for index in next.indices {
+            let number = allocator.numberPreservingSavedReference(for: .socialPost, id: next[index].id, savedNumber: next[index].postNumber)
+            next[index].postNumber = number
+        }
+        if next != posts { _ = persist(next) }
+    }
+
+    @discardableResult
+    func save(_ post: SocialPost) -> Bool {
+        guard !loadFailed else { return false }
+        var p = post
+        let savedNumber = posts.first { $0.id == p.id }?.postNumber ?? p.postNumber
+        p.postNumber = postNumberAllocator?.numberPreservingSavedReference(for: .socialPost, id: p.id, savedNumber: savedNumber) ?? savedNumber
+        p.updatedAt = Date()
+        if p.status == .posted, p.postedAt == nil {
+            p.postedAt = p.updatedAt
+        }
+        var next = posts.filter { $0.id != p.id }
+        next.insert(p, at: 0)
+        return persist(next)
+    }
+
+    func markPosted(_ post: SocialPost) {
+        var p = post
+        p.status = .posted
+        if p.postedAt == nil { p.postedAt = Date() }
+        save(p)
+    }
+
+    func togglePin(_ post: SocialPost) {
+        guard var saved = posts.first(where: { $0.id == post.id }) else { return }
+        saved.pinned.toggle()
+        save(saved)
+    }
+
+    func delete(_ post: SocialPost) {
+        _ = persist(posts.filter { $0.id != post.id })
+    }
+
+    // MARK: Disk
+
+    private init(posts: [SocialPost], fileURL: URL) {
+        self.posts = posts
+        self.fileURL = fileURL
+    }
+
+    private static var defaultFileURL: URL {
+        let directory = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent("SAVY", isDirectory: true)
+        return directory.appendingPathComponent("posts.json")
+    }
+
+    private static func load(from fileURL: URL) throws -> [SocialPost] {
+        guard FileManager.default.fileExists(atPath: fileURL.path) else { return [] }
+        let data = try Data(contentsOf: fileURL)
+        let posts = try JSONDecoder.recall.decode([SocialPost].self, from: data)
+        guard Set(posts.map(\.id)).count == posts.count else { throw CocoaError(.fileReadCorruptFile) }
+        return posts
+    }
+
+    private func persist(_ next: [SocialPost]) -> Bool {
+        guard !loadFailed else { return false }
+        do {
+            guard Set(next.map(\.id)).count == next.count else { throw CocoaError(.fileWriteUnknown) }
+            let data = try JSONEncoder.recall.encode(next)
+            try FileManager.default.createDirectory(at: fileURL.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try data.write(to: fileURL, options: .atomic)
+            posts = next
+            lastWriteFailed = false
+            return true
+        } catch {
+            lastWriteFailed = true
+            return false
+        }
+    }
+}

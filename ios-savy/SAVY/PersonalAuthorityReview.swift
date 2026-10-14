@@ -1,0 +1,1525 @@
+import Combine
+import Foundation
+import SwiftUI
+import AVFoundation
+import CryptoKit
+import Network
+
+struct PersonalAuthorityCandidatePayload: Decodable {
+    let generatedAt: String
+    let candidateCount: Int
+    let candidates: [PersonalAuthorityCandidate]
+}
+
+struct PersonalAuthorityCandidate: Decodable, Identifiable, Equatable {
+    let index: Int
+    let id: String
+    let text: String
+    let source: String
+    let sourceHash: String
+    let signalScore: Int
+    let reason: String
+    let reviewStatus: String
+    let authorityStatus: String
+
+    var sourceLabel: String {
+        source == "cursor-data-export" ? "Cursor" : "OpenAI"
+    }
+
+    var authoredText: String {
+        PersonalAuthorityConferenceClassifier.authoredText(from: text)
+    }
+
+    var containsInjectedSystemPrefix: Bool {
+        PersonalAuthorityConferenceClassifier.containsInjectedSystemPrefix(text)
+    }
+
+    var conferenceStatus: PersonalAuthorityConferenceStatus {
+        PersonalAuthorityConferenceClassifier.status(for: authoredText)
+    }
+}
+
+enum PersonalAuthorityConferenceStatus: String, CaseIterable, Identifiable {
+    case ready
+    case sourceCheck
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .ready: "READY"
+        case .sourceCheck: "CHECK SOURCE"
+        }
+    }
+
+    var explanation: String {
+        switch self {
+        case .ready:
+            "Matched to an Adam user message with no embedded-source marker."
+        case .sourceCheck:
+            "May contain a quote, transcript, pasted response, or attributed words."
+        }
+    }
+}
+
+enum PersonalAuthorityConferenceClassifier {
+    private static let systemPrefix = try! NSRegularExpression(
+        pattern: #"^<system_reminder>.*?</system_reminder>\s*"#,
+        options: [.dotMatchesLineSeparators]
+    )
+    private static let embeddedSourceMarker = try! NSRegularExpression(
+        pattern: #"(summar(?:ize|y)|transcript|quoted?|pasted?|following (?:text|article|response|conversation|content)|i especially like these suggestions|the fix:|what (?:claude|chatgpt|the ai|cursor) (?:said|wrote|gave)|assistant(?:’|'| i)s response)"#,
+        options: [.caseInsensitive]
+    )
+    private static let longQuotedBlock = try! NSRegularExpression(
+        pattern: #"[“\"](.{120,}?)[”\"]"#,
+        options: [.dotMatchesLineSeparators]
+    )
+
+    static func containsInjectedSystemPrefix(_ text: String) -> Bool {
+        let range = NSRange(text.startIndex..<text.endIndex, in: text)
+        return systemPrefix.firstMatch(in: text, range: range) != nil
+    }
+
+    static func authoredText(from text: String) -> String {
+        let range = NSRange(text.startIndex..<text.endIndex, in: text)
+        return systemPrefix
+            .stringByReplacingMatches(in: text, range: range, withTemplate: "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    static func status(for authoredText: String) -> PersonalAuthorityConferenceStatus {
+        let range = NSRange(authoredText.startIndex..<authoredText.endIndex, in: authoredText)
+        let hasEmbeddedMarker = embeddedSourceMarker.firstMatch(in: authoredText, range: range) != nil
+        let hasLongQuote = longQuotedBlock.firstMatch(in: authoredText, range: range) != nil
+        return hasEmbeddedMarker || hasLongQuote ? .sourceCheck : .ready
+    }
+}
+
+enum PersonalAuthorityDecision: String, Codable, CaseIterable {
+    case mine
+    case context
+    case evidenceOnly
+}
+
+struct PersonalAuthorityTextBlock: Identifiable, Equatable {
+    enum Style: Equatable {
+        case heading
+        case body
+        case bullet
+    }
+
+    let id: Int
+    let style: Style
+    let text: String
+}
+
+enum PersonalAuthorityTextFormatter {
+    private static let sectionLabels = [
+        "What I want?",
+        "How I think about it?",
+        "How do I know when I'm done?",
+        "How do I know when I’m done?",
+        "Objective Measurements:"
+    ]
+
+    static func blocks(from text: String) -> [PersonalAuthorityTextBlock] {
+        var result: [PersonalAuthorityTextBlock] = []
+
+        for rawLine in text.components(separatedBy: .newlines) {
+            let line = rawLine.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !line.isEmpty else { continue }
+
+            if let markdownRange = line.range(of: #"^#{1,6}\s+"#, options: .regularExpression) {
+                append(.heading, String(line[markdownRange.upperBound...]), to: &result)
+                continue
+            }
+
+            if let label = sectionLabels.first(where: { line.lowercased().hasPrefix($0.lowercased()) }) {
+                let exactLabel = String(line.prefix(label.count))
+                append(.heading, exactLabel, to: &result)
+
+                let remainder = String(line.dropFirst(label.count))
+                    .trimmingCharacters(in: .whitespacesAndNewlines)
+                if !remainder.isEmpty {
+                    append(.body, remainder, to: &result)
+                }
+                continue
+            }
+
+            if let listRange = line.range(of: #"^(?:[-*•]|\d+[.)])\s+"#, options: .regularExpression) {
+                append(.bullet, String(line[listRange.upperBound...]), to: &result)
+                continue
+            }
+
+            if line.count <= 72, line.hasSuffix("?") || line.hasSuffix(":") {
+                append(.heading, line, to: &result)
+            } else {
+                append(.body, line, to: &result)
+            }
+        }
+
+        return result
+    }
+
+    private static func append(
+        _ style: PersonalAuthorityTextBlock.Style,
+        _ text: String,
+        to result: inout [PersonalAuthorityTextBlock]
+    ) {
+        result.append(PersonalAuthorityTextBlock(id: result.count, style: style, text: text))
+    }
+}
+
+@MainActor
+final class PersonalAuthoritySpeechController: NSObject, ObservableObject, AVSpeechSynthesizerDelegate {
+    struct VoiceOption: Identifiable, Equatable {
+        let id: String
+        let name: String
+        let qualityLabel: String
+        let qualityRank: Int
+        let language: String
+
+        var displayName: String { "\(name) · \(qualityLabel)" }
+    }
+
+    enum Mode {
+        case idle
+        case speaking
+        case paused
+    }
+
+    @Published private(set) var mode: Mode = .idle
+    @Published private(set) var selectedVoiceID: String
+    let voiceOptions: [VoiceOption]
+
+    private let synthesizer = AVSpeechSynthesizer()
+    private static let selectedVoiceDefaultsKey = "savy.personal-authority-voice.v2"
+
+    override init() {
+        let options = Self.availableEnglishVoices()
+        voiceOptions = options
+
+        let saved = UserDefaults.standard.string(forKey: Self.selectedVoiceDefaultsKey)
+        if let saved, options.contains(where: { $0.id == saved }) {
+            selectedVoiceID = saved
+        } else {
+            selectedVoiceID = options.first?.id ?? AVSpeechSynthesisVoice(language: "en-US")?.identifier ?? ""
+        }
+
+        super.init()
+        synthesizer.delegate = self
+    }
+
+    var selectedVoiceLabel: String {
+        voiceOptions.first(where: { $0.id == selectedVoiceID })?.displayName ?? "Apple voice"
+    }
+
+    var bestVoiceOptions: [VoiceOption] {
+        voiceOptions.filter { $0.qualityRank >= 2 }
+    }
+
+    var standardVoiceOptions: [VoiceOption] {
+        voiceOptions.filter { $0.qualityRank == 1 }
+    }
+
+    var buttonTitle: String {
+        switch mode {
+        case .idle: "Listen"
+        case .speaking: "Pause"
+        case .paused: "Continue"
+        }
+    }
+
+    var buttonSymbol: String {
+        switch mode {
+        case .idle: "speaker.wave.2.fill"
+        case .speaking: "pause.fill"
+        case .paused: "play.fill"
+        }
+    }
+
+    func toggle(text: String) {
+        switch mode {
+        case .idle:
+            start(text: text)
+        case .speaking:
+            guard synthesizer.pauseSpeaking(at: .word) else { return }
+            mode = .paused
+        case .paused:
+            guard synthesizer.continueSpeaking() else { return }
+            mode = .speaking
+        }
+    }
+
+    func stop() {
+        synthesizer.stopSpeaking(at: .immediate)
+        mode = .idle
+        try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+    }
+
+    func selectVoice(_ option: VoiceOption, preview: Bool = true) {
+        stop()
+        selectedVoiceID = option.id
+        UserDefaults.standard.set(option.id, forKey: Self.selectedVoiceDefaultsKey)
+
+        if preview {
+            start(text: "This is \(option.name). I can read your Cowboy AI candidates in this voice.")
+        }
+    }
+
+    private func start(text: String) {
+        let session = AVAudioSession.sharedInstance()
+        try? session.setCategory(.playback, mode: .spokenAudio, options: [.duckOthers])
+        try? session.setActive(true)
+
+        let utterance = AVSpeechUtterance(string: text)
+        utterance.voice = AVSpeechSynthesisVoice(identifier: selectedVoiceID)
+            ?? AVSpeechSynthesisVoice(language: "en-US")
+        utterance.rate = 0.47
+        utterance.pitchMultiplier = 1.0
+        utterance.postUtteranceDelay = 0.25
+        synthesizer.speak(utterance)
+        mode = .speaking
+    }
+
+    private static func availableEnglishVoices() -> [VoiceOption] {
+        let preferredNames = ["Ava", "Zoe", "Evan", "Tom", "Samantha", "Nathan", "Allison", "Susan"]
+
+        return AVSpeechSynthesisVoice.speechVoices()
+            .filter { $0.language.lowercased().hasPrefix("en") }
+            .map { voice in
+                let rank: Int
+                let quality: String
+                switch voice.quality {
+                case .premium:
+                    rank = 3
+                    quality = "Premium"
+                case .enhanced:
+                    rank = 2
+                    quality = "Enhanced"
+                default:
+                    rank = 1
+                    quality = "Standard"
+                }
+
+                return VoiceOption(
+                    id: voice.identifier,
+                    name: voice.name,
+                    qualityLabel: quality,
+                    qualityRank: rank,
+                    language: voice.language
+                )
+            }
+            .sorted { lhs, rhs in
+                if lhs.qualityRank != rhs.qualityRank { return lhs.qualityRank > rhs.qualityRank }
+                let lhsUS = lhs.language.lowercased().hasPrefix("en-us")
+                let rhsUS = rhs.language.lowercased().hasPrefix("en-us")
+                if lhsUS != rhsUS { return lhsUS }
+                let lhsPreference = preferredNames.firstIndex(of: lhs.name) ?? preferredNames.count
+                let rhsPreference = preferredNames.firstIndex(of: rhs.name) ?? preferredNames.count
+                if lhsPreference != rhsPreference { return lhsPreference < rhsPreference }
+                return lhs.name.localizedCaseInsensitiveCompare(rhs.name) == .orderedAscending
+            }
+    }
+
+    nonisolated func speechSynthesizer(
+        _ synthesizer: AVSpeechSynthesizer,
+        didFinish utterance: AVSpeechUtterance
+    ) {
+        Task { @MainActor [weak self] in
+            self?.mode = .idle
+            try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+        }
+    }
+
+    nonisolated func speechSynthesizer(
+        _ synthesizer: AVSpeechSynthesizer,
+        didCancel utterance: AVSpeechUtterance
+    ) {
+        Task { @MainActor [weak self] in
+            self?.mode = .idle
+        }
+    }
+}
+
+@MainActor
+final class CowboyNaturalVoiceController: NSObject, ObservableObject, AVAudioPlayerDelegate {
+    enum Mode: Equatable {
+        case idle
+        case findingMac
+        case generating
+        case playing
+        case paused
+        case failed(String)
+    }
+
+    @Published private(set) var mode: Mode = .idle
+    @Published private(set) var isDiscovered = false
+    @Published var playbackRate: Double {
+        didSet {
+            let clamped = min(max(playbackRate, Self.minimumPlaybackRate), Self.maximumPlaybackRate)
+            if playbackRate != clamped {
+                playbackRate = clamped
+                return
+            }
+            UserDefaults.standard.set(playbackRate, forKey: Self.playbackRateDefaultsKey)
+            player?.rate = Float(playbackRate)
+        }
+    }
+
+    private var browser: NWBrowser?
+    private var endpoint: NWEndpoint?
+    private var player: AVAudioPlayer?
+    private var requestID = UUID()
+    private let transport = CowboyNaturalVoiceTransport()
+    private static let cacheVersion = "qwen3-tts-voice-design-v1"
+    private static let playbackRateDefaultsKey = "savy.cowboy-natural-voice.playback-rate.v1"
+    static let minimumPlaybackRate = 0.75
+    static let maximumPlaybackRate = 1.50
+
+    override init() {
+        let savedRate = UserDefaults.standard.double(forKey: Self.playbackRateDefaultsKey)
+        playbackRate = savedRate == 0
+            ? 1.0
+            : min(max(savedRate, Self.minimumPlaybackRate), Self.maximumPlaybackRate)
+        super.init()
+        startDiscovery()
+    }
+
+    var statusLabel: String {
+        switch mode {
+        case .findingMac: "Finding Cowboy AI on this Mac"
+        case .generating: "Cowboy AI is creating the voice"
+        case .playing, .paused: "Qwen natural voice · local Mac"
+        case .failed: "Natural voice needs the Mac"
+        case .idle: isDiscovered ? "Qwen natural voice · local Mac" : "Finding Cowboy AI on this Mac"
+        }
+    }
+
+    var buttonTitle: String {
+        switch mode {
+        case .idle, .failed: "Listen"
+        case .findingMac: "Finding Mac"
+        case .generating: "Creating voice"
+        case .playing: "Pause"
+        case .paused: "Continue"
+        }
+    }
+
+    var buttonSymbol: String {
+        switch mode {
+        case .playing: "pause.fill"
+        case .paused: "play.fill"
+        case .findingMac, .generating: "waveform.badge.magnifyingglass"
+        case .idle, .failed: "waveform"
+        }
+    }
+
+    var isWorking: Bool {
+        mode == .findingMac || mode == .generating
+    }
+
+    var canStop: Bool {
+        mode == .playing || mode == .paused
+    }
+
+    var errorMessage: String? {
+        guard case .failed(let message) = mode else { return nil }
+        return message
+    }
+
+    func toggle(text: String) {
+        switch mode {
+        case .playing:
+            player?.pause()
+            mode = .paused
+        case .paused:
+            player?.rate = Float(playbackRate)
+            player?.play()
+            mode = .playing
+        case .findingMac, .generating:
+            break
+        case .idle, .failed:
+            let currentRequest = UUID()
+            requestID = currentRequest
+            Task { await generateAndPlay(text: text, requestID: currentRequest) }
+        }
+    }
+
+    func stop() {
+        requestID = UUID()
+        player?.stop()
+        player = nil
+        mode = .idle
+        try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+    }
+
+    private func startDiscovery() {
+        guard browser == nil else { return }
+        let browser = NWBrowser(for: .bonjour(type: "_cowboyai._tcp", domain: nil), using: .tcp)
+        browser.browseResultsChangedHandler = { [weak self] results, _ in
+            let endpoint = results.first?.endpoint
+            Task { @MainActor [weak self] in
+                self?.endpoint = endpoint
+                self?.isDiscovered = endpoint != nil
+            }
+        }
+        browser.stateUpdateHandler = { [weak self] state in
+            if case .failed = state {
+                Task { @MainActor [weak self] in self?.isDiscovered = false }
+            }
+        }
+        self.browser = browser
+        browser.start(queue: DispatchQueue(label: "savy.cowboyai.natural-voice"))
+    }
+
+    private func generateAndPlay(text: String, requestID: UUID) async {
+        if let cached = try? Data(contentsOf: cacheURL(for: text)) {
+            play(cached, requestID: requestID)
+            return
+        }
+
+        mode = .findingMac
+        for _ in 0..<40 where endpoint == nil {
+            try? await Task.sleep(for: .milliseconds(100))
+            guard self.requestID == requestID else { return }
+        }
+        guard let endpoint else {
+            mode = .failed("Cowboy AI could not find the Mac on this network.")
+            return
+        }
+
+        mode = .generating
+        do {
+            let audio = try await transport.synthesize(text: text, endpoint: endpoint)
+            guard self.requestID == requestID else { return }
+            try? FileManager.default.createDirectory(
+                at: cacheDirectory,
+                withIntermediateDirectories: true
+            )
+            try? audio.write(to: cacheURL(for: text), options: .atomic)
+            play(audio, requestID: requestID)
+        } catch {
+            guard self.requestID == requestID else { return }
+            mode = .failed(error.localizedDescription)
+        }
+    }
+
+    private func play(_ data: Data, requestID: UUID) {
+        guard self.requestID == requestID else { return }
+        do {
+            let session = AVAudioSession.sharedInstance()
+            try session.setCategory(.playback, mode: .spokenAudio, options: [.duckOthers])
+            try session.setActive(true)
+            let player = try AVAudioPlayer(data: data)
+            player.delegate = self
+            player.enableRate = true
+            player.rate = Float(playbackRate)
+            player.prepareToPlay()
+            player.play()
+            self.player = player
+            mode = .playing
+        } catch {
+            mode = .failed("SAVY could not play the natural voice.")
+        }
+    }
+
+    private var cacheDirectory: URL {
+        FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent("CowboyNaturalVoice", isDirectory: true)
+    }
+
+    private func cacheURL(for text: String) -> URL {
+        let digest = SHA256.hash(data: Data("\(Self.cacheVersion)|\(text)".utf8))
+            .map { String(format: "%02x", $0) }
+            .joined()
+        return cacheDirectory.appendingPathComponent("\(digest).wav")
+    }
+
+    nonisolated func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
+        Task { @MainActor [weak self] in
+            self?.player = nil
+            self?.mode = .idle
+            try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+        }
+    }
+}
+
+struct CowboyVoiceRateControl: View {
+    @ObservedObject var controller: CowboyNaturalVoiceController
+    var labelColor: Color = SavyTheme.deepNavy
+    var accentColor: Color = SavyTheme.crimson
+
+    var body: some View {
+        VStack(spacing: 7) {
+            HStack {
+                Text("SLOWER")
+                Spacer()
+                Text(String(format: "%.2f×", controller.playbackRate))
+                    .accessibilityIdentifier("cowboyVoicePlaybackRate")
+                Spacer()
+                Text("FASTER")
+            }
+            .font(SavyTheme.readingLabel(11))
+            .tracking(1.2)
+            .foregroundStyle(labelColor)
+
+            Slider(
+                value: $controller.playbackRate,
+                in: CowboyNaturalVoiceController.minimumPlaybackRate...CowboyNaturalVoiceController.maximumPlaybackRate,
+                step: 0.05
+            )
+            .tint(accentColor)
+            .accessibilityLabel("Voice speed")
+            .accessibilityValue(String(format: "%.2f times", controller.playbackRate))
+        }
+    }
+}
+
+/// Reusable SAVY control for reading meaningful app content through Cowboy AI on Adam's Mac.
+struct CowboyNaturalVoicePanel: View {
+    let text: String
+    var accessibilityIdentifier = "cowboyNaturalVoicePanel"
+
+    @StateObject private var voice = CowboyNaturalVoiceController()
+
+    private var hasText: Bool {
+        !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            HStack(alignment: .firstTextBaseline, spacing: 12) {
+                Label("LISTEN WITH COWBOY AI", systemImage: "waveform")
+                    .font(SavyTheme.readingLabel(12))
+                    .tracking(1.3)
+                    .foregroundStyle(SavyTheme.crimson)
+
+                Spacer(minLength: 8)
+
+                Text(voice.statusLabel)
+                    .font(SavyTheme.readingBody(11))
+                    .foregroundStyle(SavyTheme.deepNavy.opacity(0.62))
+                    .multilineTextAlignment(.trailing)
+            }
+
+            HStack(spacing: 10) {
+                Button {
+                    SavyHapticFeedback.selection()
+                    voice.toggle(text: text)
+                } label: {
+                    Label(voice.buttonTitle, systemImage: voice.buttonSymbol)
+                        .font(SavyTheme.readingTitle(17))
+                        .foregroundStyle(Brand.card)
+                        .frame(maxWidth: .infinity, minHeight: 54)
+                        .background(SavyTheme.deepNavy, in: RoundedRectangle(cornerRadius: 12))
+                }
+                .buttonStyle(.plain)
+                .disabled(voice.isWorking || !hasText)
+                .accessibilityIdentifier("\(accessibilityIdentifier)Listen")
+
+                if voice.canStop {
+                    Button {
+                        voice.stop()
+                    } label: {
+                        Image(systemName: "stop.fill")
+                            .font(.system(size: 17, weight: .bold))
+                            .foregroundStyle(Brand.card)
+                            .frame(width: 54, height: 54)
+                            .background(Brand.darkRed, in: RoundedRectangle(cornerRadius: 12))
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Stop reading")
+                }
+            }
+
+            CowboyVoiceRateControl(controller: voice)
+
+            if let error = voice.errorMessage {
+                Text(error)
+                    .font(SavyTheme.readingBody(12))
+                    .foregroundStyle(Brand.darkRed)
+            }
+        }
+        .padding(16)
+        .background(Brand.tan.opacity(0.72), in: RoundedRectangle(cornerRadius: 14))
+        .overlay {
+            RoundedRectangle(cornerRadius: 14)
+                .stroke(SavyTheme.crimson.opacity(0.22), lineWidth: 1)
+        }
+        .onDisappear { voice.stop() }
+    }
+}
+
+private enum CowboyNaturalVoiceError: LocalizedError {
+    case invalidResponse
+    case server(Int, String)
+
+    var errorDescription: String? {
+        switch self {
+        case .invalidResponse: "Cowboy AI returned unreadable audio."
+        case .server(_, let message): message
+        }
+    }
+}
+
+private final class CowboyNaturalVoiceTransport: @unchecked Sendable {
+    func synthesize(text: String, endpoint: NWEndpoint) async throws -> Data {
+        let body = try JSONEncoder().encode(["text": text])
+        return try await withCheckedThrowingContinuation { continuation in
+            let header = [
+                "POST /v1/voice/synthesize HTTP/1.1",
+                "Host: cowboyai.local",
+                "Accept: audio/wav",
+                "Content-Type: application/json",
+                "Content-Length: \(body.count)",
+                "Connection: close",
+                "",
+                "",
+            ].joined(separator: "\r\n")
+            var request = Data(header.utf8)
+            request.append(body)
+            CowboyNaturalVoiceHTTPExchange(
+                endpoint: endpoint,
+                request: request,
+                continuation: continuation
+            ).start()
+        }
+    }
+}
+
+private final class CowboyNaturalVoiceHTTPExchange: @unchecked Sendable {
+    private let connection: NWConnection
+    private let request: Data
+    private let continuation: CheckedContinuation<Data, Error>
+    private let state = CowboyNaturalVoiceExchangeState()
+    private let queue = DispatchQueue(label: "savy.cowboyai.natural-voice.http")
+
+    init(endpoint: NWEndpoint, request: Data, continuation: CheckedContinuation<Data, Error>) {
+        connection = NWConnection(to: endpoint, using: .tcp)
+        self.request = request
+        self.continuation = continuation
+    }
+
+    func start() {
+        connection.stateUpdateHandler = { [self] connectionState in
+            switch connectionState {
+            case .ready:
+                connection.send(content: request, completion: .contentProcessed { [self] error in
+                    if let error { finish(.failure(error)) }
+                    else { receiveNext() }
+                })
+            case .failed(let error):
+                finish(.failure(error))
+            case .cancelled:
+                finish(.failure(CowboyNaturalVoiceError.invalidResponse))
+            default:
+                break
+            }
+        }
+        connection.start(queue: queue)
+    }
+
+    private func receiveNext() {
+        connection.receive(minimumIncompleteLength: 1, maximumLength: 1_048_576) { [self] data, _, complete, error in
+            if let data { state.append(data) }
+            if let error {
+                finish(.failure(error))
+            } else if complete {
+                do { finish(.success(try Self.parseHTTPResponse(state.data))) }
+                catch { finish(.failure(error)) }
+            } else {
+                receiveNext()
+            }
+        }
+    }
+
+    private func finish(_ result: Result<Data, Error>) {
+        guard state.markFinished() else { return }
+        connection.stateUpdateHandler = nil
+        connection.cancel()
+        continuation.resume(with: result)
+    }
+
+    private static func parseHTTPResponse(_ data: Data) throws -> Data {
+        let separator = Data("\r\n\r\n".utf8)
+        guard let range = data.range(of: separator),
+              let header = String(data: data[..<range.lowerBound], encoding: .utf8),
+              let statusLine = header.components(separatedBy: "\r\n").first,
+              let status = Int(statusLine.split(separator: " ").dropFirst().first ?? "") else {
+            throw CowboyNaturalVoiceError.invalidResponse
+        }
+        let body = Data(data[range.upperBound...])
+        guard (200..<300).contains(status) else {
+            let detail = (try? JSONSerialization.jsonObject(with: body) as? [String: Any])?["detail"] as? String
+                ?? "Cowboy AI could not create the natural voice."
+            throw CowboyNaturalVoiceError.server(status, detail)
+        }
+        guard body.starts(with: Data("RIFF".utf8)) else {
+            throw CowboyNaturalVoiceError.invalidResponse
+        }
+        return body
+    }
+}
+
+private nonisolated final class CowboyNaturalVoiceExchangeState: @unchecked Sendable {
+    private let lock = NSLock()
+    private var finished = false
+    private var received = Data()
+
+    var data: Data { lock.withLock { received } }
+
+    func append(_ data: Data) {
+        lock.withLock { received.append(data) }
+    }
+
+    func markFinished() -> Bool {
+        lock.withLock {
+            guard !finished else { return false }
+            finished = true
+            return true
+        }
+    }
+}
+
+@MainActor
+final class PersonalAuthorityReviewStore: ObservableObject {
+    nonisolated static let reviewDefaultsKey = "savy.personal-authority-review.20260717.v1"
+    /// When each decision was made by hand. Automatic approvals have no date.
+    nonisolated static let decisionDatesDefaultsKey = "savy.personal-authority-review.decided-at.v1"
+    static let didApplySync = Notification.Name("PersonalAuthorityReviewDidApplySync")
+
+    @Published private(set) var candidates: [PersonalAuthorityCandidate] = []
+    @Published private(set) var decisions: [String: PersonalAuthorityDecision] = [:]
+    @Published private(set) var loadError: String?
+
+    private let defaults: UserDefaults
+    private var syncObserver: AnyCancellable?
+
+    init(bundle: Bundle = .main, defaults: UserDefaults = .standard) {
+        self.defaults = defaults
+        loadDecisions()
+        loadCandidates(from: bundle)
+        syncObserver = NotificationCenter.default.publisher(for: Self.didApplySync)
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                MainActor.assumeIsolated { self?.loadDecisions() }
+            }
+    }
+
+    nonisolated static func savedDecisions(defaults: UserDefaults) -> [String: PersonalAuthorityDecision] {
+        guard let data = defaults.data(forKey: reviewDefaultsKey),
+              let saved = try? JSONDecoder().decode([String: PersonalAuthorityDecision].self, from: data) else { return [:] }
+        return saved
+    }
+
+    nonisolated static func savedDecisionDates(defaults: UserDefaults) -> [String: Date] {
+        guard let data = defaults.data(forKey: decisionDatesDefaultsKey),
+              let saved = try? JSONDecoder().decode([String: Date].self, from: data) else { return [:] }
+        return saved
+    }
+
+    static func saveSyncedDecisions(_ synced: [String: PersonalAuthorityDecision], defaults: UserDefaults) {
+        guard synced != savedDecisions(defaults: defaults), let data = try? JSONEncoder().encode(synced) else { return }
+        defaults.set(data, forKey: reviewDefaultsKey)
+        NotificationCenter.default.post(name: didApplySync, object: nil)
+    }
+
+    var approvedCount: Int { decisions.values.filter { $0 == .mine }.count }
+    var disapprovedCount: Int { decisions.values.filter { $0 == .evidenceOnly }.count }
+    var decidedCount: Int { approvedCount + disapprovedCount }
+    var waitingCount: Int { max(candidates.count - decidedCount, 0) }
+    var progress: Double {
+        guard !candidates.isEmpty else { return 0 }
+        return Double(decidedCount) / Double(candidates.count)
+    }
+
+    func decision(for candidate: PersonalAuthorityCandidate) -> PersonalAuthorityDecision? {
+        decisions[candidate.id]
+    }
+
+    func decide(_ decision: PersonalAuthorityDecision, candidate: PersonalAuthorityCandidate) {
+        decisions[candidate.id] = decision
+        var dates = Self.savedDecisionDates(defaults: defaults)
+        dates[candidate.id] = Date()
+        if let data = try? JSONEncoder().encode(dates) { defaults.set(data, forKey: Self.decisionDatesDefaultsKey) }
+        persistDecisions()
+    }
+
+    func approveUnreviewedDirectMessages() {
+        for candidate in candidates where candidate.conferenceStatus == .ready && decisions[candidate.id] == nil {
+            decisions[candidate.id] = .mine
+        }
+        persistDecisions()
+    }
+
+    nonisolated static func decodeCandidates(from data: Data) throws -> PersonalAuthorityCandidatePayload {
+        try JSONDecoder().decode(PersonalAuthorityCandidatePayload.self, from: data)
+    }
+
+    private func loadCandidates(from bundle: Bundle) {
+        guard let url = bundle.url(forResource: "PersonalAuthorityCandidates", withExtension: "json") else {
+            loadError = "The 709-candidate review file is missing from SAVY."
+            return
+        }
+
+        do {
+            let payload = try Self.decodeCandidates(from: Data(contentsOf: url))
+            candidates = payload.candidates
+            guard payload.candidateCount == payload.candidates.count else {
+                loadError = "The candidate count does not match the bundled review file."
+                return
+            }
+            approveUnreviewedDirectMessages()
+        } catch {
+            loadError = "SAVY could not read the candidate review file."
+        }
+    }
+
+    private func loadDecisions() {
+        let saved = Self.savedDecisions(defaults: defaults)
+        guard !saved.isEmpty, saved != decisions else { return }
+        decisions = saved
+    }
+
+    private func persistDecisions() {
+        guard let data = try? JSONEncoder().encode(decisions) else { return }
+        defaults.set(data, forKey: Self.reviewDefaultsKey)
+    }
+}
+
+private enum PersonalAuthorityConferenceFilter: String, CaseIterable, Identifiable {
+    case all
+    case toDecide
+    case approved
+    case disapproved
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .all: "ALL"
+        case .toDecide: "TO DECIDE"
+        case .approved: "APPROVED"
+        case .disapproved: "DISAPPROVED"
+        }
+    }
+}
+
+struct PersonalAuthorityReviewView: View {
+    @Environment(\.dismiss) private var dismiss
+    @StateObject private var store = PersonalAuthorityReviewStore()
+    @State private var filter: PersonalAuthorityConferenceFilter = .toDecide
+    @State private var searchText = ""
+    @State private var selectedCandidate: PersonalAuthorityCandidate?
+
+    private var readyCount: Int {
+        store.candidates.filter { $0.conferenceStatus == .ready }.count
+    }
+
+    private var sourceCheckCount: Int {
+        store.candidates.filter { $0.conferenceStatus == .sourceCheck }.count
+    }
+
+    private var cleanedPrefixCount: Int {
+        store.candidates.filter(\.containsInjectedSystemPrefix).count
+    }
+
+    private var visibleCandidates: [PersonalAuthorityCandidate] {
+        store.candidates.filter { candidate in
+            let isInFilter: Bool
+            switch filter {
+            case .all: isInFilter = true
+            case .toDecide: isInFilter = store.decision(for: candidate) != .mine && store.decision(for: candidate) != .evidenceOnly
+            case .approved: isInFilter = store.decision(for: candidate) == .mine
+            case .disapproved: isInFilter = store.decision(for: candidate) == .evidenceOnly
+            }
+
+            let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+            let matchesSearch = query.isEmpty
+                || candidate.authoredText.localizedCaseInsensitiveContains(query)
+                || candidate.sourceLabel.localizedCaseInsensitiveContains(query)
+                || String(candidate.index).contains(query)
+            return isInFilter && matchesSearch
+        }
+    }
+
+    var body: some View {
+        ZStack {
+            SavyTheme.pageBackground.ignoresSafeArea()
+
+            ScrollView {
+                VStack(spacing: 0) {
+                    hero
+                    statusBand
+                    conferenceSurface
+                }
+                .padding(.bottom, 88)
+            }
+            .scrollIndicators(.hidden)
+        }
+        .preferredColorScheme(.dark)
+        .safeAreaInset(edge: .bottom) {
+            conferenceBoundary
+        }
+        .sheet(item: $selectedCandidate) { candidate in
+            PersonalAuthorityConferenceDetail(store: store, candidate: candidate)
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
+        }
+        .accessibilityIdentifier("personalAuthorityReview")
+    }
+
+    private var hero: some View {
+        VStack(alignment: .leading, spacing: 22) {
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("COWBOY AI")
+                        .font(SavyTheme.readingLabel(13))
+                        .tracking(2.2)
+                        .foregroundStyle(SavyTheme.crimson)
+
+                    Text("Confirm what\nyou said.")
+                        .font(SavyTypography.displaySerif(52, weight: .bold))
+                        .foregroundStyle(.white)
+                        .lineSpacing(-6)
+                        .minimumScaleFactor(0.8)
+                }
+
+                Spacer(minLength: 12)
+
+                Button {
+                    dismiss()
+                } label: {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 18, weight: .heavy))
+                        .foregroundStyle(SavyTheme.deepNavy)
+                        .frame(width: 48, height: 48)
+                        .background(Brand.card, in: Circle())
+                }
+                .accessibilityLabel("Close Cowboy AI confirmation list")
+            }
+
+            ZStack(alignment: .bottomTrailing) {
+                Image("RetroSignals")
+                    .resizable()
+                    .scaledToFit()
+                    .background(Color(hex: 0xECEBE2))
+                    .clipShape(RoundedRectangle(cornerRadius: 18))
+
+                Image("HarnessedHat")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 66, height: 66)
+                    .padding(5)
+                    .background(Brand.card, in: Circle())
+                    .overlay(Circle().stroke(SavyTheme.deepNavy, lineWidth: 5))
+                    .padding(12)
+            }
+
+            Text("“If I’ve said it, then it is approved.”")
+                .font(SavyTypography.displaySerif(27, weight: .bold))
+                .foregroundStyle(Brand.card)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(.horizontal, 20)
+        .padding(.top, 22)
+        .padding(.bottom, 24)
+    }
+
+    private var statusBand: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            HStack(alignment: .lastTextBaseline, spacing: 10) {
+                Text("\(Int((store.progress * 100).rounded()))%")
+                    .font(SavyTypography.displaySerif(74, weight: .bold))
+                    .foregroundStyle(SavyTheme.crimson)
+                Text("DECIDED")
+                    .font(SavyTheme.readingLabel(13))
+                    .tracking(1.5)
+                    .foregroundStyle(SavyTheme.deepNavy)
+                    .padding(.bottom, 11)
+            }
+
+            ProgressView(value: store.progress)
+                .tint(SavyTheme.crimson)
+                .scaleEffect(x: 1, y: 2.5, anchor: .center)
+
+            HStack(spacing: 8) {
+                decisionMetric(store.approvedCount, "APPROVED", SavyTheme.crimson)
+                decisionMetric(store.disapprovedCount, "DISAPPROVED", SavyTheme.deepNavy)
+                decisionMetric(store.waitingCount, "WAITING", Color(hex: 0xE66F24))
+            }
+
+            HStack(alignment: .top, spacing: 14) {
+                conferenceMetric(
+                    count: readyCount,
+                    label: "DIRECT\nMESSAGES",
+                    color: SavyTheme.crimson,
+                    scale: 1
+                )
+
+                conferenceMetric(
+                    count: sourceCheckCount,
+                    label: "CHECK\nSOURCE",
+                    color: Color(hex: 0xE66F24),
+                    scale: 0.78
+                )
+            }
+
+            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                Image(systemName: "scissors")
+                    .foregroundStyle(SavyTheme.deepNavy)
+                Text("\(cleanedPrefixCount) Cursor system prefixes removed")
+                    .font(SavyTheme.readingTitle(15))
+                    .foregroundStyle(SavyTheme.deepNavy)
+            }
+
+            Text("The cleanup count overlaps the two groups above. Your words after each injected prefix remain intact.")
+                .font(SavyTheme.readingBody(13))
+                .foregroundStyle(SavyTheme.secondaryText)
+        }
+        .padding(.horizontal, 22)
+        .padding(.vertical, 22)
+        .background(Brand.tan)
+        .overlay(alignment: .bottom) {
+            Rectangle().fill(SavyTheme.crimson).frame(height: 5)
+        }
+    }
+
+    private func decisionMetric(_ count: Int, _ label: String, _ color: Color) -> some View {
+        VStack(alignment: .leading, spacing: 3) {
+            Text("\(count)")
+                .font(SavyTheme.readingTitle(24))
+                .foregroundStyle(color)
+            Text(label)
+                .font(SavyTheme.readingLabel(9))
+                .foregroundStyle(SavyTheme.deepNavy)
+                .minimumScaleFactor(0.7)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func conferenceMetric(
+        count: Int,
+        label: String,
+        color: Color,
+        scale: CGFloat
+    ) -> some View {
+        VStack(alignment: .leading, spacing: -4) {
+            Text("\(count)")
+                .font(SavyTypography.displaySerif(68 * scale, weight: .bold))
+                .foregroundStyle(color)
+                .minimumScaleFactor(0.7)
+            Text(label)
+                .font(SavyTheme.readingLabel(12))
+                .tracking(1.2)
+                .foregroundStyle(SavyTheme.deepNavy)
+        }
+        .frame(maxWidth: .infinity, minHeight: 110, alignment: .bottomLeading)
+    }
+
+    @ViewBuilder
+    private var conferenceSurface: some View {
+        if let error = store.loadError {
+            Text(error)
+                .font(SavyTheme.readingTitle(20))
+                .foregroundStyle(Brand.card)
+                .padding(28)
+        } else {
+            VStack(alignment: .leading, spacing: 16) {
+                VStack(alignment: .leading, spacing: 9) {
+                    Text("ONLY THE UNCERTAIN 70 REMAIN")
+                        .font(SavyTheme.readingLabel(13))
+                        .tracking(1.7)
+                        .foregroundStyle(Brand.tan)
+
+                    Text("Your \(readyCount) direct messages are already approved. Only \(sourceCheckCount) statements containing outside material remain to confirm.")
+                        .font(SavyTheme.readingBody(15))
+                        .foregroundStyle(Brand.card.opacity(0.82))
+                }
+
+                HStack(spacing: 12) {
+                    Image(systemName: "checkmark.seal.fill")
+                        .font(.system(size: 25, weight: .bold))
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("\(readyCount) DIRECT MESSAGES APPROVED")
+                            .font(SavyTheme.readingTitle(16))
+                        Text("No tapping through your own words")
+                            .font(SavyTheme.readingBody(12))
+                    }
+                    Spacer()
+                }
+                .foregroundStyle(.white)
+                .padding(.horizontal, 16)
+                .frame(minHeight: 68)
+                .background(SavyTheme.crimson, in: RoundedRectangle(cornerRadius: 14))
+                .accessibilityIdentifier("personalAuthorityDirectMessagesApproved")
+
+                TextField("Search your words, source, or number", text: $searchText)
+                    .environment(\.colorScheme, .light)
+                    .font(SavyTheme.readingBody(16))
+                    .foregroundStyle(SavyTheme.deepNavy)
+                    .padding(.horizontal, 16)
+                    .frame(minHeight: 52)
+                    .background(Brand.card, in: RoundedRectangle(cornerRadius: 12))
+                    .textInputAutocapitalization(.never)
+                    .autocorrectionDisabled()
+
+                ScrollView(.horizontal) {
+                    HStack(spacing: 9) {
+                        ForEach(PersonalAuthorityConferenceFilter.allCases) { option in
+                            conferenceFilterButton(option)
+                        }
+                    }
+                }
+                .scrollIndicators(.hidden)
+
+                HStack {
+                    Text("\(visibleCandidates.count) shown")
+                        .font(SavyTheme.readingLabel(12))
+                        .foregroundStyle(Brand.tan)
+                    Spacer()
+                    Text("Decide here or tap words to read")
+                        .font(SavyTheme.readingBody(12))
+                        .foregroundStyle(Brand.card.opacity(0.68))
+                }
+
+                LazyVStack(spacing: 12) {
+                    ForEach(visibleCandidates) { candidate in
+                        conferenceRow(candidate)
+                    }
+                }
+                .accessibilityIdentifier("personalAuthorityConferenceList")
+            }
+            .padding(.horizontal, 20)
+            .padding(.vertical, 24)
+        }
+    }
+
+    private func conferenceFilterButton(_ option: PersonalAuthorityConferenceFilter) -> some View {
+        return Button {
+            SavyHapticFeedback.selection()
+            withAnimation(.easeInOut(duration: 0.18)) { filter = option }
+        } label: {
+            Text(option.title)
+                .font(SavyTheme.readingLabel(12))
+                .tracking(1.1)
+                .foregroundStyle(filter == option ? SavyTheme.deepNavy : Brand.card)
+                .padding(.horizontal, 15)
+                .frame(minHeight: 42)
+                .background(filter == option ? Brand.tan : SavyTheme.deepNavy.opacity(0.18))
+                .clipShape(Capsule())
+                .overlay(Capsule().stroke(Brand.tan.opacity(0.48), lineWidth: 1))
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func conferenceRow(_ candidate: PersonalAuthorityCandidate) -> some View {
+        let needsCheck = candidate.conferenceStatus == .sourceCheck
+        let decision = store.decision(for: candidate)
+
+        return VStack(alignment: .leading, spacing: 13) {
+            Button {
+                selectedCandidate = candidate
+            } label: {
+                VStack(alignment: .leading, spacing: 12) {
+                Text(candidate.authoredText)
+                    .font(SavyTypography.displaySerif(21, weight: .bold))
+                    .foregroundStyle(SavyTheme.ink)
+                    .multilineTextAlignment(.leading)
+                    .lineLimit(5)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                HStack(spacing: 9) {
+                    Text("#\(candidate.index)")
+                        .font(SavyTheme.readingLabel(12))
+                        .foregroundStyle(SavyTheme.deepNavy)
+
+                    Text(candidate.sourceLabel.uppercased())
+                        .font(SavyTheme.readingLabel(11))
+                        .foregroundStyle(SavyTheme.secondaryText)
+
+                    Spacer()
+
+                    if let decision, decision == .mine || decision == .evidenceOnly {
+                        Label(
+                            decision == .mine ? "APPROVED" : "DISAPPROVED",
+                            systemImage: decision == .mine ? "checkmark.circle.fill" : "xmark.circle.fill"
+                        )
+                        .font(SavyTheme.readingLabel(10))
+                        .foregroundStyle(decision == .mine ? SavyTheme.crimson : SavyTheme.deepNavy)
+                    } else if candidate.containsInjectedSystemPrefix {
+                        Label("PREFIX CLEANED", systemImage: "scissors")
+                            .font(SavyTheme.readingLabel(10))
+                            .foregroundStyle(SavyTheme.deepNavy)
+                    }
+                }
+
+                HStack(spacing: 7) {
+                    Circle()
+                        .fill(needsCheck ? Color(hex: 0xE66F24) : SavyTheme.crimson)
+                        .frame(width: 8, height: 8)
+                    Text(candidate.conferenceStatus.title)
+                        .font(SavyTheme.readingLabel(11))
+                        .foregroundStyle(needsCheck ? Color(hex: 0xA44314) : SavyTheme.crimson)
+                    Spacer()
+                    Image(systemName: "arrow.up.right")
+                        .font(.system(size: 13, weight: .bold))
+                        .foregroundStyle(SavyTheme.deepNavy)
+                }
+                }
+            }
+            .buttonStyle(.plain)
+
+            PersonalAuthorityDecisionControls(store: store, candidate: candidate, compact: true)
+        }
+        .padding(17)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Brand.card, in: RoundedRectangle(cornerRadius: 14))
+        .clipShape(RoundedRectangle(cornerRadius: 14))
+        .accessibilityIdentifier("personalAuthorityCandidateRow\(candidate.index)")
+    }
+
+    private var conferenceBoundary: some View {
+        HStack(spacing: 12) {
+            Image(systemName: "lock.shield.fill")
+                .font(.system(size: 18, weight: .bold))
+            VStack(alignment: .leading, spacing: 1) {
+                Text("\(Int((store.progress * 100).rounded()))% DECIDED")
+                    .font(SavyTheme.readingLabel(12))
+                    .tracking(1.2)
+                Text("\(store.approvedCount) approved • \(store.disapprovedCount) disapproved • \(store.waitingCount) waiting")
+                    .font(SavyTheme.readingBody(12))
+            }
+            Spacer()
+            Button {
+                dismiss()
+            } label: {
+                Image(systemName: "xmark")
+                    .font(.system(size: 15, weight: .heavy))
+                    .frame(width: 40, height: 40)
+                    .background(SavyTheme.deepNavy.opacity(0.1), in: Circle())
+            }
+        }
+        .foregroundStyle(SavyTheme.deepNavy)
+        .padding(.horizontal, 18)
+        .padding(.vertical, 10)
+        .background(Brand.tan)
+        .overlay(alignment: .top) {
+            Rectangle().fill(SavyTheme.crimson).frame(height: 4)
+        }
+    }
+}
+
+private struct PersonalAuthorityDecisionControls: View {
+    @ObservedObject var store: PersonalAuthorityReviewStore
+    let candidate: PersonalAuthorityCandidate
+    let compact: Bool
+
+    private var decision: PersonalAuthorityDecision? {
+        store.decision(for: candidate)
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 9) {
+            if !compact {
+                Text(decisionTitle)
+                    .font(SavyTheme.readingLabel(12))
+                    .tracking(1.2)
+                    .foregroundStyle(decision == nil ? Brand.tan : Brand.card)
+            }
+
+            HStack(spacing: 9) {
+                decisionButton(
+                    title: "APPROVE",
+                    subtitle: "I SAID THIS",
+                    systemImage: decision == .mine ? "checkmark.circle.fill" : "checkmark.circle",
+                    foreground: .white,
+                    background: SavyTheme.crimson,
+                    decision: .mine
+                )
+
+                decisionButton(
+                    title: "DISAPPROVE",
+                    subtitle: "NOT MY WORDS",
+                    systemImage: decision == .evidenceOnly ? "xmark.circle.fill" : "xmark.circle",
+                    foreground: decision == .evidenceOnly ? .white : SavyTheme.deepNavy,
+                    background: decision == .evidenceOnly ? SavyTheme.deepNavy : Brand.tan,
+                    decision: .evidenceOnly
+                )
+            }
+        }
+    }
+
+    private var decisionTitle: String {
+        switch decision {
+        case .mine: "SAVED: APPROVED AS YOUR WORDS"
+        case .evidenceOnly: "SAVED: DISAPPROVED — NOT YOUR WORDS"
+        default: "MAKE THE DECISION"
+        }
+    }
+
+    private func decisionButton(
+        title: String,
+        subtitle: String,
+        systemImage: String,
+        foreground: Color,
+        background: Color,
+        decision newDecision: PersonalAuthorityDecision
+    ) -> some View {
+        Button {
+            store.decide(newDecision, candidate: candidate)
+            SavyHapticFeedback.selection()
+        } label: {
+            HStack(spacing: compact ? 7 : 10) {
+                Image(systemName: systemImage)
+                    .font(.system(size: compact ? 17 : 21, weight: .bold))
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(title)
+                        .font(SavyTheme.readingLabel(compact ? 10 : 12))
+                        .minimumScaleFactor(0.75)
+                    Text(subtitle)
+                        .font(SavyTheme.readingBody(compact ? 9 : 11))
+                        .minimumScaleFactor(0.7)
+                }
+                Spacer(minLength: 0)
+            }
+            .foregroundStyle(foreground)
+            .padding(.horizontal, compact ? 10 : 14)
+            .frame(maxWidth: .infinity, minHeight: compact ? 58 : 70, alignment: .leading)
+            .background(background, in: RoundedRectangle(cornerRadius: compact ? 10 : 14))
+            .overlay {
+                RoundedRectangle(cornerRadius: compact ? 10 : 14)
+                    .stroke(newDecision == decision ? Brand.card : SavyTheme.deepNavy.opacity(0.16), lineWidth: newDecision == decision ? 4 : 1)
+            }
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("\(title). \(subtitle). Statement \(candidate.index).")
+        .accessibilityIdentifier(newDecision == .mine
+            ? "personalAuthorityApprove\(candidate.index)"
+            : "personalAuthorityDisapprove\(candidate.index)")
+    }
+}
+
+private struct PersonalAuthorityConferenceDetail: View {
+    @Environment(\.dismiss) private var dismiss
+    @ObservedObject var store: PersonalAuthorityReviewStore
+    let candidate: PersonalAuthorityCandidate
+
+    var body: some View {
+        ZStack {
+            SavyTheme.pageBackground.ignoresSafeArea()
+
+            ScrollView {
+                VStack(alignment: .leading, spacing: 18) {
+                    HStack {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Statement #\(candidate.index)")
+                                .font(SavyTypography.displaySerif(24, weight: .bold))
+                                .foregroundStyle(.white)
+                        }
+
+                        Spacer()
+
+                        Button {
+                            dismiss()
+                        } label: {
+                            Image(systemName: "xmark")
+                                .font(.system(size: 17, weight: .heavy))
+                                .foregroundStyle(SavyTheme.deepNavy)
+                                .frame(width: 44, height: 44)
+                                .background(Brand.card, in: Circle())
+                        }
+                        .accessibilityLabel("Close statement")
+                    }
+
+                    HStack(alignment: .top, spacing: 10) {
+                        Circle()
+                            .fill(candidate.conferenceStatus == .ready ? SavyTheme.crimson : Color(hex: 0xE66F24))
+                            .frame(width: 11, height: 11)
+                            .padding(.top, 4)
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(candidate.sourceLabel)
+                                .font(SavyTheme.readingBody(13))
+                                .foregroundStyle(Brand.tan)
+                            Text(candidate.conferenceStatus.title)
+                                .font(SavyTheme.readingLabel(13))
+                                .foregroundStyle(Brand.card)
+                            Text(candidate.conferenceStatus.explanation)
+                                .font(SavyTheme.readingBody(13))
+                                .foregroundStyle(Brand.card.opacity(0.74))
+                        }
+                    }
+
+                    if candidate.containsInjectedSystemPrefix {
+                        Label(
+                            "Cursor's injected system reminder is hidden here. The words below begin after that closing tag.",
+                            systemImage: "scissors"
+                        )
+                        .font(SavyTheme.readingBody(13))
+                        .foregroundStyle(SavyTheme.deepNavy)
+                        .padding(14)
+                        .background(Brand.tan, in: RoundedRectangle(cornerRadius: 12))
+                    }
+
+                    VStack(alignment: .leading, spacing: 17) {
+                        ForEach(PersonalAuthorityTextFormatter.blocks(from: candidate.authoredText)) { block in
+                            formattedBlock(block)
+                        }
+                    }
+                    .padding(22)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(Brand.card, in: RoundedRectangle(cornerRadius: 18))
+
+                    PersonalAuthorityDecisionControls(store: store, candidate: candidate, compact: false)
+
+                    Text("Your decision is saved in SAVY for the next graph promotion. Check Source never approves or disapproves anything by itself.")
+                        .font(SavyTheme.readingBody(13))
+                        .foregroundStyle(Brand.card.opacity(0.78))
+                        .padding(.bottom, 30)
+                }
+                .padding(20)
+            }
+            .scrollIndicators(.hidden)
+        }
+        .preferredColorScheme(.dark)
+        .accessibilityIdentifier("personalAuthorityCandidateDetail")
+    }
+
+    @ViewBuilder
+    private func formattedBlock(_ block: PersonalAuthorityTextBlock) -> some View {
+        switch block.style {
+        case .heading:
+            HStack(alignment: .top, spacing: 11) {
+                RoundedRectangle(cornerRadius: 2)
+                    .fill(SavyTheme.crimson)
+                    .frame(width: 4, height: 38)
+                Text(block.text)
+                    .font(SavyTypography.displaySerif(27, weight: .bold))
+                    .foregroundStyle(SavyTheme.ink)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        case .body:
+            Text(block.text)
+                .font(.system(size: 18, weight: .medium))
+                .foregroundStyle(SavyTheme.ink)
+                .lineSpacing(4)
+                .fixedSize(horizontal: false, vertical: true)
+        case .bullet:
+            HStack(alignment: .firstTextBaseline, spacing: 10) {
+                Circle()
+                    .fill(Color(hex: 0xE66F24))
+                    .frame(width: 8, height: 8)
+                Text(block.text)
+                    .font(.system(size: 18, weight: .medium))
+                    .foregroundStyle(SavyTheme.ink)
+                    .lineSpacing(4)
+            }
+        }
+    }
+}
+
+#Preview("Personal Authority Review") {
+    PersonalAuthorityReviewView()
+}
