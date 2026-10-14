@@ -1,0 +1,14 @@
+{
+  "product": "Cowboy AI",
+  "engine_revision": "6ff807adb70fb20790f72bab635d23cf5d61371f",
+  "loaded_module_sha256": {
+    "serve.py": "10e3ce546a5cdbc2d26369e3be7e1b5cc363f4b5b6b8a105018e39d4e71a817d",
+    "graph.py": "723055edd82f462fec70c208210a862ab1d34d02fcee8eaab6f95d79f75a3654",
+    "narrative.py": "f9570d80e24cb1058ea177457b01289d17eef39f8a673e6283f4249e9b2d6175",
+    "phrases.py": "45e83e0bd4157720a5140e2cc6d7fd2f9bb763f0f556b87dbfe9b8f27100904d",
+    "links.py": "c626aa41925e7a1f346f567b7a5463a25d5e6d494b642105b5a1dc2d7a254776",
+    "ask.py": "2a482f77ff42a128b34eec69967a6ca6c73294f892fbecacafaf467de6ad73a8",
+    "middle.py": "c4e0725c482a4ec83e88bb2cbed2db378a8c69a8c1d00b2cad5bd01729fb2b79",
+    "contextual_sources.py": "349144253926b83acab0fae73e637e00a0aac8045d14587ca80597495b976335"
+  }
+}

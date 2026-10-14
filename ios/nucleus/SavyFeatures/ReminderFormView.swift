@@ -180,6 +180,7 @@ struct ReminderFormView: View {
         .fullScreenCover(isPresented: $showingEntryAnswer) {
             if let entryAskModel {
                 NavigationStack { AnswerPage(model: entryAskModel, id: nil) }
+                    .preferredColorScheme(.dark)
             }
         }
         .sheet(isPresented: $showsSchedule) {

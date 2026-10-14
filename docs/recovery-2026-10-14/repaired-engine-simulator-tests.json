@@ -1,0 +1,42 @@
+{
+  "summary": {
+    "status": "SUCCEEDED",
+    "durationMs": 150498,
+    "counts": {
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0
+    },
+    "target": "simulator"
+  },
+  "testCases": [
+    {
+      "suite": "SavyFlowTests",
+      "test": "testEntryAsksLiveOntologyAndKeepsItsAnswer",
+      "status": "passed",
+      "durationMs": 33478
+    },
+    {
+      "suite": "SavyFlowTests",
+      "test": "testHomeAskReachesLiveDictionaryEvidenceAndSavedResponse",
+      "status": "passed",
+      "durationMs": 46595
+    },
+    {
+      "suite": "SavyFlowTests",
+      "test": "testOriginalHowToFormWithAdamsExample",
+      "status": "passed",
+      "durationMs": 62884
+    }
+  ],
+  "diagnostics": {
+    "warnings": [],
+    "errors": [],
+    "testFailures": []
+  },
+  "artifacts": {
+    "buildLogPath": "~/Library/Developer/XcodeBuildMCP/workspaces/Cowboyai-89a3407fd2e7/logs/test_sim_2026-10-14T16-08-51-122Z_pid35790_1c80e563.log",
+    "xcresultPath": "/tmp/CowboyAI-Repaired-Context.xcresult",
+    "testProductsPath": "~/Library/Developer/XcodeBuildMCP/workspaces/Cowboyai-89a3407fd2e7/test-products/test_sim_2026-10-14T16-08-51-122Z_pid35790_8e09286e.xctestproducts"
+  }
+}

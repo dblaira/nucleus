@@ -1,0 +1,110 @@
+{
+  "checked_at_utc": "2026-10-14T16:13:25.089064+00:00",
+  "engine_health": {
+    "product": "Cowboy AI",
+    "engine_revision": "6ff807adb70fb20790f72bab635d23cf5d61371f",
+    "loaded_module_sha256": {
+      "serve.py": "10e3ce546a5cdbc2d26369e3be7e1b5cc363f4b5b6b8a105018e39d4e71a817d",
+      "graph.py": "723055edd82f462fec70c208210a862ab1d34d02fcee8eaab6f95d79f75a3654",
+      "narrative.py": "f9570d80e24cb1058ea177457b01289d17eef39f8a673e6283f4249e9b2d6175",
+      "phrases.py": "45e83e0bd4157720a5140e2cc6d7fd2f9bb763f0f556b87dbfe9b8f27100904d",
+      "links.py": "c626aa41925e7a1f346f567b7a5463a25d5e6d494b642105b5a1dc2d7a254776",
+      "ask.py": "2a482f77ff42a128b34eec69967a6ca6c73294f892fbecacafaf467de6ad73a8",
+      "middle.py": "c4e0725c482a4ec83e88bb2cbed2db378a8c69a8c1d00b2cad5bd01729fb2b79",
+      "contextual_sources.py": "349144253926b83acab0fae73e637e00a0aac8045d14587ca80597495b976335"
+    }
+  },
+  "loaded_modules_match_runtime_sources": {
+    "serve.py": true,
+    "graph.py": true,
+    "narrative.py": true,
+    "phrases.py": true,
+    "links.py": true,
+    "ask.py": true,
+    "middle.py": true,
+    "contextual_sources.py": true
+  },
+  "current_source_bundle_sha256": "6a4850598a77cd2c7dbdb6d3c88871f68de3831e60ce61dbcf46d622b8500d13",
+  "sources": {
+    "graph": {
+      "path": "/Users/adamblair/Documents/Main/Ontology/accepted/accepted-graph.ttl",
+      "sha256": "f13d1babcd347996a4a50c4d924c910c3d87a622e058174b64be8bc7b40c80a1",
+      "bytes": 1494126
+    },
+    "ledger": {
+      "path": "/Users/adamblair/Documents/Main/Ontology/accepted/decision-ledger.json",
+      "sha256": "c5f4bb40c43b6052d470f2bbc483f3e88460b316258b9ee577cac52eb362e907",
+      "bytes": 1362522
+    },
+    "shape": {
+      "path": "/Users/adamblair/Documents/Main/Ontology/shapes/connection-shape.ttl",
+      "sha256": "832bb1c101d0c5a784c90eac526394869879292ef2a4bc61ec075e4834c6ba96",
+      "bytes": 2256
+    },
+    "upper": {
+      "path": "/Users/adamblair/Documents/Main/Ontology/upper/bfo-bridge.ttl",
+      "sha256": "04e70158d1f498f43c684dd6c50e0ac327d232a6d4786dfdbe82c348e265ca74",
+      "bytes": 3747
+    },
+    "meanings": {
+      "path": "/Users/adamblair/Documents/adams-language/meanings.txt",
+      "sha256": "4750c8b380de094a02f7bcde0f116920f75e72241bf2e2da3a98b4cbfddfd85d",
+      "bytes": 36437
+    },
+    "routes": {
+      "path": "/Users/adamblair/Documents/adams-language/routes.txt",
+      "sha256": "cc78e4649fb86ba52a109b8a038fe41fb89022e44dc016aa914aac3739012e6d",
+      "bytes": 3860
+    }
+  },
+  "checks": [
+    {
+      "scenario": "flow",
+      "question_id": "e06b3760-8ea3-4ce3-a409-cc5391ae1551",
+      "asked_at_utc": "2026-10-14T16:09:39.793746+00:00",
+      "question": "What is FLOW?",
+      "status": "answered",
+      "source_bundle_sha256": "6a4850598a77cd2c7dbdb6d3c88871f68de3831e60ce61dbcf46d622b8500d13",
+      "bundle_matches_current_files": true,
+      "graph_matches_current_files": true,
+      "checked_originals": 757,
+      "relationships_created": 0,
+      "model_calls": 0,
+      "provider": "code",
+      "model": "narrative",
+      "explanation": "FLOW is the act of using all of your awareness and energy into one activity. And continuing it without constant reminders to continue. You can actually give your full attention to the moment, in the moment."
+    },
+    {
+      "scenario": "ontology",
+      "question_id": "a886807c-c373-4da8-8897-5f269e8676d6",
+      "asked_at_utc": "2026-10-14T16:12:38.560762+00:00",
+      "question": "What are reasons I would avoid going to the doctor?",
+      "status": "answered",
+      "source_bundle_sha256": "6a4850598a77cd2c7dbdb6d3c88871f68de3831e60ce61dbcf46d622b8500d13",
+      "bundle_matches_current_files": true,
+      "graph_matches_current_files": true,
+      "checked_originals": 757,
+      "relationships_created": 0,
+      "model_calls": 0,
+      "provider": "code",
+      "model": "narrative",
+      "explanation": "You said reasons. In English that is “a rational motive for a belief or action”. Your ontology files that under Belief: Core beliefs, values, worldview, and personal philosophy.\n\nYou said doctor. In English that is “a licensed medical practitioner”. Your ontology files that under Health: Medical, wellness, body maintenance, and preventive care.\n\nThis accepted record of yours sits in both Belief and Health: You are still combining solid general a.i. generated advice with very specific, professional advice and remain surprised how much ChatGPT doesn't know."
+    },
+    {
+      "scenario": "how-to",
+      "question_id": "07d29947-107a-4c30-b159-04cc87c066ec",
+      "asked_at_utc": "2026-10-14T16:11:02.135548+00:00",
+      "question": "I have neutral moments many times per day that I don't have a plan for how to react.  I want a plan. Done, looks like me knowing what to do, and doing it because the alternative to getting myself back in flow is such a useless alternative.",
+      "status": "answered",
+      "source_bundle_sha256": "6a4850598a77cd2c7dbdb6d3c88871f68de3831e60ce61dbcf46d622b8500d13",
+      "bundle_matches_current_files": true,
+      "graph_matches_current_files": true,
+      "checked_originals": 757,
+      "relationships_created": 0,
+      "model_calls": 0,
+      "provider": "code",
+      "model": "narrative",
+      "explanation": "“Done, looks like” is in your DELEGATION: A small amount of combined effort to draw up a plan of how and why to do something is leverage when it can be given to someone else, or an a.i. agent.\n\nFLOW: You can actually give your full attention to the moment, in the moment. If a process becomes a worry or burden the smart decision is to kill it, pause, and then think BIGGER!\n\nYou have neutral moments many times per day that you don't have a plan for how to react. You want a plan. Done, looks like you knowing what to do, and doing it because the alternative to getting yourself back in flow is such a useless alternative."
+    }
+  ]
+}

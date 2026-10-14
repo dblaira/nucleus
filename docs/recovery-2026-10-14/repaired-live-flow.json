@@ -1,0 +1,505 @@
+{
+  "question": {
+    "id": "e06b3760-8ea3-4ce3-a409-cc5391ae1551",
+    "question": "What is FLOW?",
+    "asked_at": 1791994179.793746,
+    "surface": "web",
+    "theme": null
+  },
+  "steps": [
+    {
+      "name": "1 question in",
+      "started": 1791994179.795174,
+      "finished": 1791994180.354573,
+      "note": "{\"later_words_review\": {\"question\": \"What is FLOW?\", \"graph_sha256\": \"f13d1babcd347996a4a50c4d924c910c3d87a622e058174b64be8bc7b40c80a1\", \"checked_originals\": [\"source-9efe9ab54632b60e8f8a5b6229830366\", \"source-efc364400c45d5aa00e1e15fb362523a\", \"source-460183cd5798209c755e92f87f4b8255\", \"source-7c590ded87428c1ba441a0fb65d08988\", \"source-be6cffea22f6ba0cc1c0896a5882f7a5\", \"source-866ae2c75e0326dcc45861a42146200e\", \"source-40a40a5495829fc03c710c9428317285\", \"source-89f0ae0c86ae928e87c2c2f283165648\", \"source-794227647121f1bd61de5d1c7e7bfb27\", \"source-671a16b70a9e4e541827775ba60db141\", \"source-94091758d398ee39abe61ea2ed94f311\", \"source-60b6ea436349224bbce78277f0d6c9fc\", \"source-742d50aa52c54d2c5386326cb87ca0ae\", \"source-7431df4981e76d6f7470109719c1b50c\", \"source-3ae61d8498d82c298a39bffc0ea1d2e7\", \"source-0f34442941f45a27b6c2d046367302d2\", \"source-0959b47952499139ce8fdb27fa043a31\", \"source-3bea09a10b048411f2be0e4284562f7a\", \"source-8606438a6ae2130f89514fad4332ff26\", \"source-8172dfef51a6153182ece8e322dbfd4d\", \"source-f7fcd2b63ad5d0cf637a2932446d5463\", \"source-c6028645910e76b3cead3fca78d64957\", \"source-84696dcfb03ad13b2209d723d7e5f611\", \"source-4ccc56ec6149d84f9fff3b2c429011a9\", \"source-9317a703495a71bae55583a2405357d2\", \"source-a9eae366a5bc193b3815897bcb7e913b\", \"source-33b05b73a1210bc2c9bb9d77cc7a3358\", \"source-692261cc2bff44acb086c079c2e271d4\", \"source-f7c961b0c55827891294d74060cf1a66\", \"source-b7d78148809c8030fade2570266ed196\", \"source-8c08b099bb0fd3e05dea55a32fba8330\", \"source-44aba81802aa762390661e772edbd711\", \"source-c9b73ffbc99612b23c0d78c7f4240119\", \"source-c6cf6eaad4a4d8efd7a2e78cbb5bc3bc\", \"source-a42f60544c477ebd14d7ec177c4141e1\", \"source-4b77dd341e765b6137e6c46e8c3198a5\", \"source-653115b1401dfb54a4d0c4b605a3c1fb\", \"source-1bc9c1b790bbd0d2da0249a26ccbb609\", \"source-f26a19a10bfc6972b79d6bb407e998fc\", \"source-5fe44c0ca37f86e8942820832becd9a3\", \"source-eb9f6bbb8475ba9255d02cc4c69df5f8\", \"source-85ba192aa81b45eed28eb07860e5a6b6\", \"source-177b932bb28625eac24de3ed1116c278\", \"source-81534ce914c41e9924eb754e588713fc\", \"source-628d7c2bcfa2b2c700c9fe4685775bd7\", \"source-8a4de46e0ce6c434d72186f899fb3771\", \"source-165a18fc988db14c3a045c9457d5ea61\", \"source-1971795e1813035ce710ac42c693c0f6\", \"source-21578750e2b248ea66daf49c7445ec94\", \"source-e4de1e477f1af9a1fe94e0772b32a570\", \"source-f86192af2d78e1461a46ffc594a97289\", \"source-d874b156d0ba59592d70aacf83c6142d\", \"source-cf6a4972a0ac054a7b0490ad1e0ebe09\", \"source-f03e95c0c6404c53bd0cae3756986159\", \"source-d8b40cb5dbb20598dd6c528f04f3b0b3\", \"source-243105cba405ed7088775535e7f10e0f\", \"source-e3adb5c6fd3c705f4b17cdfec70e324f\", \"source-19e0bfd2ebc61988a08ff6d72c6288c1\", \"source-9cf790e2fb2fb7481a0f72e4b3000e3c\", \"source-b1cb074c2361c6e5e7a70a0aee0a34a9\", \"source-75838e0b125f5f7138aa2980b4bedec8\", \"source-c0537a967243cbcf7992fc58ea399c25\", \"source-8be97228df06bdc1a416067489e2a420\", \"source-216a5101bde72daa2d1a660d0d873d64\", \"source-6401ff35c58ead86fa5d259796aa10fe\", \"source-52e0bd02fccfa96b7e1210e1d19eec77\", \"source-210cabcd65c926c39d41dd082880060e\", \"source-043f213ce4503ea0ca1bfda02656d642\", \"source-710f10e952997e7e952b1441a8a2bb86\", \"source-bed74ff8fb1480709541a1161de83641\", \"source-260cb8e5ff929931adfbddb16248820c\", \"source-7b1c9641e132375bfa879cae9b2af2b5\", \"source-4abc8f2fdc9b190bca41fd842c8eb28f\", \"source-dcf977f4a2f0f568dde28a7a1f981f86\", \"source-27693acf8fe1bd69345190a811d76762\", \"source-7aa92b5359327dca211a063a6edcacb1\", \"source-0a7a48492d224cf137ea4f174d998dde\", \"source-0cf29116721d847e1da88e19d748e0e3\", \"source-0fee3e8cc85bc970ee8acae95837fb03\", \"source-bbc48ca4f81e412641944d2439d4da3c\", \"source-a417257a35c4e2fe973e1dabe38321fa\", \"source-f6c6be6a71ba03363657d078f8171cec\", \"source-d2a88127b355d076aee48fc3e3ed2f0a\", \"source-e2c4b66487cacd66c6c14b2b524600f8\", \"source-477be0310e4845360246340ff69a9abb\", \"source-70fa9c0aa2b80f39feeac713a6d2109d\", \"source-b6c76f2eb8df45d37ad018fa5160aeff\", \"source-3cde9c1b8ef7fcd386dee963e080094e\", \"source-e67aa1d389930ba6ffa72ccfd3ef670e\", \"source-1c226c35f476f871a2e775ebf4dc36af\", \"source-bb16fc91bdf2e3d3c1557b794be47b76\", \"source-8f635062f03243399af8618daf139de7\", \"source-8444eeea73e0e80086425e141a8baa2d\", \"source-103a0e820fa1a3caa7aa189f58fde49a\", \"source-8d6d7d17a2215574a9a063fb24e81cf3\", \"source-01286454abac152ee1d0261ff19f718c\", \"source-61222d5bd496e516f25049bd4b8d9860\", \"source-c597ebbe25fa9f9edecbcd36ffb0a262\", \"source-1dbe312f15d95f353e94ed3221c4e0df\", \"source-2b39a87450a4a3349fd4aa34754ca0c2\", \"source-86b9dfbb3aea81dd867a3d7aded49ff7\", \"source-c36a9b3b908ce652e7f923146cf9e4e5\", \"source-c1ae30207e541e4d58a6416a0a2b3060\", \"source-6b3e02c36600adb600734092d1ab507e\", \"source-a5f26d650081c479db8f43fc4f41f607\", \"source-814fc5c6065f761cd578692494e3e9d5\", \"source-ad3aa6d2cfea475f96d4f0c57f39a7f9\", \"source-7a5713a283eeac49fd02e4509ca6d3af\", \"source-7d368233c081c4ff271a7f2fa1cdbe31\", \"source-d48851d5e71a5dc51a310b27e92dffdd\", \"source-827246816e5935c41017f27774408e97\", \"source-cac6e21e8bb7a36751f7fd0813cdb647\", \"source-58f4f16b981601cbc754051cfb574a4a\", \"source-2801b2de64237a58fd2f313295ecf190\", \"source-c92c85d7c24c963cb0aa0c1aa8ef85c3\", \"source-abe9134ce0ad30d0a1fa8ed671b31399\", \"source-183c312b13cd6013a5b633d2baa6e553\", \"source-9034ccf85116b205f7bb252f327d231c\", \"source-9546a65aa3936f0f28b4ff1b92b12123\", \"source-46b7b7cec01b4024956d0b4e931dac46\", \"source-ffeb30ca20531c287429e9cecd185bf7\", \"source-81c33169341ed983f3dcf47ebc3914e4\", \"source-51d0b2af1fdd1a1da7bd8e1e1e45c8c8\", \"source-0de4ca0ece883649a8a753dd49597262\", \"source-f148b2fb884a4308e83073e0f18c68cd\", \"source-78a52fe9c58666cfccc81b8bac87692e\", \"source-29bce0e19bbe673f720ba1e3c35a0d83\", \"source-512c02ccdeed7a2a5c6847a8d646e097\", \"source-0924bcce2e301acdd4969b948dcceee3\", \"source-02588227d0a12d537e9ff59ecf0fe9cd\", \"source-6bd7128b0a968e06b9be45ed7155f123\", \"source-1f2d24599eba8cb098844e13a7463ca8\", \"source-52c5425f42da04d0c365e63c6533b31a\", \"source-740aaa152e4724fd7bb6e5e4ad76c92d\", \"source-4ce22cd5f3712c093fd1a76d65f53cfa\", \"source-55a68f6eb2ac6db4f1224cbc050b2547\", \"source-ff03b9b82b5735a5d2ec7dfdf222fe03\", \"source-1130a8ab05a87f33ec3e91c7e3be78d5\", \"source-325be4b0179b30607ebe0136d233b6f5\", \"source-f64a6121c602c70078637de6f388179f\", \"source-813681b237dca7c9c4cc5dc0a7b2efe6\", \"source-8bb2770d77ea4117f3159393ac1d77d6\", \"source-5d9cf94672255b51b875e800c2f3a46a\", \"source-0f3d04321c2ee9dab10f8e77ba7dc1ce\", \"source-727d2724a66e224b6c5972a6656aefe0\", \"source-ec554e54e7c7cb20e91f6271b23664a1\", \"source-2f0617573409ff86c967efd5aaa8c9b9\", \"source-c23db773933ba2d6d4cff78d682ffb10\", \"source-028304b694c3418263d970b77ff38f63\", \"source-2f948afcc6040a2a7bdbd8fb93874946\", \"source-387c5495006b79052040d72217c5d8e6\", \"source-95b5e44736600a10e01903c4449f92f0\", \"source-d0af4e4b7d0704728fcb0f8b2e0c188e\", \"source-1fcae7a364ed5a867146aa07182c3bd5\", \"source-05849af20689d5e84c5abb4eb25b5c62\", \"source-0fdf17f3ae89165c2e584b3e48bbcb18\", \"source-2f042f633d8af4b9e48d54f8ebd0e640\", \"source-046e2855a908b68019566ddec5f60022\", \"source-4a1ff428a367014a4a24df70a57c1b2a\", \"source-eb19dc94b56fca6f333af78e64699a5e\", \"source-61209c5e4f8fcb6ddcc79f2d388babb7\", \"source-84c78c498c984f86404f9ce22c452753\", \"source-9e6b55f3e7b6fe97ffaec077981468bc\", \"source-25bb97f8bfb77ebd82a7e3e5020101da\", \"source-909660d95d9feb2bcc20e7edebb76634\", \"source-945edb3e706fca9d745abee6d411e3fc\", \"source-581f28891fa0882f32bdab6fbf292105\", \"source-5e47f58db68c4cffb68f8b1d40abea2b\", \"source-28ae8017efafeffdc1fe597b17cd9a3a\", \"source-d5ec5dace20356f6c22e53e2ae2d7089\", \"source-5939fe7882c323d97f83d3911e47726f\", \"source-bd4341162686f9c18a0f345085dcaf64\", \"source-2309cbb4690340d12f2a3b104bce38c7\", \"source-66127eb6fa20312c1ee1680c64dcce6d\", \"source-1a332544242b02dc93ce60e17febae50\", \"source-8e0871fa999a77338520ca119d8ecd59\", \"source-c9cdc2d0feb91592dbfd096ec9ff2de8\", \"source-bddb30bbed2497b94ae69129f1246c07\", \"source-4308b74a7ccdd3b9b9d29f08d2cf4265\", \"source-034c0b8dda652bced69f9171f38accd3\", \"source-920ada69bd4ec4493da97a00d41c9fea\", \"source-4068bf3c3dc940b7b90fc32c64af2453\", \"source-350e63e92ee6fa0fa4fc18ca9dc6206b\", \"source-584d8743d3ac262b180cc7029a5084a6\", \"source-86784cf6e40ec13f6feaa9757e3e1bf3\", \"source-26046abf104b96862e16c0b47e4dbd57\", \"source-a2efb528a20c1ba7d67ad5376f468f16\", \"source-2572ce291774383d20573a20db2bc046\", \"source-8503154341be94130a8cecd36ee78391\", \"source-aaa87fc60352de4a5df899aab88005d2\", \"source-d0c50c4678b643be90d9740f1b4f3739\", \"source-711bb5c7c52c9a6a0cbe09f69ea6243e\", \"source-f52e406e379e535fba4f12383dd7986a\", \"source-303f52ac5deb08b4d25f111b582a52fb\", \"source-4ec8eeaa53aff6e5a15fb7e37d876ad7\", \"source-063b63494573d34f5ca365fdfb12a0e1\", \"source-37219fb5fba01adcf00c67d282a9c62b\", \"source-df11541336020bfbef0fcd72fea5e261\", \"source-ea7fcb1c66aa663d523f2cc81816515a\", \"source-1c16a72dd55faf0801fc0278213eaa4b\", \"source-9936996a85a210965cf90d20d18496ef\", \"source-512ac7094068835fdef2f465eb9c1395\", \"source-e892587cb4009a53a1f1c5d3b65166ce\", \"source-47dea482dc84e016aa80168387789edd\", \"source-2d141b2af294a55adad4ed2dbc0da2fa\", \"source-673f0ea408dd2130b6eb5b08c55e6a42\", \"source-bf8a5b26c374df27007a354c8c805a5f\", \"source-4e883926c96d1f244f2196c980aefd6a\", \"source-8bd99024f0ab41ed3dd1d6c7130c9067\", \"source-4ebcf2bcb7991c3322e36226bfbdab42\", \"source-27eb74ee46e630a1cf135c982899db55\", \"source-d89f824542a6264e8814ca97370c47d8\", \"source-b23c9ba3795ff9d39cf096d1ed4ff383\", \"source-7b6a8bb13a1d3b8e5118446cdad8acaa\", \"source-be1cb1379aec3686685c612c05015d20\", \"source-e59a82ce0df263ed94034b66c556e12c\", \"source-ad430fa254502770bddf29366b17c1cc\", \"source-153394ecab2170aec6a81fdf91ba3be0\", \"source-3e96b4b60f2c9010a2aa1055a8094817\", \"source-e477b7d26affcc31b81e2c64f2f51178\", \"source-0515d76bb2f2f95e3d9d9b4fede37deb\", \"source-20eca268d983903ba171c1725607aaf6\", \"source-f51c2805a4b94bf3026370c6b0de250c\", \"source-d75be5c79d798e765f21f00de838afe2\", \"source-f7d9047304ae5897163d0bc96dda80f2\", \"source-38600abb750f2c9d676df5fbf68d8c3e\", \"source-fee3de128509ca3b463bd3f87d53574c\", \"source-bdd92b6d5792c8cb5c57f97ed159f6a0\", \"source-3eb62d9fd01994c260596a23f74639d0\", \"source-ae06da542abfc9d5bd0836b8ccd09d59\", \"source-770aa9dacc5235be11ae03158439ddb0\", \"source-8ad622de7f6098b625fcb905eb8f087b\", \"source-68c34058cfbb9b566a37240ebd0e1365\", \"source-a024a2d1a6b67a7e339641a03ecd054d\", \"source-4f6e23b6aaaef10e93ea13689da6a897\", \"source-09f06f0ab1e9344354136944cd7471d0\", \"source-d57d4d49b1fe837d28a949ad3695a764\", \"source-313a465ce978f244d1ad4b3dc541e8cc\", \"source-e060d4b54eafc431c1868c5c62b3cdb7\", \"source-c3bfc9087bcfb6274f1315905c40897d\", \"source-567e85826968136a3396cfec025d6f9f\", \"source-dfabee4c2b9550de54fe8b09aac98d10\", \"source-1b4b7904eef11c36f6a87f3b69300571\", \"source-1647b8be1e3d49f508eeca69700f9bcd\", \"source-d83e1dd7f9352dc6868363a05cfcb141\", \"source-621562513739c7164d063e159eb5a7a1\", \"source-ac326cda9ed94485b3daf252152f3541\", \"source-7bfb63918aa6bf2a776e8d949f473a9b\", \"source-f33c80d356cdbd85eb1353850272e318\", \"source-18d0be75c05d964f940a9b87800f5dbe\", \"source-7ddea87812c510b89c2c19c988d83a50\", \"source-c7765da1c1876257ab19b3008d031e85\", \"source-77712e38fef9dc2ba1b88d7608754402\", \"source-a511b5915c5a6254e34cfce8e7b91c51\", \"source-0d3979a4bc68fdd2364ace170ac7a5d4\", \"source-b21db65462235a0f129118c2a59fa990\", \"source-c0fc499eb718abe29e33ce264b3176a4\", \"source-5f9447013f2c4b817a35c494ff01dfe5\", \"source-6f5b13398e6b6be15431a9aea619258b\", \"source-66d0b278c79a06419581e9018ae498c3\", \"source-97b82dbcede5c72bb6771a3b27bfaf68\", \"source-4e748ec953d973ddcdc4567a9c14c18a\", \"source-6c60060f632ebea3b7ebd781a08cf4a8\", \"source-5678f44633466ffb19116ad67dbd7b92\", \"source-f757c04053b66ccd261a20c6f6ba51c2\", \"source-daa7c5d3cdb8d8aa13d9ba117c296ed8\", \"source-fdfae1e0e80d1ad820a949a1ee34ded1\", \"source-c3fe93a0c304089847b7614b004eebf2\", \"source-720aeb2be3beb6b8659a1a05fdae5e58\", \"source-69f8af3a27b5314a14a4b30d2b80dc65\", \"source-97a3c5b57586591ffd5aa92db53c4126\", \"source-44c44c5f1c5e9af525ef753a1c948405\", \"source-9729ba37e5e1b70e711bb19a7b5d3e6f\", \"source-3a16f87506d4c9e30584859f9e5c328d\", \"source-ec0b6e889b3807a86b837e30191037fd\", \"source-10dd9c0a6b02b6ac928986f1aaf7f806\", \"source-fede2f05e136ff75a2d24cf3d5c5aa2f\", \"source-cf2479ca87f0895adbb0868dec00adc1\", \"source-17d1cb32fa80db099e08a7fd0df3a346\", \"source-9734b8c1a22ea79c2e3a9f614892a5fd\", \"source-97e8c0b8fd159d4d873d4b27cef7289e\", \"source-aa8f161f4030e886205d3ce25c7a1604\", \"source-6c7c98c97b602683e9d532e4686f60e1\", \"source-bc0366a3ee951249a377d32bbff6a999\", \"source-f9017fce1f9e64ba002dd18344ba2be6\", \"source-da753617a0d292a93cfaaf2d4097ce24\", \"source-e5a446704d50747f2df4cb452a0125f7\", \"source-5d0ced38c505e8c0d545f23a3abf56e2\", \"source-461218bd280fe8a675a0390318af6856\", \"source-b3cebbf7ad9f13a2ee978c2a50d02e99\", \"source-83c757c32289d95c27b3a5f31e09405e\", \"source-aab490348bf6ba3505369294509e97b5\", \"source-0273bd748c4f9a0e7e4126682da68513\", \"source-aff9a0a7e57cdc3ddf00e012a52ae5eb\", \"source-ee879fbcb0ead986c874a57ee7ca9ec7\", \"source-cb0d677fc40012e03684b09851e3920e\", \"source-4b578ade8bbd3138ab4e624d1cafc23f\", \"source-4bef075610c1d09519f0b94fbfe4dd2b\", \"source-75b0035dcf0931620b62f95cc53ed8a7\", \"source-15abbc49ad993a790f7f6bdb9cd7e0ca\", \"source-a73a5bd5a67c3c4088f1dbaed80a68e6\", \"source-2937cbce92ef6d8dc9ac54233a523a05\", \"source-4909ec617ad04256a0c85f891d01c6c3\", \"source-64cca25346d31daae9f59841e45c1c97\", \"source-1680d6fe521f124e6cf96fc87c0a66ac\", \"source-030d82ff88d483eb5d0e2810b54e6305\", \"source-21786af7fd2ab49a1386a0f990b1833f\", \"source-d57873c91197fc5b93bdeb81dfcae6c1\", \"source-672c9a7d6bc490d35a2f72b1abc9f2f9\", \"source-6556bc27c5cfeb5ad93d5a2228a5f5a5\", \"source-6072f165f6b16d7db4c1a85619797953\", \"source-b6f4732abd855157017243b359c5c828\", \"source-8020701442293970ce5b449ac0348c89\", \"source-dc4da89632f030bfebc1b29bbceb5bba\", \"source-c591f3619e3735e36ff0796e2811b2e0\", \"source-ce539fdf925d4810f39c4ab8bc410e86\", \"source-7a95bbc5a8bfcfa6418dbdbc4ca5bc79\", \"source-610df0b5377635c4dc91a1a2577b3a03\", \"source-349abf42b69c85b416a7e7c21526fada\", \"source-01b5dd7e2b99a2879ca070bff884571e\", \"source-45558ba9038f70efa601e91efb6c9414\", \"source-14a0339b0e5b6efe9e981a65e895809e\", \"source-7e079934d02615e37b0a42775fc60a8a\", \"source-06f26990c706a0e2e1565b804fa94a51\", \"source-35532f31833e391ddd7d74700b9a36dd\", \"source-c88e2789debc1fa33c7a4cac0d0c8724\", \"source-5603fbbe70d85bab76ade52d9a43f70c\", \"source-5ba949655acd849b2ed27076dd371368\", \"source-bea3c02651d7676395d6b93634675cad\", \"source-933ef1124ca2ea125d856946028c8358\", \"source-5ed05e51cbddf719355b124120f45706\", \"source-848c98e2f33a37eb8078ac9b0dd2a2e8\", \"source-4090177a985aebb715cef51fe4629569\", \"source-4c8f5b3f823eaee277cbebb3d7556cc3\", \"source-389b48ca22902056894123c057be5b40\", \"source-766e1e1febfbeb15affec0dafc38e68a\", \"source-c5d414e42d313f37c222776fdfe6e99a\", \"source-e158391369bf0d2f228376a3646cb83e\", \"source-8b527245ca003246792256e297780f39\", \"source-fa20127c910f9e792905d9c5061c42a6\", \"source-988de540a3c680fb666911b53463cfb2\", \"source-f47de86033896eaad17512c754f46531\", \"source-fa1b44185ed8b1c322637dc871b2f8f4\", \"source-2a4820c1d1a6719dde1f7e7188be8f05\", \"source-fffb109946a2822ae12382544e222345\", \"source-ddd8bb0b30a02e95f31a45b36a76dfd7\", \"source-452caf0f9717922d00bab00d0db8bde2\", \"source-0ec85172b17ab38b9488c2b7605f8518\", \"source-d7cabfceb004db0bdefcc92ab814a1b9\", \"source-f47b2faf075b0caf4650155cd2cbcf2a\", \"source-977c2ae200418fca7f9487d7f3b1bd7a\", \"source-41f61a23a83c58261aadf624bb044ffa\", \"source-920d365f728393de270eaebe91efc5c9\", \"source-2f92a33300e6d075b9ddd05f16cae004\", \"source-ab71f7232593087d2915caa2403585ef\", \"source-7d0d69e6477f12515f2f9475487bfc32\", \"source-f214b64464c90dd059dc6e78b663377f\", \"source-959654070fddd450fdfe5a3b78f85d07\", \"source-24ef9e2f87c3499e42a13c5b521b4324\", \"source-05771fc953b986721ad52f07b766be9e\", \"source-bcd86344f878fc8fe94d638c64d01897\", \"source-aa5bc2ebb9a545d9fced4ae72bda0def\", \"source-c8c2a6c9a790b4269fb9c0893351f0b9\", \"source-df1bc0999d8f97ea41f11855d7db2635\", \"source-9008e19e62beb488b91946a05a3a4b21\", \"source-c6c517f8afe599dcc162b90e2066ecb5\", \"source-2425cd9eeccb98f88a1f08d23f2f4497\", \"source-a962ba7e71bc85cc8f9ecd95c26c13b5\", \"source-cf182c6b1fabf69495ae8be572f0793e\", \"source-cc60a3e6011675e6f2b5e97b03ddd6b0\", \"source-6533750adc3ecc421f3137063fb85f57\", \"source-563c3cccd7263e8c81f7a971b144d524\", \"source-9bf8148b1b440dd37db9a48ee79aa421\", \"source-1c699ec45645620687bd247238f7375b\", \"source-65213f7ea991f08edef5e7375441f530\", \"source-c6a4a658b1de07edce801a1d1b47b6fa\", \"source-8e2223a277533d923a7fc7b4c1f12c47\", \"source-72d33bdbe4e64879b9803fdf88c2f5b9\", \"source-0aef80176ed76e6e3ca13e31d7e72640\", \"source-65f18713a3caf285448241831ad133e3\", \"source-0d17a7c41c5c13b445d0105203c60376\", \"source-0ef69cca43ee59f653912f2e7a5099cb\", \"source-b2e89bd539dbdbdf1c9751a4db2fd5a0\", \"source-2af9ac16b79c692bd9449763fc1a298e\", \"source-21def68aef86f01ee9966703eb8d7894\", \"source-20b408f73c267a6c632661e8f0ebce1b\", \"source-869b3703b074065f351d4787b66b51c4\", \"source-9f2c402bfb29bbaac4dd14d7d5ed03ff\", \"source-9a27ae61f423687a1ac63167b3239f45\", \"source-093cf0d40232d8695bd418de7faecfcd\", \"source-0ffab4ac38c4f3fd752727fb3bedec17\", \"source-8898cc7525bc8b2c3b369ff72c6d56de\", \"source-b258a50babda41f6c7e546bd381e5f73\", \"source-f47f091005297593bf180bb9a1748b67\", \"source-b223488273026fde0dad2008b3533105\", \"source-62cb9ff30d997e7875f5e112ef0e2cd1\", \"source-a5b6003a07522746270921b528f9abb7\", \"source-23adbf034752e2d0742df5e8facd2857\", \"source-a627ff60e8629d887cc6d161c145f7cf\", \"source-a27ffb6fe6802d54264253705aeb2d1e\", \"source-7bded4e2aa4d4711450a6b23e64f042d\", \"source-2fcfe61fb4b729bced5c80791eee80b0\", \"source-68332681753c1fce1c20fd52e02c163a\", \"source-7e5f66c9858be239e9e1b8c82a812d36\", \"source-76e6faba5e73578405d3a2e2b538ef48\", \"source-1baac29afb508fa1ba2cc0eca3a649da\", \"source-d5039b5299ee751e05dd72dd5fc9bb2d\", \"source-cf8614cef485f52e6ea171aab3ff5bfc\", \"source-6db69d96377a99274325d6a1189e77e4\", \"source-b541ff2daa630252176032058fff08b7\", \"source-584910735645fcf718f7217b73fa1108\", \"source-15adc2fb562b816762ea8ac08723fb1b\", \"source-e08a22f8f867afa52b44177c675b2c5f\", \"source-9f34a6a4cb4139ff11e6df9af8739440\", \"source-85a5b22dbeccb824a1e05f88e7d74c81\", \"source-7f4982deb0adfc891bf2bd8761987e37\", \"source-d2a551b1a686154035e3e06e9fa94231\", \"source-2ad5bfc85c0e7461c7a264a8c78adc88\", \"source-21278aabb7a1150bdc456c9d2a143cfe\", \"source-87e4380e47235dab5bb87b711ea093c3\", \"source-78ce2727701f7c6a709d6a61fefcb34f\", \"source-2670b07e0f7c5cb62d31ba043fffedef\", \"source-01a2413e89b87b1d41cd7e3e67582ff5\", \"source-d5f387428c3eea96a808744b2350f04e\", \"source-7aac3f4051bc6f64ac55a2b2f58dcbdc\", \"source-20b0a19357927444de3790f7603b7658\", \"source-9a5b64b2833eaecb62d4d13a18b34b72\", \"source-80d8036000db397e73187cd1c1550960\", \"source-6202eff2f3f5f60412d34d9f619618e0\", \"source-f4dd16da40351262b765fd252d7f6657\", \"source-15cfb8c95b30393ba96e4fb8cba6870c\", \"source-035cf6bed5a6b2781f7eebf3e45d434c\", \"source-bffaa441af73d6886506357c3e27e6d9\", \"source-bc7793ed64e6a2451ed4f2e590b745ec\", \"source-535752b703d4e06aecef521d0d8c0c29\", \"source-51db3ee705669e20c8ab43926525dc2b\", \"source-74220a5edf9c273a9f98af3dd6104822\", \"source-17b010610ac7b519fc82347db370a280\", \"source-ba6a9d94c6a8a30bd749e29caa710b58\", \"source-b25af468066196f58c59ce6b5e489720\", \"source-d775daee890165e9628c8bea439f7bd4\", \"source-849d512a8cbd4db84a70734ea99a71df\", \"source-a6e71154c45337f64c9f90ab4ce0c38d\", \"source-3b31061d754af9149eb5c9f15529e5f6\", \"source-a819210eea5f17f1f2c6570a1bfcebe0\", \"source-a56c0d208e7fd93b9ab0931a134861f6\", \"source-52518ea77cdc709409caf04c6aa0c7a9\", \"source-828424f2f6d0b4315e9f11600d3c1f2c\", \"source-ce1f54f46e51157211a71bf81461d0c0\", \"source-e08bc64d9dbcd492c7ab7328e52298b0\", \"source-145119722380859e206823b479447722\", \"source-7e57de937631718f79b615b011e796fd\", \"source-9418648542f29cf58f86e5dfbe981635\", \"source-655f7a8c3be9a06e658503adc593d441\", \"source-62c2594ab55f3a35035662c9ffe7c035\", \"source-1a67a405b531de6c66a0be56096b8351\", \"source-3f15e54655e2269c3639ac723fae19e0\", \"source-4c278f624e73de1f002aa62a3748e2d3\", \"source-83c017ab45b3adb6823ebbda2210bf38\", \"source-8e435fbbac8cb930bcfd6a21acff87f4\", \"source-4008b4612dc9264290b27d26c5ff36b0\", \"source-3519b515e2837f9effaddb517ff8488d\", \"source-314a5c14b683bd465d9d2d58f1a606a5\", \"source-5f13f491a501270399263d2b0d7de199\", \"source-9c79bbdc469d2476a3543c0ba35dae5a\", \"source-8b2fe1e6d482fbd3da2751efaa981103\", \"source-c3e861c4107577d96e80924f35e281e6\", \"source-401208e91261961585885d9aecc0e1e8\", \"source-247045046c24bc0327bd5de543dbc2ad\", \"source-a385a7409be103add013dcee295575fb\", \"source-881f03aa5dd7443cdfc00a67afa436b9\", \"source-8b2096da53e35f5d8eb6ad32cc222f37\", \"source-0bd454a0f40f09b5f2ea576903d5e02a\", \"source-4c1863ced4baf4534ed5a6f56fa2f2e9\", \"source-dbd845afc531e316aec8b4674b0cb181\", \"source-a514f6bf6b4161d68a08c7c871e6179f\", \"source-1423df2059fb5663a8da65aeaaa76e29\", \"source-1143946b1eb6e744ac8b1f558df5b9e9\", \"source-36fb850d5bca669684d4dc9541ebadda\", \"source-0220d44dd07374b27390e6eb2cfd093e\", \"source-3c22eeec0851ad9f496a8e99d62d98bb\", \"source-dbcded60dfc8c1068d630afe4e49f319\", \"source-5fb817964b5711fddaf9a8120e5a844d\", \"source-48d913079c3a755b01868e0470f1b695\", \"source-5b5966d7a74aa7f8efe6a203115ac0bc\", \"source-1cd882a0428c5a7d0fc836b22267de2c\", \"source-490d164b82d6a78bdc2d078e9a03f103\", \"source-3991d3d87283769bdb8119284c7c1269\", \"source-9dca51e78b4a3469a6122c47d5475dc6\", \"source-8b5771eb0747d03da125be36bc3759c5\", \"source-73ca428c4fabf7e153b237cb97456655\", \"source-c58c9d9d1129d6ab73382bb727e2ac26\", \"source-e790c1f08a778b99d2b857496cefc5b8\", \"source-c261470b12f0b65e3f99e7a49c4ea249\", \"source-322c46d0a3bb277f1926e51a956b270d\", \"source-6529daef7868f301b1dfc5eb4903f11b\", \"source-22de931bce66b298c58412a5bdce992f\", \"source-d22a48c69c6b5df0afcd123bedfe4330\", \"source-395393158cd530d1b484ecd09a2f2ece\", \"source-2efdd9825805c27652df0f2f7a5b52eb\", \"source-5998f87d093934b90a692309543c0efc\", \"source-e262fd4a3273757f99d03dc66634723a\", \"source-3330232db7d02e1c9627edef1609cae7\", \"source-ffd3db2b315cb563c3680c960974fc7b\", \"source-bb19dcd0ab589c808c6e78fcd1cfa71a\", \"source-f63ec167a65f9e7efa21a5342122565c\", \"source-9f695c806a000a9e4e410cf0365098be\", \"source-da836ebfc2df6d424a3ca8d76a8fccfc\", \"source-d7f495f04dc8650044249d58edbd0e80\", \"source-0abe78a4dd4283c4b046188baa7b83a7\", \"source-793920c11e37ae9ea2d3fd5ee63f24a2\", \"source-1a45a3008a35fe5433b2b9e3a44b094a\", \"source-873c0841bc7b7fa2e90f572256015b72\", \"source-0ff796c95183d2ac09efa49a74b8ee86\", \"source-eeec7b0ca72dcc5e925305c9eb851e28\", \"source-d0e9b299437efdcc10ec32dd93eb0032\", \"source-280a57ae109c08074bd58e48017657c9\", \"source-6ddc78d31aff9eafe59aeadf5fa0a52a\", \"source-d6281dd10578bb6362eef2c65bd0cd7b\", \"source-b4837a19d495dc235ebb4498b4be5c80\", \"source-e281acf3d9694f9dd90df8f28a3d45df\", \"source-8c653bf98b105d7382983d80c8d591b2\", \"source-d0e9439b1043e21b4c577402c3b5e20e\", \"source-3458162ca7ac9f079558609241ba6a98\", \"source-9b7b268ea09cb0c3ce68ba9230bf73bf\", \"source-daf06327333b31a92204eaffcd02efca\", \"source-4343244d42b6f1043721f4f0caade8f7\", \"source-7ae34687a8d1fd0ab343a9932f172c98\", \"source-7a55386322f8cfdb7513e463f2ed26da\", \"source-0d3ca09503a06325ffd1a8ec58e45575\", \"source-760613d870daa79a6a3cab153c617bad\", \"source-bb8066ac99e5b2af1dc3643c941626b7\", \"source-3d3ec1a873eb40d24b4023ea4a41eede\", \"source-b54638f6fcb7f97600d390697bb7d430\", \"source-fe988f69e1f760325b005a6b8eeed737\", \"source-92a25dc955365ba6d6a06dfd1b8416f1\", \"source-b966174a258621bd1e2931a3b8319d6a\", \"source-45ec3ccbbbf50e680b0d16e06b7b5db5\", \"source-be80d3a14b1024bed590ab7918b02e05\", \"source-e198e86764efcdb66ceacd1f1da55d9a\", \"source-94a5c594ee454ac8b7feed88927bd2fc\", \"source-bc433b1f5051203ca7f284d3fe06d1f4\", \"source-87c5767e73015a8aa760ed9fab6a5585\", \"source-29c32c753d7d90143f7e6dd23bc04215\", \"source-04050d4aa8ea8e94d029f5a1675fc3de\", \"source-0d9a0c0e1f4b0bc1b8b35879172821d8\", \"source-b1698104e71462dec75521978a3e4cfc\", \"source-f9035ce99b17b6d4cee9e0afcb653d19\", \"source-cebe9db697e575b411b6af2737ec0254\", \"source-f778e95a5fadf160042dfe0f6cf973a5\", \"source-e660a98b9868119d243a4390774df08b\", \"source-03eda9646c11b3add1bf37352c77b9cc\", \"source-3b21b35ea44cb90fb37eed452dfbd25e\", \"source-65088ca9b1c989ffa9ea69efb7e0b05b\", \"source-fe14866f41d5399ec4bc1e98b37eca41\", \"source-8559c20fc80ee7482a1e638d7a82afe1\", \"source-3a9f730c0e1c78c70c24d6358dc333f6\", \"source-bc4f08a0e62319adb50cab8e4d0f6328\", \"source-89404862d91d8314bbdfda739d390be2\", \"source-25015e951386f2f5a4ab1d81060f0583\", \"source-9d5cec9bd49b9ebc2259451aaabbbcf4\", \"source-4a171985bb4f433a7aae770530e89cf7\", \"source-c0a247b1ab3a34e28fd20e7d5c4f49c5\", \"source-d638222ea87cdfae01ce687c851f391d\", \"source-bf0403db21eb3587daa87b385836eaad\", \"source-28438812a0b891689f76d106389d7aa6\", \"source-15a490aa99e42b87688f4a9a1f57844d\", \"source-4b068ac1c46406f1c32afa32a6a6b44f\", \"source-672db67d1dedc11b0a915ca8d46316ad\", \"source-ccbe618de6ebb2237b9ebc85b8fbec85\", \"source-5607c863561a459d335bd1bc75e85cd6\", \"source-7dd90d42758c0e0f5a8fd5a8e4d55ccd\", \"source-efcf81203c86b142c668b920f20f6e25\", \"source-4cf15115452b0e10b76f3dcde1317682\", \"source-cd4fc019ad33efff9620e15c2e1db8f7\", \"source-ddc5580e2cf7a346fcb2db61bf8b4b83\", \"source-b2761f0a37007083edb487b569f12993\", \"source-8eb4d4d3274147c512045dc809c10a4d\", \"source-1df42d0b5a93a5e3d8a9c1839c8d4f2b\", \"source-e1fc06150ae88c955d2d2f8bf767faff\", \"source-d42abe375d517ad34c6b9b4ce50fefb3\", \"source-c4145dd4f43d40c3321ddd801caddadb\", \"source-297702b79f3700f044a6fae657670de8\", \"source-bf0ecd12205fe2d2312ed8a7f2fddcd3\", \"source-9fd514223bd838480a39656fbcc29e25\", \"source-a319df08b9b34ba5787fd9d2f45a3c61\", \"source-3242d2e24d849816c227be758956c7c1\", \"source-5c4795f3d1c8e4c6ef27c0143e19801b\", \"source-a6ac8cf70fbf118767955a32fcbbfc7e\", \"source-25dc7e5ef8f69199b435807215d19f88\", \"source-38932bcabc3578bd6d75d4b972d86777\", \"source-119d066c236f55a86c312adecbf7a6f1\", \"source-36fa4a983f39e4c171117e1ed7b91130\", \"source-33dc3dbd3e7001d6eab20c87b15197d6\", \"source-40b854c6beb5a64c99796b4228be9f32\", \"source-67c64cabc93ca60b3e1f6d38177d8f06\", \"source-5550915815b80d5000accda6da161ef6\", \"source-103cb9b9eb4029b8dd08a21268cdfa99\", \"source-b5b3a1120a3032d29c4841db8c8a3ee3\", \"source-ebb47fb3bed328e02ecc0fd52f8d2b4f\", \"source-fe4f66026115ebf2bcfcd6dc34443c5d\", \"source-69726fb65829a0c4041846419a69b252\", \"source-6578dfc103b1ab109f2139f04934885a\", \"source-5b524eedece16e7851ad965eac2db61c\", \"source-da015039096626243d242a2305b7e2b9\", \"source-48383d7324f8a90c4fee214d21b54020\", \"source-23f8208c02e51cf3a4c329d9f72c64ad\", \"source-03ce395df8a7cafe403ae73a5cf5e030\", \"source-d33740ca508e8eb5184f3bb2800a684f\", \"source-5526642cce5be47e418b5e468e1e8fe5\", \"source-1eedb0805dad17796085e34638d53ac2\", \"source-ac95ee321fbc7e51eeb6ee0dc7cca445\", \"source-7386d3aa035cd458c47c34e59cee5ce6\", \"source-9e2c5e44fac01264dedc384c5418aa3a\", \"source-2c5497e2dca4b0c848ee2d45954d1a32\", \"source-d57668575992a489fc699b6581bb113a\", \"source-64d6b337668a9ef796ad683415f5c173\", \"source-5799b5c4200c265b580ebfee4f31ecdb\", \"source-50283ca3c4c86282e5e944c5348a8fb4\", \"source-32fd98960a8e407bef016da207ad869c\", \"source-68bed69f18f0b43deaebf5d1892c5932\", \"source-596d31c3de7c3517ae90d639b1497e0a\", \"source-40440b544dd77b2d9cc7864033c6bfe7\", \"source-9ca8e552806a1e3c055212bd47fbf43e\", \"source-1c354caddd785ad96f57a103f974a5ef\", \"source-f1b92a48086eb57cc798f9c698efd4fa\", \"source-1c3b8c595fd6517229acd5b9fed4dc98\", \"source-c0be78707624a8efdc41ab9c04c30bc5\", \"source-144d5ad6152f847385b3dc408477e178\", \"source-f80acf759f7166eb2dc566d1f2df1e6d\", \"source-f20dadf9da229a1bf2b7d45a82fd3237\", \"source-2c1b4f36f2f532b72075f9bdee429017\", \"source-f5b2aea96f252b5d69fdfa41db2c2b43\", \"source-767478d47cbcacac274b7b8f2bda756e\", \"source-8ad9923454a88e0eeaff75aa3e3c31b1\", \"source-2126e56fdc23361ee46b2855bee7c0aa\", \"source-ea07b1942d3f5226713f82f6ca551da5\", \"source-53022e969a4cfaf796ffe76523e5687c\", \"source-7f4bbb0b1c4599b1c3a2113843054dfd\", \"source-940aa8585e004654a6903cf950ec3f18\", \"source-afe2399619266d03d4440e9e6eb4d0ae\", \"source-b2ef65cd339e326b9da0acdb506f1af7\", \"source-47a07b47bbd96ee3a24f2ecab6e9418f\", \"source-72c3fe7373aa2b0d3aa2017a4e5c76a1\", \"source-aec10a0c0a28d5826da99fd7ffa4f95a\", \"source-3bef1339b95e556b5e63a92bc4bd1a77\", \"source-a73dcc155442dba11f7636730b834bc1\", \"source-8138c819aae126a08c6a0093aa6abfaf\", \"source-be010c252637720ab8a4a9d2df11e18b\", \"source-d790efc62c71e0387a6f7f409c3f4886\", \"source-1866ef80cedaac08e3860a4491d76ed3\", \"source-2f7ea5285fb9dd960e804e26eeb60a3d\", \"source-975163d715d7a88e4b074bfa043b747b\", \"source-522005b2abcd3571940cc0ab3f43f3fe\", \"source-371685669faafc74f088a3717f97c1ab\", \"source-fbd8c74bd7972e47b1f462ba6b8adec3\", \"source-f1c6653e6ca2c0da1fdc54dd65ff82b4\", \"source-07382e22f46034b0d2134f5ba2e38994\", \"source-bacf85f9c216ec3e0c6d4f77f212b62e\", \"source-36fb3e02c0620ffb17c9b6469ab9cef5\", \"source-5235891ec71b338c8ac9f4150808a3a5\", \"source-6fc3a6b3f8846c9d0485d9392634e894\", \"source-fa967d9687705eb22a86c9ae7107e090\", \"source-8596860e6b73f6eb8b652171403e7a25\", \"source-8092ba04c50e287943865493205280bf\", \"source-4d9b875e5f33499152a529bdbdfa1f11\", \"source-d6dcabbd48595504168575ff137fba28\", \"source-1a274517eec8edd16d554952bab080db\", \"source-bff08848882aae4a61294462aa6ad632\", \"source-3dbe211353950cf9eed41dc368fe8ce3\", \"source-53b043c9c08c34ac30695733c44ed8f7\", \"source-19d550508f5848b29fb067ed7a85c70c\", \"source-4cf0ec9510e7fcd4d37fddfd6005100a\", \"source-3f2a6f7b873bacd34c8de27aa83ea1d2\", \"source-84227645084643d81cd73ef1a9f5006f\", \"source-fdfa2849d808d04ad41d059a951eea16\", \"source-ccd51e4f2c11b24372015be749d06946\", \"source-193a7a8f7984d53296f8d5453dc2de66\", \"source-38f1c6b81b68f105fbcce94c190d0d8a\", \"source-b00ad29587e3b351bdf0d6fe1933320c\", \"source-b23305f847ec111399ad0e4b7911f7c4\", \"source-995b211920cc77e957e9d8e3fb5f89ce\", \"source-d57506b209df22fac6f8a95ca87df246\", \"source-1914404086174314032cba63c8c3823c\", \"source-e1ccd3f9e6d7b2358e39b1462f0b6698\", \"source-c5983696fc002fe5f6a94ffff9f21229\", \"source-976bfaf66e0e00e9a45a8e06106322df\", \"source-504ae7bef1acec5c2971de20afc55ebd\", \"source-0bd2b83e0e3161ccdd43fed639fb7b4d\", \"source-987c1c329c41c65ff016992a7066bde6\", \"source-5654cca3732a454c4de6f427bd2efbf7\", \"source-88d5801228125e2331e24753666aec3c\", \"source-682875df9b5eed1b02697e672fc06af7\", \"source-ced45eab698d4aabfb40ba984e692019\", \"source-92d2ca2c204354820d81aa28e30d1a20\", \"source-c4bc2a58c34d5a2c79b17332c980a427\", \"source-9dc7dc7c2cff719ecf3056c13e8c092d\", \"source-49505f90bcdfef1d96f7e8baf62f384b\", \"source-86389e59db20fd8d4c48696553e9ca84\", \"source-4e34f401d8e1f1d8e79d11766a14fa46\", \"source-be5714f556569008d9469c9be92b8008\", \"source-0962625c15236fe8595d216ea8d144c5\", \"source-7a58872bae2750ed411c96f3be9f0968\", \"source-b4e70c8c88433587919676432507bcb8\", \"source-a01e27ad708b62a8a94d084a4dc8c632\", \"source-c8b7bacd535a634da8f48b99f51a1e5b\", \"source-03b5fb3fadb8579d0307d63fa53e7884\", \"source-f4772a5926adaeeeb28cb24b02b7a904\", \"source-9ac51a9c0928ff18257885e649dd6ac2\", \"source-398afdd900a7e4233a488764f24f206c\", \"source-0d0a15baa88c6a02d7ae101d5c6c4a49\", \"source-f5a53e4256eac851a513d8a195b2c01a\", \"source-20f711095460d58b93ee789a6533fe39\", \"source-93ae08e81f723c03253f13e4c244ae3b\", \"source-69504209a056df8c37a6e73497e40850\", \"source-1d31de4c1a44b303068b6dfeb22e0470\", \"source-80b4909eabb7ebbef25e431410b3be21\", \"source-cf731c3c11efbd9ac80fbe9473427677\", \"source-deab0720d8b3120dd7e7d888c42c788f\", \"source-9ece4b569e149c4a934cbd14620c837c\", \"source-60e83346fc7326187ffcd7e517435355\", \"source-953c1bd7310a16cb82eef622e8391c28\", \"source-183f69b4fc64f86520ca269ae70336d1\", \"source-61742ae41f4f0eabb8ef98b68983dd04\", \"source-34af45728d690d914c4ed45e5a88525d\", \"source-d560ba664302c7c0b786bd8b5fcd7f1b\", \"source-ac4e7a86adaac5ee1afc658d406ccd41\", \"source-c2c8a151709fdc22e8ed8002d516562b\", \"source-c6de04ccf2ea6876e79a8d5dc76bb0e9\", \"source-aec3624cab80255b20f9354dc9cd82c5\", \"source-761ac185dc536ff47f16eb07b55e669a\", \"source-704789ca343f53c76095180aab41d37c\", \"source-d20ba01549dcbd6774176dfe6e67080c\", \"source-5c23cce232d52a7f801e7859c352e393\", \"source-aa2d3569d068684dd3ceea679399b453\", \"source-f79997737ca19e17eb18f33753d5a2ee\", \"source-317cda10a71e3145393316a47e2c70af\", \"source-690c61dd1ee2f714a7d89d64e29fa19c\", \"source-beb985f90575bb9ba28ca89489b71a0e\", \"source-f6cc604451f7f2cb1b87440c3831b7b0\", \"source-4d4cafd3f2507a4b593999a57dcb4e95\", \"source-01a456aa6f20aff115d1a51d383db20a\", \"source-eebeff3ab03e6bfbce9cc62464a11dd6\", \"source-a7f74e2799a765f5ebd068b97edaddc3\", \"source-e9392bc9f347b52799b0d47156a48601\", \"source-9cf506a42bed41d10b945007f1edd19e\", \"source-7f941f4e4eb1e13a33e814e89d16cb20\", \"source-b85e1a8aed86df4cd51e70d445a1a5d6\", \"source-eed148eca4110cfb7ad777b15f8254ee\", \"source-2491d5f9354f65507123c9861cbf8c68\", \"source-adc814864c82db8fd7d82782316aa844\", \"source-ad9e41855bdee94668457c42eeb4553a\", \"source-2da6896667d05ed036e913b78a79de46\", \"source-4c927b2a86d1992a66a7bfb5abd16765\", \"source-9898bc7436ce3bf36a02307bc8a60a8f\", \"source-a4b96768db3f34abcaca01a5f5d09df1\", \"source-97fc07956b0c2d66cda0c6d4af9a41e3\"], \"checked_count\": 757, \"later_candidates\": [], \"selected\": [], \"relationships_created\": 0}}"
+    },
+    {
+      "name": "2 dictionary reads it",
+      "started": 1791994180.3551402,
+      "finished": 1791994180.530807,
+      "note": "outcome yes"
+    },
+    {
+      "name": "3 your phrases found",
+      "started": 1791994180.531403,
+      "finished": 1791994180.726089,
+      "note": "0 of his phrases found"
+    },
+    {
+      "name": "4 nucleus read whole",
+      "started": 1791994180.7501068,
+      "finished": 1791994180.75052,
+      "note": ""
+    },
+    {
+      "name": "5 one model call",
+      "started": 1791994180.750891,
+      "finished": 1791994180.75119,
+      "note": "painted from your links, no model"
+    },
+    {
+      "name": "6 the gate",
+      "started": 1791994180.7515001,
+      "finished": 1791994180.75177,
+      "note": ""
+    },
+    {
+      "name": "7 answer out",
+      "started": 1791994180.752078,
+      "finished": 1791994180.752338,
+      "note": ""
+    }
+  ],
+  "form": {
+    "explanation": "FLOW is the act of using all of your awareness and energy into one activity. And continuing it without constant reminders to continue. You can actually give your full attention to the moment, in the moment.",
+    "answer": "aligned and why",
+    "sections": [
+      {
+        "head": "FLOW",
+        "symbol": "book",
+        "lines": [
+          "“If a process becomes a worry or burden kill it, and think BIGGER!”",
+          "“FLOW is the act of using all of my awareness and energy into one activity. And continuing it without constant reminders to continue. I can actually give my full attention to the moment, in the moment. If a process becomes a worry or burden the smart decision is to kill it, pause, and then think BIGGER!”"
+        ]
+      },
+      {
+        "head": "FLOW depends on",
+        "symbol": "link",
+        "lines": [
+          "“Momentum is Adam's compass: what gives a feeling of momentum is worthwhile, what gives a feeling of stagnation is worth avoiding”"
+        ]
+      },
+      {
+        "head": "FLOW rejects",
+        "symbol": "link",
+        "lines": [
+          "“Anything Adam doesn't understand while working with AI agents is a distraction from the project”"
+        ]
+      },
+      {
+        "head": "FLOW supports",
+        "symbol": "link",
+        "lines": [
+          "“Adam learns by shipping: his full-stack skills came from building personally useful apps, not from courses”"
+        ]
+      },
+      {
+        "head": "FLOW supports",
+        "symbol": "link",
+        "lines": [
+          "“Adam is deliberately narrowing his own role to only the things he is best at, and engineering everything else to be handed off”"
+        ]
+      },
+      {
+        "head": "FLOW supports",
+        "symbol": "link",
+        "lines": [
+          "“My kill switch is almost instant. An hour or two at most, but many times an idea / option for improvement lasts only a few minutes before the mismatch or destructive rather than constructive nature of the choice becomes obvious and is abandoned” — his words”"
+        ]
+      }
+    ],
+    "ask": null
+  },
+  "middle": null,
+  "phrases": [],
+  "answer": {
+    "status": "answered",
+    "answer": "aligned",
+    "text": "aligned and why\n\nFLOW — “If a process becomes a worry or burden kill it, and think BIGGER!”\nFLOW — “FLOW is the act of using all of my awareness and energy into one activity.  And continuing it without constant reminders to continue.  I can actually give my full attention to the moment, in the moment.  If a process becomes a worry or burden the smart decision is to kill it, pause, and then think BIGGER!”\nyou said FLOW\n\n0.90 · 2026-07-10 — FLOW depends on “Momentum is Adam's compass: what gives a feeling of momentum is worthwhile, what gives a feeling of stagnation is worth avoiding”\n\n0.90 · 2026-07-10 — FLOW rejects “Anything Adam doesn't understand while working with AI agents is a distraction from the project”\n\n0.85 · 2026-07-02 — FLOW supports “Adam learns by shipping: his full-stack skills came from building personally useful apps, not from courses”\n\n0.85 · 2026-07-10 — FLOW supports “Adam is deliberately narrowing his own role to only the things he is best at, and engineering everything else to be handed off”\nThis removes competing demands so Adam can place his awareness and energy into one meaningful activity.\n\n0.85 · 2026-07-10 — FLOW supports ““My kill switch is almost instant. An hour or two at most, but many times an idea / option for improvement lasts only a few minutes before the mismatch or destructive rather than constructive nature of the choice becomes obvious and is abandoned” — his words”\nThe immediate abandonment of a destructive mismatch is the kill-switch action inside FLOW.\n\n0.80 · 2026-07-10 — FLOW values “Whatever Adam is working on or jazzed about is what's important”\n\n0.80 · 2026-07-10 — FLOW enables “captures ideas in the moment on his phone, then returns when calm to judge them”\n\n0.80 · 2026-07-10 — FLOW contributes to “For Adam, done is discovered more than achieved — done is the label for what remains after the temptations to pivot, archive, or abandon”\n\n0.80 · 2026-07-10 — FLOW requires ““so I have a clear filter... Done is a confident, clear internal framework of what matters vs what doesn't.  The evidence shows in my behavior and results.  Strong yes or nothing!” — his words, reminders.json”\nThis clear filter protects FLOW by excluding activities that do not command a strong internal yes.\n\n0.75 · 2026-07-02 — FLOW rejects “'Borrowed motivation' is a warning sign Adam acts on: when the drive behind a project isn't his own, he pauses or kills it”\n\n0.75 · 2026-07-10 — FLOW explains “Adam moves forward by default and experiences looking back as friction”\n\n0.75 · 2026-07-02 — FLOW explains “Adam's mood drops hardest when tooling or setup blocks building, and lifts when something ships”\n\n0.70 · 2026-07-10 — FLOW depends on “Adam starts with high energy but knows his discipline fades, so he purposely builds external rules like \"if I can't say I can't play\" and the Five Stop Signs to hold himself to plans”\n\n0.65 · 2026-07-10 — FLOW requires “any change that feels effortful will not be adopted”\n\n0.65 · 2026-07-10 — FLOW depends on “Adam's feelings are the data he is least likely to volunteer — his emotional signal exists but does not surface unless something asks for it”\n\n0.60 · 2026-07-10 — FLOW supports “Adam's decade-stable working pattern is to cast wide, filter fast, and commit to roughly 30% of what survives — and AI raised his research volume without raising that commit rate”\n\n2026-10-10 — FLOW explains ““Then one of those modes again that feels apathetic, but I know it's not apathy.  It's  a familiar feeling. In the past, this sense of being pulled two different directions at the same time happened after I shared progress with others.  These summarizations feel like promises. They're rigid, and slow me down.   I've had some recent breakthroughs with how I defined cowboy AI. Those have been highs, filled with gratitude and wonder. But today I can't seem to get going. I think it's because I'm trying to go the same direction and I slept and wait and woke up to some new connections? Not sure.” — his words”\nRigid promises divide Adam's attention and slow momentum, showing how burden interrupts FLOW.\n\n2026-10-10 — FLOW supports ““yeah like when I looked at my graph, I realized I had some kind of 14 day rule that explained hey if it's not working after 14 days, I need to abandon it I don't pay attention to that shit anymore. I don't pay attention to time as much as I pay attention to how quickly I adapt to something how much momentum I get from it and I'll drop something within a day 14 days is way too long and then I don't have a morning routine like it said I did and the podcast that was created from my knowledge graph on Gemini Notebook so there's a ton of old fucking information but I can't get to it because I can't even get the goddamn thing to work right now. I mean you guys are so fucking retarded when it comes to this.” — his words”\nAdam judges a process by adaptation and momentum and drops it quickly when those signals disappear.\n\n2026-10-10 — FLOW explains ““It is important to feel pulled…interested without an obsessive desire to feel interested.  This is how I would describe a situation where the act of discerning is trigger and creates a change in my behavior that improves my life.  The term I have adopted for the feeling of being pulled is \"FLOW\", popularized by MihalyCsikszentmihaly. When I notice chronic stress, or an overly positive obsessive pattern surfacing I interpret this as a lack of FLOW, the decision is made-- flip the kill switch.  Stop whatever I am doing, and scan which part of the situation pulls, rather than pushes me.  Then the most interesting part of the process happens: I think bigger. So the short version is this,\"If a process becomes a worry or burden kill it, and think BIGGER!\"” — his words”\nThis record directly defines FLOW as being pulled, using the kill switch when stress or obsession appears, and then thinking bigger.\n\n2026-10-10 — FLOW contradicts ““Motivation is back. For some reason I fell in love the idea of constraints. It never.  I mean never created a buzz of curiosity and excitement.  It did however create a deep sense of calm which is why I think it took days to realize the damage.  I wonder what caused me to drift into a limiting pattern like that.” — his words”\nThe constraints produced calm without curiosity or excitement, revealing a limiting state that looked comfortable but lacked FLOW.\n\n2026-10-10 — FLOW supports ““10pm check in. Great day today.  Real progress. A kill switch trigger mid-day.  New agents in Grok Bot built.  Motivation lost and regained.  The Cowboyai app architecture improved and useful when it counts.  My words returned to me by agents held meaning together so building did not stall.  Momentum kept. Progress made.  Social Media ends the day more valuable to me than it began, even though I did not actually post to social media today.  This is the exact type of smart, fearless decision-making that compounds into incredible results.  Thank  you for playing a big role in a big day.” — his words”\nA mid-day kill-switch response restored motivation and preserved momentum instead of allowing the build to stall.\n\n2026-10-10 — FLOW explains ““This really helped. I had not considered how it felt to work on Cowboyai.  It can best be described as \"pulling at me\".  This is classic Polymath syndrome.  I know this will work, but don't know how to articulate it to myself, but it may not have been articulated before.  The latest frontier a.i. models were release within the past week. My aptitudes are oddly similar to the capabilities of a.i. so I sense what is possible.  Working with a.i. every day (not every weekday, but every single day) creates instincts I trust.  I can't create a kill switch because The Adam Pattern is being satisfied, not ignored.  It really doesn't take any discipline to continue what I am doing.  It is interesting.  The problem is a old one, I haven't felt recently.  Self-doubt.  The doubt involved purpose. Discernment. Am i working purely out of curiosity, or is there something more important driving this?  No.  I trust myself, so curiosity is the signal.  Curiosity is the pull.  Curiosity is the standard I hold myself to, and it is being met.  Now without guilt, and with conviction.” — his words”\nBeing pulled by curiosity makes continued work effortless and removes the need for discipline or reminders.\n\n2026-10-10 — FLOW supports ““Working with AI confirms every day that the more I work with it, the smarter I get and how to work with it. It feels like the Adam pattern has completed, and my only job is to let it compound” — his words”\nThe completed pattern allows focused work with AI to continue and compound without rebuilding the reason to continue.\n\n2026-10-10 — FLOW supports ““I’m amazed how I am able to keep my motivation and focus with AI, even when it can sometimes hallucinate.” — his words”\nSustained motivation and focus despite mistakes reflect attention continuing without constant reminders.\n\n2026-10-10 — FLOW co-occurs with ““I feel motivated whenever I work with AI, even though it can often make mistakes.” — his words”\nFLOW co-occurs with the motivation Adam experiences while working with AI despite its mistakes.\n\n2026-10-10 — FLOW explains ““This is weird. I’ve lost my momentum and my motivation, and I know I should think bigger, but I don’t know what to think about” — his words”\nLost momentum triggers the FLOW response to pause and think bigger even when the new direction is not yet visible.\n\n2026-10-10 — FLOW explains ““Exactly.  The mantra I use to remind myself of this is \"Think Bigger\" Here is newly refined defintion of \"Thinking Bigger\": Think broader.  Pattern Recognition. Awareness across different industries, disciplines, and segments of society designed to make sense of what remains confusing, or counterintuitive to close examination.  I lose momentum when I think too much about low-level, hands-on execution. System architecture is an example of higher level thinking. The way to think big while capturing the value of my pattern recognition is to express my viewpoint and connections made to others online via social media.” — his words”\nThinking bigger restores the broader pattern-recognition and system-architecture perspective that supports Adam's momentum.\n\n2026-10-10 — FLOW explains ““Curiosity wins over confidence, so that’s been my real source of speed and momentum. One of the reasons why is because curiosity removes my sense of self in a good way. I don’t forget who I am. I just forget about my worries and concerns and focus on the task at hand, which is a form of flow.” — his words”\nCuriosity removes worry and concentrates Adam's attention on the present task, which he explicitly identifies as a form of flow.\n\n2026-10-10 — FLOW supports ““Missed check-ins are fine, but only two misses over a 2 day period is acceptable.  3 or more missed triggers a kills switch.  That means something was ineffective about the habit challenge, or I had some unanticipated barrier to creating the habit right now and will need to try again. Whatever the situation, once I noticed that I’ve missed enough to trigger the kill switch, I acknowledge what the issue is then and either restart the habit challenge or postpone it until after the emergency or unavoidable situation has passed” — his words”\nRepeated missed check-ins reveal that the process has become ineffective or blocked and trigger a pause, restart, or postponement.\n\n2026-10-10 — FLOW supports ““OK. Everything is set up. and now I will share with you some rambling of how I plan to execute the strategy. so the flow is apple notes, grammatically, Apple notes again, then AI just as a dumping ground, then I go back review it in Apple notes and think of strategy then go back to AI for actual strategic questions, half ignoring the response I get from AI because it will be lost in the details and full of questions that don’t matter, but some of it will be more than redeemable but incredibly fantastic and creative and just helpful to maintain momentum because that is the key to this happening speed and momentum, momentum and speed” — his words”\nThe process assigns each tool a role that filters distracting detail and preserves the speed and momentum needed for sustained attention.\n\n2026-10-10 — FLOW supports ““Questions asked by AI qualifies as a moment that triggers a kill switch.” — his words”\nAI questions interrupt Adam's direction and therefore trigger the kill-switch response within FLOW.\n\n2026-10-10 — FLOW explains ““After hours of letting AI lead I was left with an incoherent result.” — his words”\nLetting AI lead displaced Adam's focused awareness and produced the kind of burdensome process that FLOW says to kill.\n\n2026-10-10 — FLOW supports ““I have neutral moments many times per day that I don't have a plan for how to react.  I want a plan. Done, looks like me knowing what to do, and doing it because the alternative to getting myself back in flow is such a useless alternative.” — his words”\nA prepared response to neutral moments helps Adam return his awareness and energy to FLOW.\n\n2026-10-10 — FLOW rejects ““Specialization is a kill switch for me. Always has been. Always will.” — his words”\nFLOW rejects specialization because Adam identifies it as a condition that immediately activates his kill switch.\n\n2026-10-10 — FLOW depends on ““Curiosity is the fuel. That is the new pattern that’s emerged. For some reason, I had thought that curiosity was a problem, that it was actually causing, I don’t know, doubt other problems, but it is not. It” — his words”\nCuriosity supplies the pull that fuels Adam's continued attention and momentum.\n\n2026-10-10 — FLOW inhibits ““I find it difficult to feel satisfied and motivated at the end of the day. Especially when I look back at my work.” — his words”\nLooking back at completed work shifts Adam from present-moment attention into dissatisfaction and lost motivation.\n\n2026-10-10 — FLOW explains ““It wasn't until I paused to consider why I felt blah that the reason occurred to me.  I did not have strong Yes reason to do what I did today.” — his words”\nThe absence of a strong Yes left the day's activity without the pull needed for FLOW.\n\n2026-10-10 — FLOW is different from ““I had a productive day that ended feeling unfulfilled.” — his words”\nProductive activity can produce output without the absorbed attention and satisfying pull of FLOW.\n\n2026-10-10 — FLOW requires ““When I say that I’m interested in processes that have incredible output for little input, I failed to mention that a small amount of input is an essential ingredient.  It is also nonnegotiable. If something takes a high amount of input and reaps an astronomical amount of output that is still not satisfying.” — his words”\nFLOW requires a process whose input stays small enough that it does not become a burden despite its output.\n\n2026-10-10 — FLOW depends on ““I lose momentum when I think too much about low-level, hands-on execution.  The opposite is also true.  I gain momentum when I think too much about high-level, hands-off execution.” — his words”\nAdam's FLOW depends on high-level hands-off execution because low-level execution drains momentum.\n\n2026-10-10 — FLOW prefers ““I am happy with this step of the system, however something about this feels thin.  I am energized by the thought of architecting a system to create context.” — his words”\nFLOW prefers architecting the larger system because that thought energizes Adam when the current step feels thin.\n\n2026-10-10 — FLOW requires ““Satisfying results, or kill it.” — his words”\nFLOW requires satisfying results and activates the kill switch when the process fails that test.\n\n2026-10-10 — FLOW rejects ““I want to know with a passion that specialization is a kill switch for me.” — his words”\nFLOW rejects specialization because Adam wants its kill-switch status held with certainty.\n\n2026-10-10 — FLOW prevents ““A certain kind of low level frustration and angst disappears” — his words”\nFLOW prevents the low-level frustration and angst that appear when Adam's attention is trapped in burdensome execution.\n\n2026-10-10 — FLOW supports ““I look back on today, knowing I didn’t outwork the problem and enjoy the process” — his words”\nNot trying to outwork the problem allows Adam to preserve attention for an enjoyable process instead of turning it into a burden.\n\n2026-10-10 — FLOW is different from ““Contemplation replaced action which felt like lost momentum…” — his words”\nFLOW is different from contemplation replacing action and producing lost momentum.\n\n2026-10-10 — FLOW is different from ““Sometimes I get mad at how slow things feel.  Like now.  Fuck! Things feel slow.” — his words”\nFLOW is different from the burden and lost momentum Adam experiences when a process feels slow.",
+    "reply_json": "{\"answer\": \"aligned\", \"words\": [{\"word\": \"FLOW\", \"why\": \"you said FLOW\"}], \"records\": [{\"id\": \"conn-obs-fable5-2026-07-10-affect-work-momentum-compass\", \"quote\": \"Momentum is Adam's compass: what gives a feeling of momentum is worthwhile, what gives a feeling of stagnation is worth avoiding\", \"why\": \"\"}, {\"id\": \"conn-obs-fable5-2026-07-10-belief-work-distraction-rule\", \"quote\": \"Anything Adam doesn't understand while working with AI agents is a distraction from the project\", \"why\": \"\"}, {\"id\": \"conn-obs-claude-2026-07-02-learning-work-stated-relationship\", \"quote\": \"Adam learns by shipping: his full-stack skills came from building personally useful apps, not from courses\", \"why\": \"\"}, {\"id\": \"conn-obs-mined-2026-07-10-hardcode-only-what-he-is-best-at\", \"quote\": \"Adam is deliberately narrowing his own role to only the things he is best at, and engineering everything else to be handed off\", \"why\": \"This removes competing demands so Adam can place his awareness and energy into one meaningful activity.\"}, {\"id\": \"cand-hiswords-2026-07-10-instant-kill-switch-two-week-verdict\", \"quote\": \"“My kill switch is almost instant. An hour or two at most, but many times an idea / option for improvement lasts only a few minutes before the mismatch or destructive rather than constructive nature of the choice becomes obvious and is abandoned” — his words\", \"why\": \"The immediate abandonment of a destructive mismatch is the kill-switch action inside FLOW.\"}, {\"id\": \"conn-obs-fable5-2026-07-10-affect-ambition-jazzed-is-important\", \"quote\": \"Whatever Adam is working on or jazzed about is what's important\", \"why\": \"\"}, {\"id\": \"conn-obs-fable5-2026-07-10-affect-insight-capture-then-calm\", \"quote\": \"captures ideas in the moment on his phone, then returns when calm to judge them\", \"why\": \"\"}, {\"id\": \"conn-obs-fable5-2026-07-10-belief-work-done-is-discovered\", \"quote\": \"For Adam, done is discovered more than achieved — done is the label for what remains after the temptations to pivot, archive, or abandon\", \"why\": \"\"}, {\"id\": \"conn-obs-hiswords-2026-07-10-compounding-filter-strong-yes\", \"quote\": \"“so I have a clear filter... Done is a confident, clear internal framework of what matters vs what doesn't.  The evidence shows in my behavior and results.  Strong yes or nothing!” — his words, reminders.json\", \"why\": \"This clear filter protects FLOW by excluding activities that do not command a strong internal yes.\"}, {\"id\": \"conn-obs-claude-2026-07-02-belief-insight-stated-relationship\", \"quote\": \"'Borrowed motivation' is a warning sign Adam acts on: when the drive behind a project isn't his own, he pauses or kills it\", \"why\": \"\"}, {\"id\": \"conn-obs-mined-2026-07-10-forward-wired-review-is-friction\", \"quote\": \"Adam moves forward by default and experiences looking back as friction\", \"why\": \"\"}, {\"id\": \"conn-obs-claude-2026-07-02-affect-work-stated-relationship\", \"quote\": \"Adam's mood drops hardest when tooling or setup blocks building, and lifts when something ships\", \"why\": \"\"}, {\"id\": \"conn-obs-mined-2026-07-10-external-scaffolding-by-design\", \"quote\": \"Adam starts with high energy but knows his discipline fades, so he purposely builds external rules like \\\"if I can't say I can't play\\\" and the Five Stop Signs to hold himself to plans\", \"why\": \"\"}, {\"id\": \"conn-obs-mined-2026-07-10-easy-innocent-changes-stick\", \"quote\": \"any change that feels effortful will not be adopted\", \"why\": \"\"}, {\"id\": \"conn-obs-mined-2026-07-10-affect-is-his-blind-spot\", \"quote\": \"Adam's feelings are the data he is least likely to volunteer — his emotional signal exists but does not surface unless something asks for it\", \"why\": \"\"}, {\"id\": \"conn-obs-mined-2026-07-10-cast-wide-commit-thirty-percent\", \"quote\": \"Adam's decade-stable working pattern is to cast wide, filter fast, and commit to roughly 30% of what survives — and AI raised his research volume without raising that commit rate\", \"why\": \"\"}, {\"id\": \"adam-words-20261010-257d9e3ea6331eb0\", \"quote\": \"“Then one of those modes again that feels apathetic, but I know it's not apathy.  It's  a familiar feeling. In the past, this sense of being pulled two different directions at the same time happened after I shared progress with others.  These summarizations feel like promises. They're rigid, and slow me down.   I've had some recent breakthroughs with how I defined cowboy AI. Those have been highs, filled with gratitude and wonder. But today I can't seem to get going. I think it's because I'm trying to go the same direction and I slept and wait and woke up to some new connections? Not sure.” — his words\", \"why\": \"Rigid promises divide Adam's attention and slow momentum, showing how burden interrupts FLOW.\"}, {\"id\": \"adam-words-20261010-be7c6ed2e434f653\", \"quote\": \"“yeah like when I looked at my graph, I realized I had some kind of 14 day rule that explained hey if it's not working after 14 days, I need to abandon it I don't pay attention to that shit anymore. I don't pay attention to time as much as I pay attention to how quickly I adapt to something how much momentum I get from it and I'll drop something within a day 14 days is way too long and then I don't have a morning routine like it said I did and the podcast that was created from my knowledge graph on Gemini Notebook so there's a ton of old fucking information but I can't get to it because I can't even get the goddamn thing to work right now. I mean you guys are so fucking retarded when it comes to this.” — his words\", \"why\": \"Adam judges a process by adaptation and momentum and drops it quickly when those signals disappear.\"}, {\"id\": \"adam-words-20261010-bd2d1d6e82f616c9\", \"quote\": \"“It is important to feel pulled…interested without an obsessive desire to feel interested.  This is how I would describe a situation where the act of discerning is trigger and creates a change in my behavior that improves my life.  The term I have adopted for the feeling of being pulled is \\\"FLOW\\\", popularized by MihalyCsikszentmihaly. When I notice chronic stress, or an overly positive obsessive pattern surfacing I interpret this as a lack of FLOW, the decision is made-- flip the kill switch.  Stop whatever I am doing, and scan which part of the situation pulls, rather than pushes me.  Then the most interesting part of the process happens: I think bigger. So the short version is this,\\\"If a process becomes a worry or burden kill it, and think BIGGER!\\\"” — his words\", \"why\": \"This record directly defines FLOW as being pulled, using the kill switch when stress or obsession appears, and then thinking bigger.\"}, {\"id\": \"adam-words-20261010-124bab7f123d3b98\", \"quote\": \"“Motivation is back. For some reason I fell in love the idea of constraints. It never.  I mean never created a buzz of curiosity and excitement.  It did however create a deep sense of calm which is why I think it took days to realize the damage.  I wonder what caused me to drift into a limiting pattern like that.” — his words\", \"why\": \"The constraints produced calm without curiosity or excitement, revealing a limiting state that looked comfortable but lacked FLOW.\"}, {\"id\": \"adam-words-20261010-bab6628030057825\", \"quote\": \"“10pm check in. Great day today.  Real progress. A kill switch trigger mid-day.  New agents in Grok Bot built.  Motivation lost and regained.  The Cowboyai app architecture improved and useful when it counts.  My words returned to me by agents held meaning together so building did not stall.  Momentum kept. Progress made.  Social Media ends the day more valuable to me than it began, even though I did not actually post to social media today.  This is the exact type of smart, fearless decision-making that compounds into incredible results.  Thank  you for playing a big role in a big day.” — his words\", \"why\": \"A mid-day kill-switch response restored motivation and preserved momentum instead of allowing the build to stall.\"}, {\"id\": \"adam-words-20261010-ab98c17dd9cdae94\", \"quote\": \"“This really helped. I had not considered how it felt to work on Cowboyai.  It can best be described as \\\"pulling at me\\\".  This is classic Polymath syndrome.  I know this will work, but don't know how to articulate it to myself, but it may not have been articulated before.  The latest frontier a.i. models were release within the past week. My aptitudes are oddly similar to the capabilities of a.i. so I sense what is possible.  Working with a.i. every day (not every weekday, but every single day) creates instincts I trust.  I can't create a kill switch because The Adam Pattern is being satisfied, not ignored.  It really doesn't take any discipline to continue what I am doing.  It is interesting.  The problem is a old one, I haven't felt recently.  Self-doubt.  The doubt involved purpose. Discernment. Am i working purely out of curiosity, or is there something more important driving this?  No.  I trust myself, so curiosity is the signal.  Curiosity is the pull.  Curiosity is the standard I hold myself to, and it is being met.  Now without guilt, and with conviction.” — his words\", \"why\": \"Being pulled by curiosity makes continued work effortless and removes the need for discipline or reminders.\"}, {\"id\": \"adam-words-20261010-85713fb2b0422d42\", \"quote\": \"“Working with AI confirms every day that the more I work with it, the smarter I get and how to work with it. It feels like the Adam pattern has completed, and my only job is to let it compound” — his words\", \"why\": \"The completed pattern allows focused work with AI to continue and compound without rebuilding the reason to continue.\"}, {\"id\": \"adam-words-20261010-72834f2ef02b3565\", \"quote\": \"“I’m amazed how I am able to keep my motivation and focus with AI, even when it can sometimes hallucinate.” — his words\", \"why\": \"Sustained motivation and focus despite mistakes reflect attention continuing without constant reminders.\"}, {\"id\": \"adam-words-20261010-9672c67ef0432c6f\", \"quote\": \"“I feel motivated whenever I work with AI, even though it can often make mistakes.” — his words\", \"why\": \"FLOW co-occurs with the motivation Adam experiences while working with AI despite its mistakes.\"}, {\"id\": \"adam-words-20261010-2dd13b3e6d6fe0c4\", \"quote\": \"“This is weird. I’ve lost my momentum and my motivation, and I know I should think bigger, but I don’t know what to think about” — his words\", \"why\": \"Lost momentum triggers the FLOW response to pause and think bigger even when the new direction is not yet visible.\"}, {\"id\": \"adam-words-20261010-e62354c7998cac68\", \"quote\": \"“Exactly.  The mantra I use to remind myself of this is \\\"Think Bigger\\\" Here is newly refined defintion of \\\"Thinking Bigger\\\": Think broader.  Pattern Recognition. Awareness across different industries, disciplines, and segments of society designed to make sense of what remains confusing, or counterintuitive to close examination.  I lose momentum when I think too much about low-level, hands-on execution. System architecture is an example of higher level thinking. The way to think big while capturing the value of my pattern recognition is to express my viewpoint and connections made to others online via social media.” — his words\", \"why\": \"Thinking bigger restores the broader pattern-recognition and system-architecture perspective that supports Adam's momentum.\"}, {\"id\": \"adam-words-20261010-296f9e542cd84392\", \"quote\": \"“Curiosity wins over confidence, so that’s been my real source of speed and momentum. One of the reasons why is because curiosity removes my sense of self in a good way. I don’t forget who I am. I just forget about my worries and concerns and focus on the task at hand, which is a form of flow.” — his words\", \"why\": \"Curiosity removes worry and concentrates Adam's attention on the present task, which he explicitly identifies as a form of flow.\"}, {\"id\": \"adam-words-20261010-990fdade7ab74916\", \"quote\": \"“Missed check-ins are fine, but only two misses over a 2 day period is acceptable.  3 or more missed triggers a kills switch.  That means something was ineffective about the habit challenge, or I had some unanticipated barrier to creating the habit right now and will need to try again. Whatever the situation, once I noticed that I’ve missed enough to trigger the kill switch, I acknowledge what the issue is then and either restart the habit challenge or postpone it until after the emergency or unavoidable situation has passed” — his words\", \"why\": \"Repeated missed check-ins reveal that the process has become ineffective or blocked and trigger a pause, restart, or postponement.\"}, {\"id\": \"adam-words-20261010-5014c245eead9fda\", \"quote\": \"“OK. Everything is set up. and now I will share with you some rambling of how I plan to execute the strategy. so the flow is apple notes, grammatically, Apple notes again, then AI just as a dumping ground, then I go back review it in Apple notes and think of strategy then go back to AI for actual strategic questions, half ignoring the response I get from AI because it will be lost in the details and full of questions that don’t matter, but some of it will be more than redeemable but incredibly fantastic and creative and just helpful to maintain momentum because that is the key to this happening speed and momentum, momentum and speed” — his words\", \"why\": \"The process assigns each tool a role that filters distracting detail and preserves the speed and momentum needed for sustained attention.\"}, {\"id\": \"adam-words-20261010-6c77ce004896617e\", \"quote\": \"“Questions asked by AI qualifies as a moment that triggers a kill switch.” — his words\", \"why\": \"AI questions interrupt Adam's direction and therefore trigger the kill-switch response within FLOW.\"}, {\"id\": \"adam-words-20261010-a9f0f7e73ac57432\", \"quote\": \"“After hours of letting AI lead I was left with an incoherent result.” — his words\", \"why\": \"Letting AI lead displaced Adam's focused awareness and produced the kind of burdensome process that FLOW says to kill.\"}, {\"id\": \"adam-words-20261010-799b59d68b47e9f1\", \"quote\": \"“I have neutral moments many times per day that I don't have a plan for how to react.  I want a plan. Done, looks like me knowing what to do, and doing it because the alternative to getting myself back in flow is such a useless alternative.” — his words\", \"why\": \"A prepared response to neutral moments helps Adam return his awareness and energy to FLOW.\"}, {\"id\": \"adam-words-20261010-77e19acda9a1f678\", \"quote\": \"“Specialization is a kill switch for me. Always has been. Always will.” — his words\", \"why\": \"FLOW rejects specialization because Adam identifies it as a condition that immediately activates his kill switch.\"}, {\"id\": \"adam-words-20261010-10f6f52726724de4\", \"quote\": \"“Curiosity is the fuel. That is the new pattern that’s emerged. For some reason, I had thought that curiosity was a problem, that it was actually causing, I don’t know, doubt other problems, but it is not. It” — his words\", \"why\": \"Curiosity supplies the pull that fuels Adam's continued attention and momentum.\"}, {\"id\": \"adam-words-20261010-a0f4bf94a50b7a15\", \"quote\": \"“I find it difficult to feel satisfied and motivated at the end of the day. Especially when I look back at my work.” — his words\", \"why\": \"Looking back at completed work shifts Adam from present-moment attention into dissatisfaction and lost motivation.\"}, {\"id\": \"adam-words-20261010-ad383caf2b6a77ae\", \"quote\": \"“It wasn't until I paused to consider why I felt blah that the reason occurred to me.  I did not have strong Yes reason to do what I did today.” — his words\", \"why\": \"The absence of a strong Yes left the day's activity without the pull needed for FLOW.\"}, {\"id\": \"adam-words-20261010-cab4cce71ea39c4f\", \"quote\": \"“I had a productive day that ended feeling unfulfilled.” — his words\", \"why\": \"Productive activity can produce output without the absorbed attention and satisfying pull of FLOW.\"}, {\"id\": \"adam-words-20261010-ac3924d28893abd6\", \"quote\": \"“When I say that I’m interested in processes that have incredible output for little input, I failed to mention that a small amount of input is an essential ingredient.  It is also nonnegotiable. If something takes a high amount of input and reaps an astronomical amount of output that is still not satisfying.” — his words\", \"why\": \"FLOW requires a process whose input stays small enough that it does not become a burden despite its output.\"}, {\"id\": \"adam-words-20261010-9dd7ba38b45fa6f6\", \"quote\": \"“I lose momentum when I think too much about low-level, hands-on execution.  The opposite is also true.  I gain momentum when I think too much about high-level, hands-off execution.” — his words\", \"why\": \"Adam's FLOW depends on high-level hands-off execution because low-level execution drains momentum.\"}, {\"id\": \"adam-words-20261010-dde64eb92ece1cd6\", \"quote\": \"“I am happy with this step of the system, however something about this feels thin.  I am energized by the thought of architecting a system to create context.” — his words\", \"why\": \"FLOW prefers architecting the larger system because that thought energizes Adam when the current step feels thin.\"}, {\"id\": \"adam-words-20261010-7d8a275a40a8aa4e\", \"quote\": \"“Satisfying results, or kill it.” — his words\", \"why\": \"FLOW requires satisfying results and activates the kill switch when the process fails that test.\"}, {\"id\": \"adam-words-20261010-70bd47abc1e69076\", \"quote\": \"“I want to know with a passion that specialization is a kill switch for me.” — his words\", \"why\": \"FLOW rejects specialization because Adam wants its kill-switch status held with certainty.\"}, {\"id\": \"adam-words-20261010-bb44ee394f671eae\", \"quote\": \"“A certain kind of low level frustration and angst disappears” — his words\", \"why\": \"FLOW prevents the low-level frustration and angst that appear when Adam's attention is trapped in burdensome execution.\"}, {\"id\": \"adam-words-20261010-40c06a7f2317e06f\", \"quote\": \"“I look back on today, knowing I didn’t outwork the problem and enjoy the process” — his words\", \"why\": \"Not trying to outwork the problem allows Adam to preserve attention for an enjoyable process instead of turning it into a burden.\"}, {\"id\": \"adam-words-20261010-bdbfc20552b0e962\", \"quote\": \"“Contemplation replaced action which felt like lost momentum…” — his words\", \"why\": \"FLOW is different from contemplation replacing action and producing lost momentum.\"}, {\"id\": \"adam-words-20261010-f8eed812b16d25a5\", \"quote\": \"“Sometimes I get mad at how slow things feel.  Like now.  Fuck! Things feel slow.” — his words\", \"why\": \"FLOW is different from the burden and lost momentum Adam experiences when a process feels slow.\"}], \"possibility\": []}",
+    "gate_ok": 1,
+    "gate_reason": null,
+    "finished": 1791994180.760541
+  },
+  "asked_before": 66,
+  "rows": [
+    {
+      "word": "FLOW",
+      "record": "conn-obs-fable5-2026-07-10-affect-work-momentum-compass",
+      "quote": "Momentum is Adam's compass: what gives a feeling of momentum is worthwhile, what gives a feeling of stagnation is worth avoiding",
+      "kind": "depends on",
+      "thumb": 1,
+      "saved": true
+    },
+    {
+      "word": "FLOW",
+      "record": "conn-obs-fable5-2026-07-10-belief-work-distraction-rule",
+      "quote": "Anything Adam doesn't understand while working with AI agents is a distraction from the project",
+      "kind": "rejects",
+      "thumb": null,
+      "saved": true
+    },
+    {
+      "word": "FLOW",
+      "record": "conn-obs-claude-2026-07-02-learning-work-stated-relationship",
+      "quote": "Adam learns by shipping: his full-stack skills came from building personally useful apps, not from courses",
+      "kind": "supports",
+      "thumb": null,
+      "saved": true
+    },
+    {
+      "word": "FLOW",
+      "record": "conn-obs-mined-2026-07-10-hardcode-only-what-he-is-best-at",
+      "quote": "Adam is deliberately narrowing his own role to only the things he is best at, and engineering everything else to be handed off",
+      "kind": "supports",
+      "thumb": null,
+      "saved": true
+    },
+    {
+      "word": "FLOW",
+      "record": "cand-hiswords-2026-07-10-instant-kill-switch-two-week-verdict",
+      "quote": "“My kill switch is almost instant. An hour or two at most, but many times an idea / option for improvement lasts only a few minutes before the mismatch or destructive rather than constructive nature of the choice becomes obvious and is abandoned” — his words",
+      "kind": "supports",
+      "thumb": null,
+      "saved": true
+    },
+    {
+      "word": "FLOW",
+      "record": "conn-obs-fable5-2026-07-10-affect-ambition-jazzed-is-important",
+      "quote": "Whatever Adam is working on or jazzed about is what's important",
+      "kind": "values",
+      "thumb": null,
+      "saved": true
+    },
+    {
+      "word": "FLOW",
+      "record": "conn-obs-fable5-2026-07-10-affect-insight-capture-then-calm",
+      "quote": "captures ideas in the moment on his phone, then returns when calm to judge them",
+      "kind": "enables",
+      "thumb": null,
+      "saved": true
+    },
+    {
+      "word": "FLOW",
+      "record": "conn-obs-fable5-2026-07-10-belief-work-done-is-discovered",
+      "quote": "For Adam, done is discovered more than achieved — done is the label for what remains after the temptations to pivot, archive, or abandon",
+      "kind": "contributes to",
+      "thumb": null,
+      "saved": true
+    },
+    {
+      "word": "FLOW",
+      "record": "conn-obs-hiswords-2026-07-10-compounding-filter-strong-yes",
+      "quote": "“so I have a clear filter... Done is a confident, clear internal framework of what matters vs what doesn't.  The evidence shows in my behavior and results.  Strong yes or nothing!” — his words, reminders.json",
+      "kind": "requires",
+      "thumb": null,
+      "saved": true
+    },
+    {
+      "word": "FLOW",
+      "record": "conn-obs-claude-2026-07-02-belief-insight-stated-relationship",
+      "quote": "'Borrowed motivation' is a warning sign Adam acts on: when the drive behind a project isn't his own, he pauses or kills it",
+      "kind": "rejects",
+      "thumb": null,
+      "saved": true
+    },
+    {
+      "word": "FLOW",
+      "record": "conn-obs-mined-2026-07-10-forward-wired-review-is-friction",
+      "quote": "Adam moves forward by default and experiences looking back as friction",
+      "kind": "explains",
+      "thumb": null,
+      "saved": true
+    },
+    {
+      "word": "FLOW",
+      "record": "conn-obs-claude-2026-07-02-affect-work-stated-relationship",
+      "quote": "Adam's mood drops hardest when tooling or setup blocks building, and lifts when something ships",
+      "kind": "explains",
+      "thumb": null,
+      "saved": true
+    },
+    {
+      "word": "FLOW",
+      "record": "conn-obs-mined-2026-07-10-external-scaffolding-by-design",
+      "quote": "Adam starts with high energy but knows his discipline fades, so he purposely builds external rules like \"if I can't say I can't play\" and the Five Stop Signs to hold himself to plans",
+      "kind": "depends on",
+      "thumb": null,
+      "saved": true
+    },
+    {
+      "word": "FLOW",
+      "record": "conn-obs-mined-2026-07-10-easy-innocent-changes-stick",
+      "quote": "any change that feels effortful will not be adopted",
+      "kind": "requires",
+      "thumb": null,
+      "saved": true
+    },
+    {
+      "word": "FLOW",
+      "record": "conn-obs-mined-2026-07-10-affect-is-his-blind-spot",
+      "quote": "Adam's feelings are the data he is least likely to volunteer — his emotional signal exists but does not surface unless something asks for it",
+      "kind": "depends on",
+      "thumb": null,
+      "saved": true
+    },
+    {
+      "word": "FLOW",
+      "record": "conn-obs-mined-2026-07-10-cast-wide-commit-thirty-percent",
+      "quote": "Adam's decade-stable working pattern is to cast wide, filter fast, and commit to roughly 30% of what survives — and AI raised his research volume without raising that commit rate",
+      "kind": "supports",
+      "thumb": null,
+      "saved": true
+    },
+    {
+      "word": "FLOW",
+      "record": "adam-words-20261010-257d9e3ea6331eb0",
+      "quote": "“Then one of those modes again that feels apathetic, but I know it's not apathy.  It's  a familiar feeling. In the past, this sense of being pulled two different directions at the same time happened after I shared progress with others.  These summarizations feel like promises. They're rigid, and slow me down.   I've had some recent breakthroughs with how I defined cowboy AI. Those have been highs, filled with gratitude and wonder. But today I can't seem to get going. I think it's because I'm trying to go the same direction and I slept and wait and woke up to some new connections? Not sure.” — his words",
+      "kind": "explains",
+      "thumb": null,
+      "saved": true
+    },
+    {
+      "word": "FLOW",
+      "record": "adam-words-20261010-be7c6ed2e434f653",
+      "quote": "“yeah like when I looked at my graph, I realized I had some kind of 14 day rule that explained hey if it's not working after 14 days, I need to abandon it I don't pay attention to that shit anymore. I don't pay attention to time as much as I pay attention to how quickly I adapt to something how much momentum I get from it and I'll drop something within a day 14 days is way too long and then I don't have a morning routine like it said I did and the podcast that was created from my knowledge graph on Gemini Notebook so there's a ton of old fucking information but I can't get to it because I can't even get the goddamn thing to work right now. I mean you guys are so fucking retarded when it comes to this.” — his words",
+      "kind": "supports",
+      "thumb": null,
+      "saved": true
+    },
+    {
+      "word": "FLOW",
+      "record": "adam-words-20261010-bd2d1d6e82f616c9",
+      "quote": "“It is important to feel pulled…interested without an obsessive desire to feel interested.  This is how I would describe a situation where the act of discerning is trigger and creates a change in my behavior that improves my life.  The term I have adopted for the feeling of being pulled is \"FLOW\", popularized by MihalyCsikszentmihaly. When I notice chronic stress, or an overly positive obsessive pattern surfacing I interpret this as a lack of FLOW, the decision is made-- flip the kill switch.  Stop whatever I am doing, and scan which part of the situation pulls, rather than pushes me.  Then the most interesting part of the process happens: I think bigger. So the short version is this,\"If a process becomes a worry or burden kill it, and think BIGGER!\"” — his words",
+      "kind": "explains",
+      "thumb": null,
+      "saved": true
+    },
+    {
+      "word": "FLOW",
+      "record": "adam-words-20261010-124bab7f123d3b98",
+      "quote": "“Motivation is back. For some reason I fell in love the idea of constraints. It never.  I mean never created a buzz of curiosity and excitement.  It did however create a deep sense of calm which is why I think it took days to realize the damage.  I wonder what caused me to drift into a limiting pattern like that.” — his words",
+      "kind": "contradicts",
+      "thumb": null,
+      "saved": true
+    },
+    {
+      "word": "FLOW",
+      "record": "adam-words-20261010-bab6628030057825",
+      "quote": "“10pm check in. Great day today.  Real progress. A kill switch trigger mid-day.  New agents in Grok Bot built.  Motivation lost and regained.  The Cowboyai app architecture improved and useful when it counts.  My words returned to me by agents held meaning together so building did not stall.  Momentum kept. Progress made.  Social Media ends the day more valuable to me than it began, even though I did not actually post to social media today.  This is the exact type of smart, fearless decision-making that compounds into incredible results.  Thank  you for playing a big role in a big day.” — his words",
+      "kind": "supports",
+      "thumb": null,
+      "saved": true
+    },
+    {
+      "word": "FLOW",
+      "record": "adam-words-20261010-ab98c17dd9cdae94",
+      "quote": "“This really helped. I had not considered how it felt to work on Cowboyai.  It can best be described as \"pulling at me\".  This is classic Polymath syndrome.  I know this will work, but don't know how to articulate it to myself, but it may not have been articulated before.  The latest frontier a.i. models were release within the past week. My aptitudes are oddly similar to the capabilities of a.i. so I sense what is possible.  Working with a.i. every day (not every weekday, but every single day) creates instincts I trust.  I can't create a kill switch because The Adam Pattern is being satisfied, not ignored.  It really doesn't take any discipline to continue what I am doing.  It is interesting.  The problem is a old one, I haven't felt recently.  Self-doubt.  The doubt involved purpose. Discernment. Am i working purely out of curiosity, or is there something more important driving this?  No.  I trust myself, so curiosity is the signal.  Curiosity is the pull.  Curiosity is the standard I hold myself to, and it is being met.  Now without guilt, and with conviction.” — his words",
+      "kind": "explains",
+      "thumb": null,
+      "saved": true
+    },
+    {
+      "word": "FLOW",
+      "record": "adam-words-20261010-85713fb2b0422d42",
+      "quote": "“Working with AI confirms every day that the more I work with it, the smarter I get and how to work with it. It feels like the Adam pattern has completed, and my only job is to let it compound” — his words",
+      "kind": "supports",
+      "thumb": null,
+      "saved": true
+    },
+    {
+      "word": "FLOW",
+      "record": "adam-words-20261010-72834f2ef02b3565",
+      "quote": "“I’m amazed how I am able to keep my motivation and focus with AI, even when it can sometimes hallucinate.” — his words",
+      "kind": "supports",
+      "thumb": null,
+      "saved": true
+    },
+    {
+      "word": "FLOW",
+      "record": "adam-words-20261010-9672c67ef0432c6f",
+      "quote": "“I feel motivated whenever I work with AI, even though it can often make mistakes.” — his words",
+      "kind": "co-occurs with",
+      "thumb": null,
+      "saved": true
+    },
+    {
+      "word": "FLOW",
+      "record": "adam-words-20261010-2dd13b3e6d6fe0c4",
+      "quote": "“This is weird. I’ve lost my momentum and my motivation, and I know I should think bigger, but I don’t know what to think about” — his words",
+      "kind": "explains",
+      "thumb": null,
+      "saved": true
+    },
+    {
+      "word": "FLOW",
+      "record": "adam-words-20261010-e62354c7998cac68",
+      "quote": "“Exactly.  The mantra I use to remind myself of this is \"Think Bigger\" Here is newly refined defintion of \"Thinking Bigger\": Think broader.  Pattern Recognition. Awareness across different industries, disciplines, and segments of society designed to make sense of what remains confusing, or counterintuitive to close examination.  I lose momentum when I think too much about low-level, hands-on execution. System architecture is an example of higher level thinking. The way to think big while capturing the value of my pattern recognition is to express my viewpoint and connections made to others online via social media.” — his words",
+      "kind": "explains",
+      "thumb": null,
+      "saved": true
+    },
+    {
+      "word": "FLOW",
+      "record": "adam-words-20261010-296f9e542cd84392",
+      "quote": "“Curiosity wins over confidence, so that’s been my real source of speed and momentum. One of the reasons why is because curiosity removes my sense of self in a good way. I don’t forget who I am. I just forget about my worries and concerns and focus on the task at hand, which is a form of flow.” — his words",
+      "kind": "explains",
+      "thumb": null,
+      "saved": true
+    },
+    {
+      "word": "FLOW",
+      "record": "adam-words-20261010-990fdade7ab74916",
+      "quote": "“Missed check-ins are fine, but only two misses over a 2 day period is acceptable.  3 or more missed triggers a kills switch.  That means something was ineffective about the habit challenge, or I had some unanticipated barrier to creating the habit right now and will need to try again. Whatever the situation, once I noticed that I’ve missed enough to trigger the kill switch, I acknowledge what the issue is then and either restart the habit challenge or postpone it until after the emergency or unavoidable situation has passed” — his words",
+      "kind": "supports",
+      "thumb": null,
+      "saved": true
+    },
+    {
+      "word": "FLOW",
+      "record": "adam-words-20261010-5014c245eead9fda",
+      "quote": "“OK. Everything is set up. and now I will share with you some rambling of how I plan to execute the strategy. so the flow is apple notes, grammatically, Apple notes again, then AI just as a dumping ground, then I go back review it in Apple notes and think of strategy then go back to AI for actual strategic questions, half ignoring the response I get from AI because it will be lost in the details and full of questions that don’t matter, but some of it will be more than redeemable but incredibly fantastic and creative and just helpful to maintain momentum because that is the key to this happening speed and momentum, momentum and speed” — his words",
+      "kind": "supports",
+      "thumb": null,
+      "saved": true
+    },
+    {
+      "word": "FLOW",
+      "record": "adam-words-20261010-6c77ce004896617e",
+      "quote": "“Questions asked by AI qualifies as a moment that triggers a kill switch.” — his words",
+      "kind": "supports",
+      "thumb": null,
+      "saved": true
+    },
+    {
+      "word": "FLOW",
+      "record": "adam-words-20261010-a9f0f7e73ac57432",
+      "quote": "“After hours of letting AI lead I was left with an incoherent result.” — his words",
+      "kind": "explains",
+      "thumb": null,
+      "saved": true
+    },
+    {
+      "word": "FLOW",
+      "record": "adam-words-20261010-799b59d68b47e9f1",
+      "quote": "“I have neutral moments many times per day that I don't have a plan for how to react.  I want a plan. Done, looks like me knowing what to do, and doing it because the alternative to getting myself back in flow is such a useless alternative.” — his words",
+      "kind": "supports",
+      "thumb": null,
+      "saved": true
+    },
+    {
+      "word": "FLOW",
+      "record": "adam-words-20261010-77e19acda9a1f678",
+      "quote": "“Specialization is a kill switch for me. Always has been. Always will.” — his words",
+      "kind": "rejects",
+      "thumb": null,
+      "saved": true
+    },
+    {
+      "word": "FLOW",
+      "record": "adam-words-20261010-10f6f52726724de4",
+      "quote": "“Curiosity is the fuel. That is the new pattern that’s emerged. For some reason, I had thought that curiosity was a problem, that it was actually causing, I don’t know, doubt other problems, but it is not. It” — his words",
+      "kind": "depends on",
+      "thumb": null,
+      "saved": true
+    },
+    {
+      "word": "FLOW",
+      "record": "adam-words-20261010-a0f4bf94a50b7a15",
+      "quote": "“I find it difficult to feel satisfied and motivated at the end of the day. Especially when I look back at my work.” — his words",
+      "kind": "inhibits",
+      "thumb": null,
+      "saved": true
+    },
+    {
+      "word": "FLOW",
+      "record": "adam-words-20261010-ad383caf2b6a77ae",
+      "quote": "“It wasn't until I paused to consider why I felt blah that the reason occurred to me.  I did not have strong Yes reason to do what I did today.” — his words",
+      "kind": "explains",
+      "thumb": null,
+      "saved": true
+    },
+    {
+      "word": "FLOW",
+      "record": "adam-words-20261010-cab4cce71ea39c4f",
+      "quote": "“I had a productive day that ended feeling unfulfilled.” — his words",
+      "kind": "is different from",
+      "thumb": null,
+      "saved": true
+    },
+    {
+      "word": "FLOW",
+      "record": "adam-words-20261010-ac3924d28893abd6",
+      "quote": "“When I say that I’m interested in processes that have incredible output for little input, I failed to mention that a small amount of input is an essential ingredient.  It is also nonnegotiable. If something takes a high amount of input and reaps an astronomical amount of output that is still not satisfying.” — his words",
+      "kind": "requires",
+      "thumb": null,
+      "saved": true
+    },
+    {
+      "word": "FLOW",
+      "record": "adam-words-20261010-9dd7ba38b45fa6f6",
+      "quote": "“I lose momentum when I think too much about low-level, hands-on execution.  The opposite is also true.  I gain momentum when I think too much about high-level, hands-off execution.” — his words",
+      "kind": "depends on",
+      "thumb": null,
+      "saved": true
+    },
+    {
+      "word": "FLOW",
+      "record": "adam-words-20261010-dde64eb92ece1cd6",
+      "quote": "“I am happy with this step of the system, however something about this feels thin.  I am energized by the thought of architecting a system to create context.” — his words",
+      "kind": "prefers",
+      "thumb": null,
+      "saved": true
+    },
+    {
+      "word": "FLOW",
+      "record": "adam-words-20261010-7d8a275a40a8aa4e",
+      "quote": "“Satisfying results, or kill it.” — his words",
+      "kind": "requires",
+      "thumb": null,
+      "saved": true
+    },
+    {
+      "word": "FLOW",
+      "record": "adam-words-20261010-70bd47abc1e69076",
+      "quote": "“I want to know with a passion that specialization is a kill switch for me.” — his words",
+      "kind": "rejects",
+      "thumb": null,
+      "saved": true
+    },
+    {
+      "word": "FLOW",
+      "record": "adam-words-20261010-bb44ee394f671eae",
+      "quote": "“A certain kind of low level frustration and angst disappears” — his words",
+      "kind": "prevents",
+      "thumb": null,
+      "saved": true
+    },
+    {
+      "word": "FLOW",
+      "record": "adam-words-20261010-40c06a7f2317e06f",
+      "quote": "“I look back on today, knowing I didn’t outwork the problem and enjoy the process” — his words",
+      "kind": "supports",
+      "thumb": null,
+      "saved": true
+    },
+    {
+      "word": "FLOW",
+      "record": "adam-words-20261010-bdbfc20552b0e962",
+      "quote": "“Contemplation replaced action which felt like lost momentum…” — his words",
+      "kind": "is different from",
+      "thumb": null,
+      "saved": true
+    },
+    {
+      "word": "FLOW",
+      "record": "adam-words-20261010-f8eed812b16d25a5",
+      "quote": "“Sometimes I get mad at how slow things feel.  Like now.  Fuck! Things feel slow.” — his words",
+      "kind": "is different from",
+      "thumb": null,
+      "saved": true
+    }
+  ],
+  "explanation": {
+    "status": "shown",
+    "text": "FLOW is the act of using all of your awareness and energy into one activity. And continuing it without constant reminders to continue. You can actually give your full attention to the moment, in the moment.",
+    "reason": null,
+    "provider": "code",
+    "model": "narrative",
+    "started": 1791994180.751876,
+    "finished": 1791994180.7527401,
+    "thumb": null
+  },
+  "more": [],
+  "options": []
+}

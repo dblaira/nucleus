@@ -101,6 +101,10 @@ final class SavyFlowTests: XCTestCase {
         let explanation = app.staticTexts["form-explanation"]
         XCTAssertTrue(explanation.waitForExistence(timeout: 30), app.debugDescription)
         XCTAssertFalse(explanation.label.isEmpty)
+        XCTAssertTrue(explanation.label.contains("DELEGATION"))
+        XCTAssertTrue(explanation.label.contains("FLOW"))
+        XCTAssertFalse(explanation.label.contains("summarize what we did hear"))
+        XCTAssertFalse(explanation.label.contains("Any future addition to Apple Notes"))
         XCTAssertEqual(app.staticTexts["live-answer-question"].label, question)
         screenshot("Actual answer to Adams How-To example", app: app)
         let word = app.buttons["live-meaning-FLOW"]
