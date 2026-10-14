@@ -36,6 +36,13 @@ Read this file, then `README.md`, then `AGENTS.md` in the Cowboyai repo for the 
 
 Tests: `.venv/bin/python -m pytest` — 108 pass.
 
+## 2026-10-14 — the daily grade note to Apple Notes is OFF
+
+Adam, 2026-10-14, on the "nucleus grade" notes: "Find out where this is coming from and stop the nightly feed." "They are
+being sent to my apple notes." Source: `launchd/com.nucleus.grade.plist` (06:30) → `nucleus/grade.py` → a new Apple
+Note "nucleus grade" every day. The job is booted out and its plist is `~/Library/LaunchAgents/com.nucleus.grade.plist.disabled-20261014`.
+The grade code stays; nothing writes to his Notes now. The notes already in his Notes are his to delete.
+
 ## 2026-10-07 — what Cowboy AI is for, in his words (governs the day lane, the night lane, and the morning)
 
 Adam, verbatim: "Cowboyai should return a response immediately. The idea is that it improves over night.  Then offers more
