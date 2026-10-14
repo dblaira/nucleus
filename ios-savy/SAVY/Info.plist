@@ -40,7 +40,7 @@
 		<true/>
 	</dict>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>CowboyAI lets you attach chosen images to native entries.</string>
+	<string>CowboyAI lets you choose photos for page backgrounds and attach chosen images to entries.</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>BodoniModa-Regular.ttf</string>

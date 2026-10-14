@@ -1,4 +1,5 @@
 import Combine
+import PhotosUI
 import SwiftUI
 
 enum RootHomeLayout {
@@ -72,6 +73,7 @@ struct RootView: View {
     let onSignOut: (() -> Void)?
     @State private var cowboyModel: AskModel
     @StateObject private var navigationState: SavyNavigationState
+    @StateObject private var pageBackgrounds = PageBackgroundStore()
     @StateObject private var leverageStore = LeverageDataStore()
     @StateObject private var metadataStore = MetadataEntryStore.live()
     @StateObject private var reminderStore: ReminderStore
@@ -84,6 +86,10 @@ struct RootView: View {
     @State private var isPostsPresented = false
     @State private var opensPostsAfterComposer = false
     @State private var recoveringDraft: EntryRecoveryDraft?
+    @State private var selectedBackgroundPhoto: PhotosPickerItem?
+    @State private var backgroundPhotoTarget: SavyNavigationSection = .now
+    @State private var isBackgroundPhotoPickerPresented = false
+    @State private var backgroundPhotoError: String?
     private let syncsWithCloud: Bool
 
     init(
@@ -210,7 +216,9 @@ struct RootView: View {
                             onSignOut: onSignOut,
                             onOpenPersonalAuthorityReview: {
                                 isPersonalAuthorityReviewPresented = true
-                            }
+                            },
+                            onChooseBackground: { chooseBackgroundPhoto() },
+                            onUseNavyBackground: { useNavyBackground() }
                         )
                     case .reminders:
                         SavyReminderKindTabScreen(kind: .reminder)
@@ -268,6 +276,32 @@ struct RootView: View {
             }
             .fullScreenCover(isPresented: $isPersonalAuthorityReviewPresented) {
                 PersonalAuthorityReviewView()
+            }
+            .photosPicker(isPresented: $isBackgroundPhotoPickerPresented,
+                          selection: $selectedBackgroundPhoto,
+                          matching: .images)
+            .onChange(of: selectedBackgroundPhoto) { _, photo in
+                guard let photo else { return }
+                let target = backgroundPhotoTarget
+                Task {
+                    do {
+                        guard let data = try await photo.loadTransferable(type: Data.self) else {
+                            throw PageBackgroundStore.ImportError.invalidImage
+                        }
+                        try pageBackgrounds.save(data, for: target)
+                    } catch {
+                        backgroundPhotoError = "That photo could not be used. Choose another photo."
+                    }
+                    selectedBackgroundPhoto = nil
+                }
+            }
+            .alert("Background photo", isPresented: Binding(
+                get: { backgroundPhotoError != nil },
+                set: { if !$0 { backgroundPhotoError = nil } }
+            )) {
+                Button("OK") { backgroundPhotoError = nil }
+            } message: {
+                Text(backgroundPhotoError ?? "")
             }
             .navigationDestination(isPresented: $isPostsPresented) {
                 // Posts live on the Social Media Posts page.
@@ -329,6 +363,21 @@ struct RootView: View {
         }
         .environment(cowboyModel.archive)
         .environmentObject(reminderStore)
+        .environmentObject(pageBackgrounds)
+    }
+
+    private func chooseBackgroundPhoto() {
+        backgroundPhotoTarget = navigationState.activeSection
+        selectedBackgroundPhoto = nil
+        isBackgroundPhotoPickerPresented = true
+    }
+
+    private func useNavyBackground() {
+        do {
+            try pageBackgrounds.useNavy(for: navigationState.activeSection)
+        } catch {
+            backgroundPhotoError = "The background could not be reset. Try again."
+        }
     }
 
     /// Routes the radial "+" menu to the shared Re_Call-style entry form, backed by the
@@ -392,6 +441,8 @@ struct RootView: View {
                     onOpenPersonalAuthorityReview: {
                         isPersonalAuthorityReviewPresented = true
                     },
+                    onChooseBackground: { chooseBackgroundPhoto() },
+                    onUseNavyBackground: { useNavyBackground() },
                     appearance: .onDarkHero
                 )
             }
@@ -411,6 +462,7 @@ private struct IsolatedUITestCandidateClient: CowboyCandidateSubmitting {
 
 struct EditorialHomeView: View {
     let model: AskModel
+    @EnvironmentObject private var pageBackgrounds: PageBackgroundStore
     @State private var selectedResponse: ConversationOrigin?
     @ObservedObject var leverageStore: LeverageDataStore
     @ObservedObject var reminderStore: ReminderStore
@@ -420,6 +472,8 @@ struct EditorialHomeView: View {
     @ObservedObject var connectionStore: ConnectionStore
     let onSignOut: (() -> Void)?
     let onOpenPersonalAuthorityReview: () -> Void
+    let onChooseBackground: () -> Void
+    let onUseNavyBackground: (() -> Void)?
     @State private var editingReminder: Reminder?
     @StateObject private var sectionPinStore = HomeSectionPinStore()
     @State private var armedHomeCardID: String?
@@ -462,22 +516,11 @@ struct EditorialHomeView: View {
                         alignment: .top
                     )
                     .background {
-                        GeometryReader { landscape in
-                            Image("HomeMountainLandscape")
-                                .resizable()
-                                .scaledToFill()
-                                .frame(
-                                    width: landscape.size.width,
-                                    height: proxy.size.height + proxy.safeAreaInsets.top
-                                )
-                                .clipped()
-                                // Keep the crop independent of saved card count. Once the
-                                // header scrolls away, the landscape stays behind the cards.
-                                .offset(y: max(0, -landscape.frame(in: .named("homeLandscapeScroll")).minY))
-                        }
-                        .clipped()
-                        .allowsHitTesting(false)
-                        .accessibilityHidden(true)
+                        SavyStickyPageBackground(
+                            image: pageBackgrounds.image(for: .now),
+                            viewportHeight: proxy.size.height + proxy.safeAreaInsets.top,
+                            coordinateSpace: "homeLandscapeScroll"
+                        )
                     }
                 }
             }
@@ -579,7 +622,9 @@ struct EditorialHomeView: View {
 
             SavyAccountMenuButton(
                 onSignOut: onSignOut,
-                onOpenPersonalAuthorityReview: onOpenPersonalAuthorityReview
+                onOpenPersonalAuthorityReview: onOpenPersonalAuthorityReview,
+                onChooseBackground: onChooseBackground,
+                onUseNavyBackground: onUseNavyBackground
             )
                 .padding(.top, RootHomeLayout.accountMenuHeroWordmarkOffset)
         }

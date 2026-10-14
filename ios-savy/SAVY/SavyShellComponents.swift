@@ -1,6 +1,49 @@
 import SwiftUI
 import UIKit
 
+/// SAVY's page-photo layer, with the established deep navy when no photo is chosen.
+struct SavyPageBackground: View {
+    let image: UIImage?
+
+    var body: some View {
+        GeometryReader { area in
+            ZStack {
+                SavyTheme.deepNavy
+                if let image {
+                    Image(uiImage: image)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: area.size.width, height: area.size.height)
+                        .clipped()
+                    Color.black.opacity(0.16)
+                }
+            }
+            .frame(width: area.size.width, height: area.size.height)
+            .clipped()
+        }
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
+    }
+}
+
+/// Keeps a page photo behind the visible cards while the page scrolls.
+struct SavyStickyPageBackground: View {
+    let image: UIImage?
+    let viewportHeight: CGFloat
+    let coordinateSpace: String
+
+    var body: some View {
+        GeometryReader { area in
+            SavyPageBackground(image: image)
+                .frame(width: area.size.width, height: viewportHeight)
+                .offset(y: max(0, -area.frame(in: .named(coordinateSpace)).minY))
+        }
+        .clipped()
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
+    }
+}
+
 extension View {
     /// The white canvas travels with the header. Navy behind the ScrollView is exposed
     /// only above it during a pull. Extend white below the content for bottom bounce.
@@ -150,10 +193,32 @@ enum SavyAccountMenuAppearance {
 struct SavyAccountMenuButton: View {
     var onSignOut: (() -> Void)?
     var onOpenPersonalAuthorityReview: (() -> Void)?
+    var onChooseBackground: (() -> Void)?
+    var onUseNavyBackground: (() -> Void)?
     var appearance: SavyAccountMenuAppearance = .onDarkHero
 
     var body: some View {
         Menu {
+            if let onChooseBackground {
+                Button {
+                    onChooseBackground()
+                } label: {
+                    Label("Choose background photo", systemImage: "photo")
+                }
+            }
+
+            if let onUseNavyBackground {
+                Button {
+                    onUseNavyBackground()
+                } label: {
+                    Label("Use navy background", systemImage: "paintpalette")
+                }
+            }
+
+            if onChooseBackground != nil || onUseNavyBackground != nil {
+                Divider()
+            }
+
             if let onOpenPersonalAuthorityReview {
                 Button {
                     onOpenPersonalAuthorityReview()
@@ -186,7 +251,7 @@ struct SavyAccountMenuButton: View {
                 )
         }
         .buttonStyle(.plain)
-        .accessibilityLabel("SAVY menu")
+        .accessibilityLabel("CowboyAI menu")
     }
 
     private var iconColor: Color {

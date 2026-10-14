@@ -5,6 +5,7 @@ import SwiftUI
 /// "now" line, and an all-day row. Backed by the real store.
 struct CalendarView: View {
     @EnvironmentObject var store: ReminderStore
+    @EnvironmentObject private var pageBackgrounds: PageBackgroundStore
     var onOpen: (Reminder) -> Void = { _ in }
 
     @State private var month: Date = Date()      // any date inside the displayed month
@@ -33,8 +34,18 @@ struct CalendarView: View {
                         .padding(.top, 16)
                         .padding(.bottom, 150)
                     }
-                    .savyHeaderPageContent(minHeight: viewport.size.height + viewport.safeAreaInsets.top)
+                    .frame(maxWidth: .infinity,
+                           minHeight: viewport.size.height + viewport.safeAreaInsets.top,
+                           alignment: .top)
+                    .background {
+                        SavyStickyPageBackground(
+                            image: pageBackgrounds.image(for: .calendar),
+                            viewportHeight: viewport.size.height + viewport.safeAreaInsets.top,
+                            coordinateSpace: "calendarBackgroundScroll"
+                        )
+                    }
                 }
+                .coordinateSpace(name: "calendarBackgroundScroll")
                 .savyHeaderOverscrollCapture("calendar")
                 .background(SavyTheme.pageBackground.ignoresSafeArea())
                 .ignoresSafeArea(edges: .top)
@@ -197,9 +208,11 @@ struct CalendarView: View {
     private var dayHeader: some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(cal.isDateInToday(selected) ? "Today" : selected.formatted(.dateTime.weekday(.wide)))
-                .font(.system(size: 22, weight: .heavy)).foregroundStyle(SavyTheme.deepNavy)
+                .font(.system(size: 22, weight: .heavy)).foregroundStyle(.white)
+                .shadow(color: .black.opacity(0.7), radius: 2, y: 1)
             Text(selected.formatted(.dateTime.weekday(.abbreviated).month(.abbreviated).day()))
-                .font(.system(size: 16, weight: .heavy)).foregroundStyle(SavyTheme.deepNavy.opacity(0.72))
+                .font(.system(size: 16, weight: .heavy)).foregroundStyle(.white.opacity(0.9))
+                .shadow(color: .black.opacity(0.7), radius: 2, y: 1)
                 .multilineTextAlignment(.leading)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
@@ -212,7 +225,8 @@ struct CalendarView: View {
             HStack(alignment: .top, spacing: 8) {
                 Text("all-day")
                     .font(.system(size: 13, weight: .heavy))
-                    .foregroundStyle(SavyTheme.deepNavy.opacity(0.72))
+                    .foregroundStyle(.white)
+                    .shadow(color: .black.opacity(0.7), radius: 2, y: 1)
                     .frame(width: 52, alignment: .trailing)
                 VStack(spacing: 6) {
                     ForEach(items) { reminder in
@@ -233,11 +247,12 @@ struct CalendarView: View {
                     HStack(alignment: .top, spacing: 8) {
                         Text(Self.hourFmt.string(from: dateAtHour(h)))
                             .font(.system(size: 13, weight: .semibold))
-                            .foregroundStyle(SavyTheme.deepNavy.opacity(0.7))
+                            .foregroundStyle(.white)
+                            .shadow(color: .black.opacity(0.7), radius: 2, y: 1)
                             .frame(width: 52, alignment: .trailing)
                             .offset(y: -6)
                         VStack(spacing: 0) {
-                            Rectangle().fill(SavyTheme.deepNavy.opacity(0.2)).frame(height: 1)
+                            Rectangle().fill(Color.white.opacity(0.45)).frame(height: 1)
                             Spacer(minLength: 0)
                         }
                     }

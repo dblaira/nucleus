@@ -1,4 +1,5 @@
 import XCTest
+import UIKit
 @testable import SAVY
 
 final class CowboyFoundationTests: XCTestCase {
@@ -7,6 +8,28 @@ final class CowboyFoundationTests: XCTestCase {
         try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
         addTeardownBlock { try? FileManager.default.removeItem(at: url) }
         return url
+    }
+
+    @MainActor func testPageBackgroundsStaySeparateAndBadImportKeepsThePhoto() throws {
+        let folder = try directory()
+        let image = UIGraphicsImageRenderer(size: CGSize(width: 20, height: 20)).image { context in
+            UIColor.systemBlue.setFill()
+            context.fill(CGRect(x: 0, y: 0, width: 20, height: 20))
+        }
+        let photo = try XCTUnwrap(image.jpegData(compressionQuality: 1))
+        let backgrounds = PageBackgroundStore(directory: folder)
+        try backgrounds.save(photo, for: .now)
+        try backgrounds.save(photo, for: .calendar)
+        let homeFile = folder.appendingPathComponent("now.jpg")
+        let original = try Data(contentsOf: homeFile)
+        XCTAssertThrowsError(try backgrounds.save(Data("invalid image".utf8), for: .now))
+        XCTAssertEqual(try Data(contentsOf: homeFile), original)
+        try backgrounds.useNavy(for: .calendar)
+        let reloaded = PageBackgroundStore(directory: folder)
+        XCTAssertNotNil(reloaded.image(for: .now))
+        XCTAssertNil(reloaded.image(for: .calendar))
+        XCTAssertNil(reloaded.image(for: .actions))
+        XCTAssertNil(reloaded.image(for: .reminders))
     }
 
     private func response(_ id: String = "one", text: String = "Exact response.\nSecond line!") throws -> AskResponse {

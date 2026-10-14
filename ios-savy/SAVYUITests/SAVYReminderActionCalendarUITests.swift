@@ -273,8 +273,8 @@ final class SAVYReminderActionCalendarUITests: XCTestCase {
     }
 
     private func openPersonalAuthorityReview() {
-        let menu = app.buttons["SAVY menu"].firstMatch
-        XCTAssertTrue(menu.waitForExistence(timeout: 20), "SAVY menu missing")
+        let menu = app.buttons["CowboyAI menu"].firstMatch
+        XCTAssertTrue(menu.waitForExistence(timeout: 20), "CowboyAI menu missing")
         menu.tap()
 
         let teachCowboyAI = app.buttons["Teach Cowboy AI"].firstMatch
@@ -361,7 +361,7 @@ final class SAVYReminderActionCalendarUITests: XCTestCase {
         // into view before separately photographing the timeline through its Today control.
         for _ in 0..<8 where !todayButton.isHittable { calendarScroll.swipeDown() }
         captureSettledPage("visual-calendar-header-and-month", anchor: todayButton)
-        XCTAssertFalse(app.buttons["Next month"].frame.intersects(app.buttons["SAVY menu"].frame),
+        XCTAssertFalse(app.buttons["Next month"].frame.intersects(app.buttons["CowboyAI menu"].frame),
                        "The account menu overlaps the next-month control")
         todayButton.tap()
         let hour = max(0, Calendar.current.component(.hour, from: Date()) - 1)

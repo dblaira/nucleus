@@ -36,6 +36,36 @@ final class CowboyFoundationUITests: XCTestCase {
         }
     }
 
+    func testMainPageBackgroundPhotoPicker() {
+        launch()
+        for page in ["Now", "Actions", "Calendar", "Reminders"] {
+            app.buttons[page].tap()
+            let menu = app.buttons["CowboyAI menu"]
+            XCTAssertTrue(menu.waitForExistence(timeout: 5), "Missing menu on \(page)")
+            menu.tap()
+            XCTAssertTrue(app.buttons["Use navy background"].waitForExistence(timeout: 3))
+            app.buttons["Use navy background"].tap()
+            attach("\(page) with navy background")
+
+            menu.tap()
+            XCTAssertTrue(app.buttons["Choose background photo"].waitForExistence(timeout: 3))
+            app.buttons["Choose background photo"].tap()
+            let photo = app.images.matching(identifier: "PXGGridLayout-Info").firstMatch
+            XCTAssertTrue(photo.waitForExistence(timeout: 10), "Photo picker did not load on \(page)")
+            photo.tap()
+            XCTAssertTrue(menu.waitForExistence(timeout: 10))
+            XCTAssertTrue(menu.isHittable)
+            attach("\(page) with a chosen background photo")
+        }
+
+        app.terminate()
+        launch(reset: false)
+        for page in ["Now", "Actions", "Calendar", "Reminders"] {
+            app.buttons[page].tap()
+            attach("\(page) background after relaunch")
+        }
+    }
+
     func testRightSwipePinsMultipleResponsesAndUnpinKeepsTheOthersAfterRelaunch() {
         launch()
         XCTAssertFalse(app.staticTexts["Recent responses"].exists)

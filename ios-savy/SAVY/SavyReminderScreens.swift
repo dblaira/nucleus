@@ -30,6 +30,7 @@ struct SavyReminderKindTabScreen: View {
     let kind: ReminderKind
 
     @EnvironmentObject private var store: ReminderStore
+    @EnvironmentObject private var pageBackgrounds: PageBackgroundStore
     @State private var editing: Reminder?
     @State private var armedReorderId: String?
     @State private var isCompletedExpanded = false
@@ -88,32 +89,11 @@ struct SavyReminderKindTabScreen: View {
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
                 .background {
-                    GeometryReader { landscape in
-                        if kind == .action {
-                            actionsLandscape(
-                                width: landscape.size.width,
-                                contentTop: landscape.frame(in: .named("remindersLandscapeScroll")).minY,
-                                viewportHeight: viewportHeight
-                            )
-                        } else {
-                            Image("RemindersBeachLandscape")
-                                .resizable()
-                                .scaledToFill()
-                                // Bias this 4:3 photo toward the cliff without losing the ocean.
-                                .offset(x: -max(0, viewportHeight * 4 / 3 - landscape.size.width) * 0.15)
-                                .frame(
-                                    width: landscape.size.width,
-                                    height: viewportHeight
-                                )
-                                .clipped()
-                                // Preserve the cliff in a portrait crop, independent of card count.
-                                // Like Home, keep the scene behind cards once the hero scrolls away.
-                                .offset(y: max(0, -landscape.frame(in: .named("remindersLandscapeScroll")).minY))
-                        }
-                    }
-                    .clipped()
-                    .allowsHitTesting(false)
-                    .accessibilityHidden(true)
+                    SavyStickyPageBackground(
+                        image: pageBackgrounds.image(for: kind == .action ? .actions : .reminders),
+                        viewportHeight: viewportHeight,
+                        coordinateSpace: "remindersLandscapeScroll"
+                    )
                 }
             }
             .frame(maxWidth: .infinity, minHeight: viewportHeight, alignment: .top)
@@ -126,28 +106,6 @@ struct SavyReminderKindTabScreen: View {
             }
             .savyHeaderPageContent(minHeight: viewportHeight)
         }
-    }
-
-    private func actionsLandscape(width: CGFloat, contentTop: CGFloat, viewportHeight: CGFloat) -> some View {
-        let sky = Color(red: 0.52, green: 0.70, blue: 0.83)
-        let visibleHeight = max(0, viewportHeight - max(0, contentTop))
-
-        return ZStack(alignment: .bottom) {
-            sky
-            Image("ActionsCarLandscape")
-                .resizable()
-                .scaledToFit()
-                .frame(width: width, height: width * 480 / 959)
-                .overlay(alignment: .top) {
-                    LinearGradient(colors: [sky, sky.opacity(0)], startPoint: .top, endPoint: .bottom)
-                        .frame(height: 44)
-                }
-                // Keep the complete photograph above the existing navy navigation band.
-                .padding(.bottom, RootHomeLayout.bottomNavNavyRiserHeight + 8)
-        }
-        .frame(width: width, height: visibleHeight)
-        // Keep the photo in the visible viewport even when the Actions list is long.
-        .offset(y: max(0, -contentTop))
     }
 
     private var hero: some View {
@@ -167,7 +125,7 @@ struct SavyReminderKindTabScreen: View {
                 Spacer()
                 Text("\(activeItems.count)")
                     .font(.system(size: 14, weight: .heavy))
-                    .foregroundStyle(SavyTheme.deepNavy.opacity(kind == .reminder ? 1 : 0.65))
+                    .foregroundStyle(.white.opacity(0.82))
             }
 
             if activeItems.isEmpty {
@@ -217,7 +175,7 @@ struct SavyReminderKindTabScreen: View {
                             .font(.system(size: 13, weight: .heavy))
                             .textCase(.uppercase)
                             .tracking(1.5)
-                            .foregroundStyle(SavyTheme.deepNavy)
+                            .foregroundStyle(.white)
                         Text("\(completedItems.count)")
                             .font(.system(size: 12, weight: .heavy))
                             .foregroundStyle(SavyTheme.crimson)
