@@ -36,6 +36,37 @@ final class CowboyFoundationUITests: XCTestCase {
         }
     }
 
+    func testImportedHistoryOpensAndReopensWithoutNetworkOrFixtures() {
+        continueAfterFailure = false
+        app = XCUIApplication()
+        // Testing mode skips network loading and opening; the separate flag imports real saved history.
+        app.launchArguments = ["SAVY_UI_TEST_UNLOCKED", "COWBOYAI_UI_TEST", "COWBOYAI_UI_TEST_IMPORTED_HISTORY", "COWBOYAI_UI_TEST_RESET"]
+        app.launchEnvironment["COWBOYAI_UI_TEST_BASE_URL"] = "http://100.111.154.126:8766"
+        app.launch()
+        let card = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "latest-")).firstMatch
+        XCTAssertTrue(card.waitForExistence(timeout: 30), app.debugDescription)
+        XCTAssertFalse(card.identifier.contains("ui-source"))
+        let identifier = card.identifier
+        attach("Real saved conversations available offline")
+        card.tap()
+        let question = app.staticTexts["live-answer-question"]
+        XCTAssertTrue(question.waitForExistence(timeout: 10), app.debugDescription)
+        let exactQuestion = question.label
+        XCTAssertFalse(exactQuestion.isEmpty)
+        XCTAssertFalse(app.staticTexts["live-answer-error"].exists)
+        attach("Original question and response opened offline")
+        app.terminate()
+        app.launchArguments.removeAll { $0 == "COWBOYAI_UI_TEST_RESET" }
+        app.launch()
+        let saved = app.buttons[identifier].firstMatch
+        XCTAssertTrue(saved.waitForExistence(timeout: 30))
+        saved.tap()
+        XCTAssertTrue(question.waitForExistence(timeout: 10))
+        XCTAssertEqual(question.label, exactQuestion)
+        XCTAssertFalse(app.staticTexts["live-answer-error"].exists)
+        attach("Same original response after offline relaunch")
+    }
+
     func testMainPageBackgroundPhotoPicker() {
         launch()
         for page in ["Now", "Actions", "Calendar", "Reminders"] {

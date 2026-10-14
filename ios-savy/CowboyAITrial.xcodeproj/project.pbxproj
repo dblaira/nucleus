@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		C01420261014A00000000001 /* CowboyAIHistory.json in Resources */ = {isa = PBXBuildFile; fileRef = C01420261014A00000000002 /* CowboyAIHistory.json */; };
 		0013C3C934AE8300926F4AAD /* ReminderFormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2939854795FA7060062F163A /* ReminderFormView.swift */; };
 		018573D4213EAB8EFE0729EC /* SavyScreenCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3780B1418050BE25B13A430 /* SavyScreenCapture.swift */; };
 		02D2000A816E7E7B18651C71 /* LocalImageStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07DF5A23D6AF71680F3CF505 /* LocalImageStore.swift */; };
@@ -124,6 +125,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		C01420261014A00000000002 /* CowboyAIHistory.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = CowboyAIHistory.json; sourceTree = "<group>"; };
 		00F568FF56B82318E5635543 /* SavyLocationProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavyLocationProvider.swift; sourceTree = "<group>"; };
 		01F615D92EE9BA15541E2989 /* AskModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AskModel.swift; sourceTree = "<group>"; };
 		038DBA69CB81F5927A89383C /* LiveAnswerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveAnswerView.swift; sourceTree = "<group>"; };
@@ -283,6 +285,7 @@
 		1E42343758BB3A8FF36557FE /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				C01420261014A00000000002 /* CowboyAIHistory.json */,
 				CA01943CCDE7B8067FFD33B2 /* PersonalAuthorityCandidates.json */,
 			);
 			path = Resources;
@@ -511,6 +514,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C01420261014A00000000001 /* CowboyAIHistory.json in Resources */,
 				728C395C8A6575991F5136F4 /* Assets.xcassets in Resources */,
 				5B714A3759DE905D6C79C1C1 /* BodoniModa-Regular.ttf in Resources */,
 				89DFFF95BEC0C26F046A5E8B /* PersonalAuthorityCandidates.json in Resources */,

@@ -50,6 +50,79 @@ final class CowboyFoundationTests: XCTestCase {
         }
     }
 
+    @MainActor func testHistoryImportPreservesExistingWritingPinsAndExactResponseBytes() throws {
+        let file = try directory().appendingPathComponent("archive.json")
+        let source = URL(string: "http://100.111.154.126:8766")!
+        let archive = ConversationArchive(fileURL: file)
+        let original = try XCTUnwrap(archive.capture(response("one", text: "My newer saved answer."), source: source))
+        XCTAssertTrue(archive.togglePin(original))
+        var metadata = archive.metadata(for: original)
+        metadata.notes = "Keep my exact writing.\nAnd this line."
+        XCTAssertTrue(archive.saveMetadata(metadata, for: original))
+        let before = try XCTUnwrap(archive.record(questionID: "one", source: source))
+        let older = try ConversationOrigin.capture(response("one", text: "Earlier answer."), source: source)
+        let raw = Data(#"{"question":{"id":"two","question":"Exact earlier question."},"steps":[],"phrases":[],"answer":{"status":"answered","text":"Complete earlier answer."},"original_trace":{"keep":"every byte"}}"#.utf8)
+        var fetched = try JSONDecoder().decode(AskResponse.self, from: raw)
+        fetched.originalJSON = raw
+        XCTAssertEqual(try ConversationOrigin.capture(fetched, source: source).responseJSON, raw,
+                       "Opening an online answer must retain fields the screen does not render")
+        let second = ConversationOrigin(source: "http://127.0.0.1:8766", questionID: "two",
+                                        question: "Exact earlier question.", responseJSON: raw,
+                                        capturedAt: Date(timeIntervalSince1970: 1_700_000_000))
+        let imported = try JSONEncoder().encode([ArchivedConversation(latest: older), ArchivedConversation(latest: second)])
+        XCTAssertTrue(archive.importHistory(imported, source: source))
+        XCTAssertEqual(archive.record(questionID: "one", source: source), before)
+        XCTAssertEqual(archive.record(questionID: "two", source: source)?.latest.responseJSON, raw)
+        let savedBytes = try Data(contentsOf: file)
+        XCTAssertTrue(archive.importHistory(imported, source: source))
+        XCTAssertEqual(try Data(contentsOf: file), savedBytes, "Repeating the import must not rewrite the archive")
+        let reloaded = ConversationArchive(fileURL: file)
+        XCTAssertEqual(reloaded.record(questionID: "one", source: source), before)
+        XCTAssertEqual(reloaded.record(questionID: "two", source: source)?.latest.responseJSON, raw)
+    }
+
+    @MainActor func testDamagedHistoryCannotPartiallyImportOrReplaceExistingArchive() throws {
+        let file = try directory().appendingPathComponent("archive.json")
+        let source = URL(string: "http://100.111.154.126:8766")!
+        let archive = ConversationArchive(fileURL: file)
+        _ = archive.capture(try response("existing"), source: source)
+        let before = try Data(contentsOf: file)
+        let origin = try ConversationOrigin.capture(response("new"), source: source)
+        let duplicate = try JSONEncoder().encode([ArchivedConversation(latest: origin), ArchivedConversation(latest: origin)])
+        XCTAssertFalse(archive.importHistory(duplicate, source: source))
+        XCTAssertEqual(try Data(contentsOf: file), before)
+        XCTAssertFalse(archive.importHistory(Data("damaged".utf8), source: source))
+        XCTAssertEqual(try Data(contentsOf: file), before)
+        let damagedFile = try directory().appendingPathComponent("archive.json")
+        try Data("original damaged archive".utf8).write(to: damagedFile)
+        let damaged = ConversationArchive(fileURL: damagedFile)
+        XCTAssertFalse(damaged.importHistory(try JSONEncoder().encode([ArchivedConversation(latest: origin)])))
+        XCTAssertEqual(try Data(contentsOf: damagedFile), Data("original damaged archive".utf8))
+    }
+
+    @MainActor func testCompleteBundledHistoryIsReadableOfflineAndSurvivesRelaunch() throws {
+        let history = try XCTUnwrap(Bundle.main.url(forResource: "CowboyAIHistory", withExtension: "json"))
+        let expected = try JSONDecoder().decode([ArchivedConversation].self, from: Data(contentsOf: history))
+        XCTAssertEqual(expected.count, 168)
+        let file = try directory().appendingPathComponent("archive.json")
+        let source = URL(string: "http://100.111.154.126:8766")!
+        let archive = ConversationArchive(fileURL: file, historyURL: history, historySource: source)
+        XCTAssertFalse(archive.loadFailed)
+        XCTAssertNil(archive.errorMessage)
+        XCTAssertEqual(archive.records(for: source).count, expected.count)
+        let reloaded = ConversationArchive(fileURL: file)
+        for record in expected {
+            let actual = try XCTUnwrap(reloaded.record(questionID: record.latest.questionID, source: source))
+            XCTAssertEqual(actual.latest.responseJSON, record.latest.responseJSON)
+            XCTAssertEqual(actual.latest.question, record.latest.question)
+            XCTAssertEqual(actual.latest.capturedAt, record.latest.capturedAt)
+            let model = AskModel(archive: reloaded, keepsComposerDraft: false)
+            model.showSnapshot(actual.displayed)
+            XCTAssertNotNil(model.current)
+            XCTAssertNil(model.problem)
+        }
+    }
+
     func testAskPreservesEditedPromptsLineBreaksAndAllEntryWriting() {
         var entry = Reminder(); entry.title = "  My question.\nExact line!  "
         entry.whenIAm = " My context. "; entry.outcome = "Keep this!"; entry.notes = "Two\nlines."

@@ -139,7 +139,7 @@ struct RootView: View {
             loadedReminderStore = ReminderStore(repo: LocalReminderRepository())
             numberLedgerURL = PostNumberAllocator.defaultFileURL
         }
-        if ProcessInfo.processInfo.arguments.contains("COWBOYAI_UI_TEST") {
+        if ProcessInfo.processInfo.arguments.contains("COWBOYAI_UI_TEST") && !ProcessInfo.processInfo.arguments.contains("COWBOYAI_UI_TEST_IMPORTED_HISTORY") {
             CowboyUITestFixtures.prepare(model: model, entries: loadedReminderStore)
         }
         // Both formats participate in the initial chronological sequence. A damaged ledger

@@ -27,7 +27,7 @@ struct ConversationOrigin: Codable, Equatable, Hashable, Identifiable, Sendable 
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.sortedKeys]
         return Self(source: canonicalSource(source), questionID: response.question.id,
-                    question: response.question.question, responseJSON: try encoder.encode(response), capturedAt: now)
+                    question: response.question.question, responseJSON: try response.originalJSON ?? encoder.encode(response), capturedAt: now)
     }
 
     static func canonicalSource(_ url: URL) -> String {
@@ -132,8 +132,23 @@ final class ConversationArchive {
     var errorMessage: String?
     @ObservationIgnored private let fileURL: URL
 
-    init(fileURL: URL = CowboyStorage.file("conversations.json")) {
+    convenience init() {
+        let importsHistory = !CowboyRuntime.isTesting || ProcessInfo.processInfo.arguments.contains("COWBOYAI_UI_TEST_IMPORTED_HISTORY")
+        self.init(fileURL: CowboyStorage.file("conversations.json"),
+                  historyURL: importsHistory ? Bundle.main.url(forResource: "CowboyAIHistory", withExtension: "json") : nil,
+                  historySource: NucleusAPI.base)
+    }
+
+    init(fileURL: URL, historyURL: URL? = nil, historySource: URL? = nil) {
         self.fileURL = fileURL
+        load()
+        if let historyURL, !loadFailed {
+            do { _ = importHistory(try Data(contentsOf: historyURL), source: historySource) }
+            catch { errorMessage = "The earlier conversations could not be imported. Existing conversations are unchanged." }
+        }
+    }
+
+    private func load() {
         guard FileManager.default.fileExists(atPath: fileURL.path) else { return }
         do {
             var values = try JSONDecoder().decode([ArchivedConversation].self, from: Data(contentsOf: fileURL))
@@ -153,6 +168,53 @@ final class ConversationArchive {
             else { throw ArchiveError.damagedArchive }
             conversations = values
         } catch { loadFailed = true; errorMessage = ArchiveError.damagedArchive.localizedDescription }
+    }
+
+    /// Add the preserved history without replacing writing, pins, or newer answers already on this device.
+    @discardableResult
+    func importHistory(_ data: Data, source: URL? = nil) -> Bool {
+        guard !loadFailed else { return false }
+        do {
+            var imported = try JSONDecoder().decode([ArchivedConversation].self, from: data)
+            let aliases = ["http://127.0.0.1:8766", "http://100.111.154.126:8766"]
+            let destination = source.map(ConversationOrigin.canonicalSource)
+            // The export belongs to this existing engine, not an arbitrary configured server.
+            if let destination, !aliases.contains(destination) { return true }
+            func mapped(_ origin: ConversationOrigin) throws -> ConversationOrigin {
+                guard let response = origin.response,
+                      response.question.id == origin.questionID,
+                      response.question.question == origin.question else { throw ArchiveError.damagedArchive }
+                guard let destination, aliases.contains(origin.source) else { return origin }
+                return ConversationOrigin(source: destination, questionID: origin.questionID,
+                                          question: origin.question, responseJSON: origin.responseJSON,
+                                          capturedAt: origin.capturedAt)
+            }
+            for index in imported.indices {
+                imported[index].latest = try mapped(imported[index].latest)
+                if let pinned = imported[index].pinned { imported[index].pinned = try mapped(pinned) }
+                if let origin = imported[index].cardMetadata?.origin {
+                    imported[index].cardMetadata?.origin = try mapped(origin)
+                }
+                guard imported[index].cardMetadata == nil || imported[index].cardMetadata?.origin?.conversationID == imported[index].id,
+                      imported[index].pinned == nil || imported[index].pinned?.conversationID == imported[index].id
+                else { throw ArchiveError.damagedArchive }
+            }
+            guard Set(imported.map(\.id)).count == imported.count else { throw ArchiveError.damagedArchive }
+            let existing = Set(conversations.map(\.id))
+            var additions = imported.filter { !existing.contains($0.id) }
+            guard !additions.isEmpty else { return true }
+            let lastRank = conversations.compactMap { $0.cardMetadata?.upNextOrder }.max() ?? -1
+            for index in additions.indices where additions[index].cardMetadata == nil {
+                var metadata = ConversationMetadata.seed(from: additions[index].displayed)
+                metadata.pinned = additions[index].pinned != nil
+                metadata.upNextOrder = lastRank + index + 1
+                additions[index].cardMetadata = metadata
+            }
+            return persist(conversations + additions)
+        } catch {
+            errorMessage = "The earlier conversations could not be imported. Existing conversations are unchanged."
+            return false
+        }
     }
 
     func records(for source: URL) -> [ArchivedConversation] {

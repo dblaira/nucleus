@@ -34,6 +34,12 @@ struct AskResponse: Codable {
     let explanation: Explanation?
     let more: [More]?
     let form: Form?
+    // Preserve the complete service payload, including fields this screen does not render.
+    var originalJSON: Data? = nil
+
+    private enum CodingKeys: String, CodingKey {
+        case question, steps, phrases, answer, asked_before, rows, explanation, more, form
+    }
 }
 
 struct RecentItem: Codable, Identifiable {
@@ -85,7 +91,9 @@ enum NucleusAPI {
 
     static func status(_ id: String) async throws -> AskResponse {
         let data = try await checkedData(for: URLRequest(url: base.appendingPathComponent("ask/\(id)")))
-        return try JSONDecoder().decode(AskResponse.self, from: data)
+        var response = try JSONDecoder().decode(AskResponse.self, from: data)
+        response.originalJSON = data
+        return response
     }
 
     static func recent() async throws -> [RecentItem] {
