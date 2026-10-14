@@ -4,7 +4,7 @@ final class SavyFlowTests: XCTestCase {
     @MainActor func testHomeAskReachesLiveDictionaryEvidenceAndSavedResponse() {
         let app = launchApp()
         let question = "What is FLOW?"
-        let homeAsk = app.buttons["homeAskCowboyAI"]
+        let homeAsk = app.buttons["chargeFab"]
         XCTAssertTrue(homeAsk.waitForExistence(timeout: 10))
         homeAsk.tap()
         let input = app.textViews["new-question-text"].firstMatch
@@ -31,8 +31,12 @@ final class SavyFlowTests: XCTestCase {
         XCTAssertFalse(app.staticTexts.matching(identifier: "meaning-detail-words").allElementsBoundByIndex.map(\.label).joined().isEmpty)
         screenshot("Accepted graph record opened from response", app: app)
         app.buttons["meaning-detail-close"].tap()
-        for _ in 0..<8 { if app.buttons["pinConversation"].isHittable { break }; app.swipeDown() }
-        app.buttons["pinConversation"].tap()
+        reveal(app.staticTexts["QUESTION"], app: app)
+        XCTAssertFalse(app.buttons["pinConversation"].exists)
+        XCTAssertFalse(app.buttons["conversationDetails"].exists)
+        XCTAssertFalse(app.buttons["createFromConversation"].exists)
+        app.staticTexts["QUESTION"].press(forDuration: 1)
+        app.buttons["Pin"].tap()
         app.buttons["Back"].firstMatch.tap()
         let card = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@ AND label CONTAINS %@", "latest-", question)).firstMatch
         XCTAssertTrue(card.waitForExistence(timeout: 5))
@@ -49,6 +53,7 @@ final class SavyFlowTests: XCTestCase {
 
     @MainActor func testEntryAsksLiveOntologyAndKeepsItsAnswer() {
         let app = launchApp()
+        app.buttons["tab-reminders"].tap()
         app.buttons["chargeFab"].tap(); app.buttons["Reminder"].tap()
         let ask = app.buttons["entryAskCowboyAI"]
         XCTAssertTrue(ask.waitForExistence(timeout: 5))
@@ -87,7 +92,7 @@ final class SavyFlowTests: XCTestCase {
 
     @MainActor func testOriginalHowToFormWithAdamsExample() {
         let app = launchApp()
-        app.buttons["homeAskCowboyAI"].tap()
+        app.buttons["chargeFab"].tap()
         app.buttons["PostTheme"].tap()
         app.buttons["How-To"].tap()
         XCTAssertTrue(app.descendants(matching: .any).matching(identifier: "DecideAnswer3").firstMatch.exists)
@@ -119,6 +124,7 @@ final class SavyFlowTests: XCTestCase {
         app.launchArguments = ["COWBOYAI_UI_TEST", "COWBOYAI_UI_TEST_RESET", "COWBOYAI_UI_TEST_SEED"]
         app.launchEnvironment["COWBOYAI_UI_TEST_BASE_URL"] = "http://127.0.0.1:1"
         app.launch()
+        app.buttons["tab-actions"].tap()
         app.buttons["chargeFab"].tap(); app.buttons["Action"].tap()
         let title = app.descendants(matching: .any).matching(identifier: "Title").firstMatch
         reveal(title, app: app); title.tap(); title.typeText("Keep my unfinished writing.")
@@ -159,6 +165,7 @@ final class SavyFlowTests: XCTestCase {
 
     @MainActor func testSavyFabOpensArcAndCloses() {
         let app = launchApp()
+        app.buttons["tab-actions"].tap()
         let fab = app.buttons["chargeFab"]
         XCTAssertTrue(fab.waitForExistence(timeout: 10))
         fab.tap()
@@ -212,7 +219,7 @@ final class SavyFlowTests: XCTestCase {
         XCTAssertEqual(app.staticTexts["live-answer-question"].label, "A third sample question to swipe to.")
     }
 
-    @MainActor func testPinKeepsCarouselMetadataAndUnpinReturnsToRecent() {
+    @MainActor func testPinKeepsCarouselMetadataAndUnpinKeepsHistoryAvailable() {
         let app = launchApp()
         let card = app.buttons["latest-ui-source"]
         XCTAssertTrue(card.waitForExistence(timeout: 10))
@@ -221,10 +228,12 @@ final class SavyFlowTests: XCTestCase {
         XCTAssertTrue(card.otherElements["carouselDetail-theme"].exists)
         card.press(forDuration: 1)
         app.buttons["Unpin"].tap()
-        XCTAssertFalse(card.exists)
-        let recent = app.buttons["recent-ui-source"]
-        reveal(recent, app: app)
-        recent.press(forDuration: 1)
+        XCTAssertTrue(card.exists, "Unpinning must not remove a conversation from the carousel.")
+        let cards = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "latest-"))
+        XCTAssertEqual(cards.allElementsBoundByIndex.map(\.identifier), ["latest-ui-source-2", "latest-ui-source-3", "latest-ui-source"])
+        app.scrollViews["latestCarousel"].swipeLeft()
+        app.scrollViews["latestCarousel"].swipeLeft()
+        card.press(forDuration: 1)
         app.buttons["Pin"].tap()
         XCTAssertEqual(card.frame.height, pinnedHeight, accuracy: 1)
         for kind in ["theme", "pattern", "priority", "energy"] {
@@ -256,15 +265,16 @@ final class SavyFlowTests: XCTestCase {
     @MainActor func testCreateLinkedActionAndRetainAfterRelaunch() {
         let app = launchApp()
         app.buttons["latest-ui-source"].tap()
-        let create = app.buttons["createFromConversation"]
-        reveal(create, app: app); create.tap()
+        XCTAssertFalse(app.buttons["createFromConversation"].exists)
+        app.staticTexts["QUESTION"].press(forDuration: 1)
         app.buttons["Action"].tap()
         let title = app.descendants(matching: .any).matching(identifier: "Title").firstMatch
         reveal(title, app: app)
         XCTAssertTrue(title.waitForExistence(timeout: 5))
         title.tap(); title.typeText("A linked action to keep")
         app.buttons["entrySave"].tap()
-        XCTAssertTrue(app.buttons.matching(identifier: "createFromConversation").firstMatch.waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["live-answer-question"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.buttons["createFromConversation"].exists)
         app.terminate()
         app.launchArguments = ["COWBOYAI_UI_TEST", "COWBOYAI_UI_TEST_SEED"]
         app.launch()
@@ -275,6 +285,40 @@ final class SavyFlowTests: XCTestCase {
         app.buttons["entryOrigin"].tap()
         XCTAssertEqual(app.staticTexts["live-answer-question"].label, "A sample question for checking this screen.")
         screenshot("Persisted action with original conversation", app: app)
+    }
+
+    @MainActor func testUnpinnedHistoryStaysInCarouselAndPinMovesPairFirst() {
+        let app = launchApp(extraArguments: ["COWBOYAI_UI_TEST_UNPINNED"])
+        let carousel = app.scrollViews["latestCarousel"]
+        let first = app.buttons["latest-ui-source"]
+        XCTAssertTrue(first.waitForExistence(timeout: 10))
+        XCTAssertEqual(first.frame.height, 182, accuracy: 1)
+        XCTAssertFalse(app.staticTexts["emptyConversationCarousel"].exists)
+        XCTAssertFalse(app.buttons["homeAskCowboyAI"].exists)
+        screenshot("Full history carousel with no pins", app: app)
+        carousel.swipeLeft(); carousel.swipeLeft()
+        let third = app.buttons["latest-ui-source-3"]
+        XCTAssertTrue(third.isHittable)
+        third.press(forDuration: 1)
+        XCTAssertTrue(app.buttons["Reminder"].exists)
+        XCTAssertTrue(app.buttons["Action"].exists)
+        XCTAssertTrue(app.buttons["Calendar event"].exists)
+        app.buttons["Pin"].tap()
+        let cards = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "latest-"))
+        XCTAssertEqual(cards.allElementsBoundByIndex.map(\.identifier), ["latest-ui-source-3", "latest-ui-source", "latest-ui-source-2"])
+        carousel.swipeRight(); carousel.swipeRight()
+        third.tap()
+        XCTAssertTrue(app.staticTexts["live-answer-question"].waitForExistence(timeout: 5))
+        XCTAssertEqual(app.staticTexts["live-answer-question"].label, "A third sample question to swipe to.")
+        XCTAssertFalse(app.buttons["pinConversation"].exists)
+        XCTAssertFalse(app.buttons["conversationDetails"].exists)
+        XCTAssertFalse(app.buttons["createFromConversation"].exists)
+        screenshot("Question and response without toolbar", app: app)
+        app.buttons["Back"].firstMatch.tap()
+        app.buttons["chargeFab"].tap()
+        XCTAssertTrue(app.buttons["PostTheme"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["ask-nucleus"].exists)
+        XCTAssertFalse(app.buttons["Reminder"].exists, "Now's lightning button opens the original question form directly.")
     }
 
     @MainActor func testScheduleEditorAndCalendar() {

@@ -226,7 +226,21 @@ struct SavyBottomNavigationBar: View {
         .animation(SavyFabMenuMotion.open, value: isRadialMenuPresented)
     }
 
-    private var captureFab: some View {
+    @ViewBuilder private var captureFab: some View {
+        if selection == .now {
+            Button {
+                SavyHapticFeedback.primaryImpact()
+                onSelectCaptureKind(.question)
+            } label: { captureSymbol }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Ask CowboyAI")
+            .accessibilityIdentifier("chargeFab")
+        } else {
+            radialCaptureFab
+        }
+    }
+
+    private var captureSymbol: some View {
         borderedSymbol(isRadialMenuPresented ? "xmark" : "bolt.fill")
             .frame(
                 width: RootHomeLayout.floatingCaptureSize,
@@ -235,6 +249,10 @@ struct SavyBottomNavigationBar: View {
             .background(RootHomeLayout.floatingCaptureBackground, in: Circle())
             .shadow(color: .black.opacity(0.3), radius: 12, y: 6)
             .contentShape(Circle())
+    }
+
+    private var radialCaptureFab: some View {
+        captureSymbol
             .gesture(
                 DragGesture(minimumDistance: 0)
                     .onChanged { value in
@@ -317,7 +335,7 @@ struct SavyBottomNavigationBar: View {
 
                 Text(kind.menuTitle)
                     .font(.system(size: RootHomeLayout.radialMenuLabelSize, weight: .heavy))
-                    .foregroundStyle(SavyTheme.crimson)
+                    .foregroundStyle(.white)
             }
             .shadow(color: .black.opacity(0.3), radius: 8, y: 4)
         }

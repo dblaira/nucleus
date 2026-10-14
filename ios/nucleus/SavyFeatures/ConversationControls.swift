@@ -16,38 +16,55 @@ private struct EntryPresentation: Identifiable {
     var id: String { existing?.id.uuidString ?? kind.rawValue }
 }
 
-/// Every create action captures the displayed response, never an unrelated global selection.
-struct ConversationControls: View {
-    let origin: ConversationOrigin
+/// Native card actions keep the reading surface clear. The origin is the card's
+/// displayed snapshot, never an unrelated global selection.
+private struct ConversationActions: ViewModifier {
+    let origin: ConversationOrigin?
     @Environment(ConversationArchive.self) private var archive
     @Environment(ReminderStore.self) private var entries
     @State private var editor: EntryPresentation?
     @State private var showingDetails = false
+
+    func body(content: Content) -> some View {
+        content
+            .contextMenu {
+                if let origin {
+                    Button(archive.isPinned(origin) ? "Unpin" : "Pin", systemImage: "pin") {
+                        _ = archive.togglePin(origin)
+                    }
+                    Button("Edit", systemImage: "pencil") { showingDetails = true }
+                    Divider()
+                    Button("Reminder", systemImage: "bell") { editor = EntryPresentation(kind: .reminder, existing: nil) }
+                    Button("Action", systemImage: "bolt") { editor = EntryPresentation(kind: .action, existing: nil) }
+                    Button("Calendar event", systemImage: "calendar") { editor = EntryPresentation(kind: .event, existing: nil) }
+                }
+            }
+            .sheet(isPresented: $showingDetails) {
+                if let origin { ConversationDetailsEditor(origin: origin) }
+            }
+            .sheet(item: $editor) { presentation in
+                ReminderFormView(initialKind: presentation.kind, origin: origin, existing: nil,
+                                 existingTags: entries.recentTags, onSaveAttempt: { entries.save($0) }) { _ in }
+            }
+    }
+}
+
+extension View {
+    func conversationActions(for origin: ConversationOrigin?) -> some View {
+        modifier(ConversationActions(origin: origin))
+    }
+}
+
+/// Entries connected to the conversation follow its answer and evidence.
+struct LinkedConversationEntries: View {
+    let origin: ConversationOrigin
+    @Environment(ConversationArchive.self) private var archive
+    @Environment(ReminderStore.self) private var entries
+    @State private var editor: EntryPresentation?
     @State private var armedEntryID: String?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            HStack {
-                Button {
-                    _ = archive.togglePin(origin)
-                } label: {
-                    Label(archive.isPinned(origin) ? "Unpin" : "Pin", systemImage: archive.isPinned(origin) ? "pin.fill" : "pin")
-                }
-                .accessibilityIdentifier("pinConversation")
-                Button { showingDetails = true } label: {
-                    Label("Details", systemImage: "slider.horizontal.3")
-                }
-                .accessibilityIdentifier("conversationDetails")
-                Spacer()
-                Menu {
-                    ForEach(ReminderKind.allCases.filter { $0 != .post }) { kind in
-                        Button(kind.label, systemImage: symbol(kind)) { editor = EntryPresentation(kind: kind, existing: nil) }
-                    }
-                } label: { Label("Create", systemImage: "plus") }
-                .accessibilityIdentifier("createFromConversation")
-            }
-            .font(.system(size: 16, weight: .semibold))
-
             SavyCardFlow(spacing: 10) {
                 ForEach(Array(entries.items(from: origin).filter { $0.status == .active }.enumerated()), id: \.element.id) { index, entry in
                     let colors = SavyReminderCardAppearance.colors(for: index)
@@ -84,16 +101,12 @@ struct ConversationControls: View {
         }
         .foregroundStyle(.white)
         .padding(20)
-        .sheet(isPresented: $showingDetails) { ConversationDetailsEditor(origin: origin) }
         .sheet(item: $editor) { presentation in
             ReminderFormView(initialKind: presentation.kind, origin: origin, existing: presentation.existing,
                              existingTags: entries.recentTags, onSaveAttempt: { entries.save($0) }) { _ in }
         }
     }
 
-    private func symbol(_ kind: ReminderKind) -> String {
-        switch kind { case .reminder: "bell"; case .action: "bolt"; case .event: "calendar"; case .post: "text.bubble" }
-    }
 }
 
 /// Uses SAVY's form controls. This edits the pair's local metadata only;

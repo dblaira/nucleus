@@ -817,10 +817,10 @@ struct SavyReminderBandCard: View {
             secondaryText: secondaryText,
             detailLine: detailLine,
             detail: detail,
-            isCompact: !reminder.pinned,
+            isCompact: !reminder.pinned && previewHeight == nil,
             minimumHeight: reminder.pinned && previewHeight == nil ? 186 : nil,
             expandsContent: showsCompleteMetadata,
-            previewHeight: reminder.pinned ? previewHeight : nil,
+            previewHeight: previewHeight,
             metadataColor: metadataColor,
             metadataWeight: metadataWeight,
             carouselDetails: carouselDetails

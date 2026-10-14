@@ -83,6 +83,8 @@ struct LiveAnswerSection: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(20)
             .background(Color.white, in: RoundedRectangle(cornerRadius: 8))
+            .contentShape(RoundedRectangle(cornerRadius: 8))
+            .conversationActions(for: model.currentOrigin)
             .padding(.horizontal, 18)
             .padding(.top, 24)
 

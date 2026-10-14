@@ -30,7 +30,9 @@ import Foundation
                 metadata.energy = .low
                 if metadata.postThemeName == nil { metadata.postThemeName = "Sample theme" }
                 _ = model.archive.saveMetadata(metadata, for: origin)
-                _ = model.archive.togglePin(origin)
+                if !ProcessInfo.processInfo.arguments.contains("COWBOYAI_UI_TEST_UNPINNED") {
+                    _ = model.archive.togglePin(origin)
+                }
             }
         }
         if ProcessInfo.processInfo.arguments.contains("COWBOYAI_UI_TEST_SEED"), entries.reminders.isEmpty {

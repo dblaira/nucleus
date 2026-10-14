@@ -17,9 +17,6 @@ struct HomeView: View {
     let openOrigin: (ConversationOrigin) -> Void
     let openRoute: () -> Void
     let openAppearance: () -> Void
-    let openQuestion: () -> Void
-    @State private var editingDetails: ConversationOrigin?
-    @State private var armedConversationID: String?
 
     private var cards: [HomeConversation] {
         let records = model.archive.recentRecords(for: NucleusAPI.base, recent: model.recent)
@@ -47,9 +44,9 @@ struct HomeView: View {
         let values = cards
         let pins = model.archive.records(for: NucleusAPI.base).filter { $0.pinned != nil }.map { $0.latest.questionID }
         let byID = Dictionary(values.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
-        // SAVY HomeFeedRow.rows reads ReminderStore.pinnedFeed.
-        // Recent conversations belong below; only saved pins belong in this carousel.
-        return pins.compactMap { byID[$0] }
+        let pinnedIDs = Set(pins)
+        // Keep all history available here, with saved pins at the front.
+        return pins.compactMap { byID[$0] } + values.filter { !pinnedIDs.contains($0.id) }
     }
 
     var body: some View {
@@ -58,17 +55,6 @@ struct HomeView: View {
                 VStack(alignment: .leading, spacing: 0) {
                     header(topInset: proxy.safeAreaInsets.top)
                     VStack(alignment: .leading, spacing: 0) {
-                        Button(action: openQuestion) {
-                            Label("Ask CowboyAI", systemImage: "paperplane")
-                                .font(.body.weight(.semibold))
-                                .foregroundStyle(CowboyTheme.red)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .padding(18)
-                                .background(CowboyTheme.cream, in: RoundedRectangle(cornerRadius: 24))
-                        }
-                        .buttonStyle(.plain)
-                        .padding(.horizontal, 16).padding(.top, 20)
-                        .accessibilityIdentifier("homeAskCowboyAI")
                         carousel
                         Color.clear.frame(height: 28).accessibilityHidden(true)
                         recentResponses
@@ -100,9 +86,6 @@ struct HomeView: View {
             .accessibilityIdentifier("editorialHomeScroll")
         }
         .background(CowboyTheme.navy.ignoresSafeArea())
-        .sheet(item: $editingDetails) { origin in
-            ConversationDetailsEditor(origin: origin)
-        }
     }
 
     private func header(topInset: CGFloat) -> some View {
@@ -141,11 +124,11 @@ struct HomeView: View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(alignment: .top, spacing: 16) {
                 if carouselCards.isEmpty {
-                    Text("Pin a conversation to keep it here.")
+                    Text(model.loadingRecent ? "Opening conversations…" : "Use the lightning button to ask CowboyAI a question.")
                         .font(.system(size: 14)).foregroundStyle(SavyTheme.deepNavy)
                         .padding(20).frame(width: RootHomeLayout.carouselCardWidth, alignment: .leading)
                         .background(Brand.card, in: RoundedRectangle(cornerRadius: 8))
-                        .accessibilityIdentifier("emptyPinnedCarousel")
+                        .accessibilityIdentifier("emptyConversationCarousel")
                 }
                 ForEach(carouselCards) { item in
                     Button { open(item) } label: {
@@ -154,22 +137,17 @@ struct HomeView: View {
                             bg: Brand.card,
                             fg: SavyTheme.deepNavy,
                             accent: Brand.crimson,
-                            detail: item.pinned ? .full : .minimal,
+                            detail: .full,
                             showsSchedule: false,
                             showsCompleteMetadata: false,
-                            previewHeight: item.pinned ? RootHomeLayout.carouselCardHeight : nil,
+                            previewHeight: RootHomeLayout.carouselCardHeight,
                             carouselDetails: SavyCarouselDetail.values(for: item.metadata)
                         )
                         .frame(width: RootHomeLayout.carouselCardWidth, alignment: .topLeading)
                     }
                         .buttonStyle(.plain)
                         .accessibilityIdentifier("latest-\(item.id)")
-                        .contextMenu {
-                            if let origin = item.origin {
-                                Button("Details", systemImage: "slider.horizontal.3") { editingDetails = origin }
-                                Button(item.pinned ? "Unpin" : "Pin", systemImage: "pin") { _ = model.archive.togglePin(origin) }
-                            }
-                        }
+                        .conversationActions(for: item.origin)
                 }
             }
             .padding(.horizontal, RootHomeLayout.carouselHorizontalPadding)
@@ -214,24 +192,9 @@ struct HomeView: View {
                 }
                 .buttonStyle(.plain)
                 .accessibilityIdentifier("recent-\(item.id)")
-                .contextMenu {
-                    if let origin = item.origin {
-                        Button("Details", systemImage: "slider.horizontal.3") { editingDetails = origin }
-                        Button(item.pinned ? "Unpin" : "Pin", systemImage: "pin") { _ = model.archive.togglePin(origin) }
-                    }
-                }
+                .conversationActions(for: item.origin)
             }
         }.padding(.horizontal, 16).padding(.bottom, 20)
-    }
-
-    private func conversationActions(_ item: HomeConversation) -> [SavySwipeAction] {
-        guard let origin = item.origin else { return [] }
-        return [
-            SavySwipeAction(title: "Details", icon: "slider.horizontal.3", bg: Brand.tileBlue) { editingDetails = origin },
-            SavySwipeAction(title: item.pinned ? "Unpin" : "Pin", icon: "pin", bg: Brand.tileBlue) {
-                _ = model.archive.togglePin(origin)
-            },
-        ]
     }
 
     private var categories: some View {

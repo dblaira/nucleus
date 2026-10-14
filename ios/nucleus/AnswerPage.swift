@@ -32,12 +32,12 @@ struct AnswerPage: View {
                         .font(.footnote).foregroundStyle(CowboyTheme.tan).padding(.horizontal, 20)
                 }
                 if loaded {
-                    if let origin = model.currentOrigin { ConversationControls(origin: origin) }
                     LiveAnswerSection(
                         model: model,
                         selectRecord: { selectedRecord = $0 },
                         selectWords: { selectedWords = $0 }
                     )
+                    if let origin = model.currentOrigin { LinkedConversationEntries(origin: origin) }
                 } else if model.problem == nil {
                     ProgressView("reading your words…")
                         .tint(CowboyTheme.red)
