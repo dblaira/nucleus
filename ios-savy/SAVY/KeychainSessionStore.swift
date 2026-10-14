@@ -2,7 +2,7 @@ import Foundation
 import Security
 
 enum KeychainSessionStore {
-    private static let service = "com.adamblair.savy.auth"
+    private static let service = "com.adamblair.cowboyai.savytrial.auth"
     private static let account = "aws-graph-session"
 
     static func load() -> AuthSession? {

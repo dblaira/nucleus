@@ -1,0 +1,125 @@
+import Foundation
+import UIKit
+
+/// The Mac's nucleus service. The phone reaches it over Tailscale.
+struct AskResponse: Codable {
+    /// The form he picked (one of his SAVY themes) and what he filled in, as the Mac kept it.
+    struct Theme: Codable {
+        /// What the night run put under a box he left blank: one of his records or words, quoted, and what it says.
+        struct Night: Codable { let brings_in: String; let quote: String; let answer: String }
+        struct Field: Codable { let prompt: String; let symbol: String?; let answer: String; let night: Night? }
+        let id: String; let name: String; let question: String?; let fields: [Field]
+    }
+    struct Question: Codable { let id: String; let question: String; let theme: Theme? }
+    struct Step: Codable { let name: String; let started: Double; let finished: Double?; let note: String? }
+    struct Phrase: Codable { let phrase: String; let name: String; let text: String }
+    struct Answer: Codable { let status: String; let answer: String?; let text: String?; let gate_reason: String? }
+    struct Row: Codable {
+        let word: String; let record: String; let quote: String; let kind: String?; let thumb: Int?; let saved: Bool
+    }
+    struct Explanation: Codable { let status: String; let text: String?; let thumb: Int? }
+    /// What he gave after a middle response, as the Mac logged it.
+    struct More: Codable, Identifiable { let id: String; let text: String }
+    /// One form for every answer, filled by the Mac (nucleus/middle.py). The middle one is the form Adam wrote.
+    struct Form: Codable {
+        struct Section: Codable { let head: String; let symbol: String; let lines: [String] }
+        let explanation: String?; let answer: String; let sections: [Section]; let ask: String?
+    }
+    let question: Question
+    let steps: [Step]
+    let phrases: [Phrase]
+    let answer: Answer?
+    let asked_before: Int?
+    let rows: [Row]?
+    let explanation: Explanation?
+    let more: [More]?
+    let form: Form?
+}
+
+struct RecentItem: Codable, Identifiable {
+    let id: String; let question: String; let status: String; let answer: String?; let finished: Double
+}
+
+enum NucleusAPI {
+    struct ServiceError: LocalizedError {
+        let status: Int
+        var errorDescription: String? { "CowboyAI could not complete the request (\(status))." }
+    }
+
+    private static func checkedData(for original: URLRequest) async throws -> Data {
+        var request = original
+        request.timeoutInterval = 15
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) else {
+            throw ServiceError(status: (response as? HTTPURLResponse)?.statusCode ?? 0)
+        }
+        return data
+    }
+
+    static var base: URL {
+        #if DEBUG
+        if CowboyRuntime.isTesting,
+           let value = ProcessInfo.processInfo.environment["COWBOYAI_UI_TEST_BASE_URL"],
+           let url = URL(string: value) { return url }
+        #endif
+        let saved = UserDefaults.standard.string(forKey: "nucleus.base") ?? "http://127.0.0.1:8766"
+        return URL(string: saved) ?? URL(string: "http://127.0.0.1:8766")!
+    }
+
+    static func ask(_ question: String, themeData: Data? = nil) async throws -> String {
+        var request = URLRequest(url: base.appendingPathComponent("ask"))
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "content-type")
+        var body: [String: Any] = ["question": question]
+        if let themeData, let theme = try? JSONSerialization.jsonObject(with: themeData) { body["theme"] = theme }
+        request.httpBody = try JSONSerialization.data(withJSONObject: body)
+        let data = try await checkedData(for: request)
+        struct Reply: Codable { let question_id: String }
+        return try JSONDecoder().decode(Reply.self, from: data).question_id
+    }
+
+    static func status(_ id: String) async throws -> AskResponse {
+        let data = try await checkedData(for: URLRequest(url: base.appendingPathComponent("ask/\(id)")))
+        return try JSONDecoder().decode(AskResponse.self, from: data)
+    }
+
+    static func recent() async throws -> [RecentItem] {
+        let data = try await checkedData(for: URLRequest(url: base.appendingPathComponent("recent")))
+        return try JSONDecoder().decode([RecentItem].self, from: data)
+    }
+
+    static func hello() async {
+        var request = URLRequest(url: base.appendingPathComponent("hello"))
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "content-type")
+        let name = await MainActor.run { UIDevice.current.name }
+        request.httpBody = try? JSONSerialization.data(withJSONObject: ["build": BuildStamp.text, "device": name])
+        _ = try? await URLSession.shared.data(for: request)
+    }
+
+    static func thumbExplanation(questionID: String, up: Bool) async throws {
+        var request = URLRequest(url: base.appendingPathComponent("thumb-explanation"))
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "content-type")
+        request.httpBody = try JSONSerialization.data(withJSONObject: ["question_id": questionID, "up": up])
+        _ = try await checkedData(for: request)
+    }
+
+    /// Adam, 2026-10-03: the middle response "will be followed by requesting more information, which will be logged".
+    static func more(questionID: String, text: String) async throws {
+        var request = URLRequest(url: base.appendingPathComponent("more"))
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "content-type")
+        request.httpBody = try JSONSerialization.data(withJSONObject: ["question_id": questionID, "text": text])
+        _ = try await checkedData(for: request)
+    }
+
+    static func thumb(word: String, record: String, quote: String, up: Bool) async throws {
+        var request = URLRequest(url: base.appendingPathComponent("thumb"))
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "content-type")
+        let body: [String: Any] = ["word": word, "record": record, "quote": quote, "up": up]
+        request.httpBody = try JSONSerialization.data(withJSONObject: body)
+        _ = try await checkedData(for: request)
+    }
+}

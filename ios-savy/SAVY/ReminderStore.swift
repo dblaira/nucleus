@@ -175,6 +175,7 @@ final class ReminderStore: ObservableObject {
         guard !loadFailed else { return false }
         var r = reminder
         let existing = reminders.first { $0.id == r.id }
+        r.origin = existing?.origin ?? r.origin
         if r.schedule != nil || r.scheduleSyncVersion != nil
             || existing?.schedule != nil || existing?.scheduleSyncVersion != nil {
             r.scheduleSyncVersion = 1
@@ -375,6 +376,7 @@ final class ReminderStore: ObservableObject {
     }
 
     private func enqueueCandidateCapture(for reminder: Reminder) {
+        guard TrialIsolation.connectsToSavyServices else { return }
         let existing = technicalCaptureStore.capture(forReminderID: reminder.id)
         let capture = TechnicalCapture.from(reminder: reminder, existing: existing)
         technicalCaptureStore.save(capture)
@@ -382,6 +384,7 @@ final class ReminderStore: ObservableObject {
     }
 
     private func flushCandidateOutbox(now: Date = Date()) async {
+        guard TrialIsolation.connectsToSavyServices else { return }
         for item in candidateOutbox.dueItems(now: now) {
             do {
                 let receipt = try await candidateClient.submit(item.payload)
@@ -665,4 +668,11 @@ final class ReminderStore: ObservableObject {
         )
         return [active, completedA, completedB]
     }()
+}
+
+
+extension ReminderStore {
+    func items(from origin: ConversationOrigin) -> [Reminder] {
+        (active + completed).filter { $0.origin?.conversationID == origin.conversationID }
+    }
 }

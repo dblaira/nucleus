@@ -194,6 +194,7 @@ struct Subtask: Identifiable, Codable, Equatable, Hashable {
 /// Every "part" from the entry form is a field here so nothing the user enters is dropped.
 struct Reminder: Identifiable, Codable, Equatable {
     var id: UUID = UUID()
+    var origin: ConversationOrigin? = nil
     var kind: ReminderKind = .reminder         // reminder / action / event (local-first for now)
     // Core
     var title: String = ""

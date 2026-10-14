@@ -16,4 +16,6 @@ Forbidden: writes to the original SAVY source, `/Applications/SAVY.app`, SAVY's 
 
 Isolation: the trial must have its own bundle identity and application container. Remove SAVY/Harness cloud entitlements and disable those service routes before launching the copy. Build and install only on the recovery simulator.
 
+Distribution: keep this trial and its commits local. The Nucleus origin is a public repository; Adam has not authorized publishing SAVY source or its bundled personal material there.
+
 Acceptance: inspect the real simulator screens and use FAB choices, normal entry, Ask, response opening, right-swipe Pin/Unpin and pin ordering. Preserve exact writing, saved response origins and existing history. Test persistence and draft recovery in separate test storage. Recheck the original SAVY source, app and saved records against the preservation manifest. A test count alone does not establish visual parity.

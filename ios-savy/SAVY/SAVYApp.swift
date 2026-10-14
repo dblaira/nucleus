@@ -15,7 +15,7 @@ final class SavyAppDelegate: NSObject, UIApplicationDelegate {
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
     ) -> Bool {
-        if !SavyRuntime.isTesting { application.registerForRemoteNotifications() }
+        if TrialIsolation.connectsToSavyServices && !SavyRuntime.isTesting { application.registerForRemoteNotifications() }
         return true
     }
 }
@@ -24,6 +24,7 @@ final class SavyAppDelegate: NSObject, UIApplicationDelegate {
 struct SAVYApp: App {
     @UIApplicationDelegateAdaptor(SavyAppDelegate.self) private var appDelegate
     init() {
+        CowboyStorage.prepareForTesting()
         SavyTypography.performAudit()
         NotificationScheduler.configurePresentation()
     }

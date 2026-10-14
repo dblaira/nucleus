@@ -15,10 +15,10 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "F9770833D9C90E9EA5883D75"
+               BlueprintIdentifier = "F6D1C594F584992CAE1DF8B9"
                BuildableName = "SAVY.app"
                BlueprintName = "SAVY"
-               ReferencedContainer = "container:SAVY.xcodeproj">
+               ReferencedContainer = "container:CowboyAITrial.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
          <BuildActionEntry
@@ -29,10 +29,10 @@
             buildForAnalyzing = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "C5F0F32DCB930F81E2318BB8"
+               BlueprintIdentifier = "B8E44DC6BC3C1B39B01572E2"
                BuildableName = "SAVYTests.xctest"
                BlueprintName = "SAVYTests"
-               ReferencedContainer = "container:SAVY.xcodeproj">
+               ReferencedContainer = "container:CowboyAITrial.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
          <BuildActionEntry
@@ -43,10 +43,10 @@
             buildForAnalyzing = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "C786FF3174742FDC23101F57"
+               BlueprintIdentifier = "D5CA96C81BDA798C5ABFE378"
                BuildableName = "SAVYUITests.xctest"
                BlueprintName = "SAVYUITests"
-               ReferencedContainer = "container:SAVY.xcodeproj">
+               ReferencedContainer = "container:CowboyAITrial.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -60,10 +60,10 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "F9770833D9C90E9EA5883D75"
+            BlueprintIdentifier = "F6D1C594F584992CAE1DF8B9"
             BuildableName = "SAVY.app"
             BlueprintName = "SAVY"
-            ReferencedContainer = "container:SAVY.xcodeproj">
+            ReferencedContainer = "container:CowboyAITrial.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
       <Testables>
@@ -72,10 +72,10 @@
             parallelizable = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "C5F0F32DCB930F81E2318BB8"
+               BlueprintIdentifier = "B8E44DC6BC3C1B39B01572E2"
                BuildableName = "SAVYTests.xctest"
                BlueprintName = "SAVYTests"
-               ReferencedContainer = "container:SAVY.xcodeproj">
+               ReferencedContainer = "container:CowboyAITrial.xcodeproj">
             </BuildableReference>
          </TestableReference>
          <TestableReference
@@ -83,10 +83,10 @@
             parallelizable = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "C786FF3174742FDC23101F57"
+               BlueprintIdentifier = "D5CA96C81BDA798C5ABFE378"
                BuildableName = "SAVYUITests.xctest"
                BlueprintName = "SAVYUITests"
-               ReferencedContainer = "container:SAVY.xcodeproj">
+               ReferencedContainer = "container:CowboyAITrial.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -107,10 +107,10 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "F9770833D9C90E9EA5883D75"
+            BlueprintIdentifier = "F6D1C594F584992CAE1DF8B9"
             BuildableName = "SAVY.app"
             BlueprintName = "SAVY"
-            ReferencedContainer = "container:SAVY.xcodeproj">
+            ReferencedContainer = "container:CowboyAITrial.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
       <CommandLineArguments>
@@ -126,10 +126,10 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "F9770833D9C90E9EA5883D75"
+            BlueprintIdentifier = "F6D1C594F584992CAE1DF8B9"
             BuildableName = "SAVY.app"
             BlueprintName = "SAVY"
-            ReferencedContainer = "container:SAVY.xcodeproj">
+            ReferencedContainer = "container:CowboyAITrial.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

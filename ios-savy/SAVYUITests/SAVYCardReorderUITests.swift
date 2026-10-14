@@ -259,9 +259,9 @@ final class SAVYCardReorderUITests: XCTestCase {
 
     private func setHomePinned(_ pinned: Bool, section: String) {
         let row = homeRow(section)
-        XCTAssertEqual(row.value as? String, pinned ? "Unpinned" : "Pinned")
         let gesture = element("homeReorder-\(section)")
         reveal(gesture)
+        XCTAssertEqual(row.value as? String, pinned ? "Unpinned" : "Pinned")
         gesture.swipeRight()
         let button = row.buttons[pinned ? "swipePin" : "swipeUnpin"].firstMatch
         reveal(button)

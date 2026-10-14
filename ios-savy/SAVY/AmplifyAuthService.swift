@@ -7,6 +7,7 @@ enum AmplifyAuthService {
     private static nonisolated(unsafe) var isConfigured = false
 
     static func configureIfNeeded() throws {
+        guard TrialIsolation.connectsToSavyServices else { throw URLError(.unsupportedURL) }
         guard !isConfigured else { return }
 
         try Amplify.add(plugin: AWSCognitoAuthPlugin())

@@ -70,6 +70,7 @@ struct RootView: View {
     @ObservedObject private var notificationStatus = NotificationScheduler.status
     let session: AuthSession?
     let onSignOut: (() -> Void)?
+    @State private var cowboyModel: AskModel
     @StateObject private var navigationState: SavyNavigationState
     @StateObject private var leverageStore = LeverageDataStore()
     @StateObject private var metadataStore = MetadataEntryStore.live()
@@ -90,13 +91,15 @@ struct RootView: View {
         onSignOut: (() -> Void)? = nil,
         initialSection: SavyNavigationSection = .now
     ) {
+        let model = AskModel()
+        _cowboyModel = State(initialValue: model)
         self.session = session
         self.onSignOut = onSignOut
         let navigationState = SavyNavigationState()
         navigationState.activeSection = initialSection
         _navigationState = StateObject(wrappedValue: navigationState)
         let isUITest = SavyRuntime.isTesting
-        syncsWithCloud = !isUITest
+        syncsWithCloud = TrialIsolation.connectsToSavyServices && !isUITest
         _recoveringDraft = State(initialValue: EntryDraftStore.shared.latest)
         let loadedPostStore: SocialPostStore
         let loadedStoryStore: StoryStore
@@ -129,6 +132,9 @@ struct RootView: View {
             loadedStoryStore = StoryStore.live()
             loadedReminderStore = ReminderStore(repo: LocalReminderRepository())
             numberLedgerURL = PostNumberAllocator.defaultFileURL
+        }
+        if ProcessInfo.processInfo.arguments.contains("COWBOYAI_UI_TEST") {
+            CowboyUITestFixtures.prepare(model: model, entries: loadedReminderStore)
         }
         // Both formats participate in the initial chronological sequence. A damaged ledger
         // is left intact rather than replaced with a sequence that could reuse references.
@@ -194,6 +200,7 @@ struct RootView: View {
                     switch navigationState.activeSection {
                     case .now:
                         EditorialHomeView(
+                            model: cowboyModel,
                             leverageStore: leverageStore,
                             reminderStore: reminderStore,
                             postStore: postStore,
@@ -272,6 +279,7 @@ struct RootView: View {
                     postCardOrder: postCardOrder
                 )
             }
+            .task { await cowboyModel.loadRecent() }
             .task {
                 await reminderStore.bootstrap()
             }
@@ -319,6 +327,8 @@ struct RootView: View {
         } message: {
             Text(notificationStatus.errorMessage ?? "")
         }
+        .environment(cowboyModel.archive)
+        .environmentObject(reminderStore)
     }
 
     /// Routes the radial "+" menu to the shared Re_Call-style entry form, backed by the
@@ -356,7 +366,13 @@ struct RootView: View {
                              existing: writing.original,
                              existingTags: writing.connectionMode ? connectionStore.recentTags : reminderStore.recentTags,
                              recoveryDraft: draft,
-                             onSaveAttempt: { writing.connectionMode ? connectionStore.save($0) : reminderStore.save($0) },
+                             conversationID: writing.conversationID,
+                             onSaveAttempt: { entry in
+                                 if writing.conversationID != nil, let origin = entry.origin {
+                                     return cowboyModel.archive.saveMetadata(entry, for: origin)
+                                 }
+                                 return writing.connectionMode ? connectionStore.save(entry) : reminderStore.save(entry)
+                             },
                              onSave: { _ in })
         case .post(let writing):
             SocialPostFormView(existing: writing.original, recentAreas: postStore.recentAreas,
@@ -394,6 +410,8 @@ private struct IsolatedUITestCandidateClient: CowboyCandidateSubmitting {
 }
 
 struct EditorialHomeView: View {
+    let model: AskModel
+    @State private var selectedResponse: ConversationOrigin?
     @ObservedObject var leverageStore: LeverageDataStore
     @ObservedObject var reminderStore: ReminderStore
     @ObservedObject var postStore: SocialPostStore
@@ -427,6 +445,7 @@ struct EditorialHomeView: View {
                             .frame(height: RootHomeLayout.homeLandscapeRevealHeight)
                             .accessibilityHidden(true)
 
+                        CowboyResponseCards(model: model, armedID: $armedHomeCardID) { selectedResponse = $0 }
                         homeContentSections
 
                         if onSignOut != nil {
@@ -472,6 +491,7 @@ struct EditorialHomeView: View {
             }
             .ignoresSafeArea(edges: .top)
             .refreshable {
+                await model.loadRecent()
                 await leverageStore.refresh()
             }
             .task(id: "gateway-sync") {
@@ -479,6 +499,9 @@ struct EditorialHomeView: View {
             }
         }
         .background(SavyTheme.deepNavy.ignoresSafeArea())
+        .navigationDestination(item: $selectedResponse) { origin in
+            SavedResponsePage(origin: origin, archive: model.archive, pinned: model.archive.isPinned(origin))
+        }
         .navigationDestination(item: $selectedHomeCard) { card in
             if let section = leverageStore.section(id: card.sectionID) {
                 if section.id == "beliefs" {
@@ -546,11 +569,11 @@ struct EditorialHomeView: View {
 
     private func header(topInset: CGFloat) -> some View {
         HStack(alignment: .top, spacing: 0) {
-            Text("SAVY")
-                .font(SavyTypography.displaySerif(RootHomeLayout.heroWordmarkFontSize, weight: .bold))
+            Text("CowboyAI")
+                .font(SavyTypography.displaySerif(56, weight: .regular))
                 .foregroundStyle(.white)
                 .lineLimit(1)
-                .minimumScaleFactor(0.85)
+                .minimumScaleFactor(0.7)
 
             Spacer(minLength: 0)
 
@@ -568,7 +591,18 @@ struct EditorialHomeView: View {
             maxHeight: RootHomeLayout.heroHeight,
             alignment: .topLeading
         )
-        .background(SavyTheme.deepNavy)
+        .background(alignment: .topLeading) {
+            ZStack(alignment: .topLeading) {
+                SavyTheme.deepNavy
+                Image("CowboyHat")
+                    .renderingMode(.template).resizable().scaledToFit()
+                    .foregroundStyle(.white.opacity(0.18))
+                    .frame(width: 220, height: 220)
+                    .offset(x: 30, y: topInset - 18)
+                    .allowsHitTesting(false).accessibilityHidden(true)
+            }
+        }
+        .clipped()
         .overlay(alignment: .bottom) {
             Rectangle()
                 .fill(SavyTheme.crimson)
@@ -579,6 +613,14 @@ struct EditorialHomeView: View {
     private var homeCarousel: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(alignment: .top, spacing: 16) {
+                ForEach(model.archive.records(for: NucleusAPI.base)) { record in
+                    Button { selectedResponse = record.displayed } label: {
+                        CowboyResponseCarouselCard(origin: record.displayed,
+                                                   metadata: model.archive.metadata(for: record.displayed))
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("latest-\(record.latest.questionID)")
+                }
                 ForEach(feedRows) { entry in
                     switch entry.source {
                     case let .reminder(reminder):
@@ -1550,7 +1592,7 @@ enum SavyTheme {
     static let contentBackground = Color.white
     static let headerDivider = Color.white
     static let deepNavy = Color(red: 8 / 255, green: 23 / 255, blue: 45 / 255)
-    static let crimson = Color(red: 230 / 255, green: 14 / 255, blue: 68 / 255)
+    static let crimson = Brand.crimson
     static let green = Color(red: 42 / 255, green: 184 / 255, blue: 96 / 255)
     static let paper = Color(red: 248 / 255, green: 244 / 255, blue: 237 / 255)
     static let paperAccent = Color(red: 239 / 255, green: 235 / 255, blue: 228 / 255)

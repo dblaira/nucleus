@@ -332,6 +332,7 @@ extension AWSGraphClient {
     }
 
     private func sendDocumentRequest(_ request: URLRequest) async throws -> [String: Any] {
+        guard TrialIsolation.connectsToSavyServices else { throw URLError(.unsupportedURL) }
         let (data, response) = try await URLSession.shared.data(for: request)
         guard let http = response as? HTTPURLResponse else { throw SavyDocumentSyncError.badResponse }
         if http.statusCode == 404 || http.statusCode == 503 { throw SavyDocumentSyncError.unavailable }
@@ -470,10 +471,12 @@ final class SavyAccessTokens: @unchecked Sendable {
 
     @discardableResult
     func refresh() async -> String {
+        #if canImport(Amplify)
         if let fresh = await AmplifyAuthService.freshAccessToken() {
             lock.withLock { token = fresh }
             return fresh
         }
+        #endif
         return current
     }
 }

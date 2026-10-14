@@ -1,0 +1,245 @@
+[
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "D2BC1BBD-8375-4225-A9BE-F50C1D65E023",
+        "deviceName" : "CowboyAI-Recovery",
+        "exportedFileName" : "8C5997B9-F475-486F-8550-070C74404919.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Connection failure leaves a return to the original writing_0_1CACC06B-111C-47EE-8439-D2E6A4A01A5B.png",
+        "timestamp" : 1791999840.947
+      }
+    ],
+    "testIdentifier" : "CowboyFoundationUITests/testConnectionFailureRetainsTheWholeEntryForRetry()",
+    "testIdentifierURL" : "test://com.apple.xcode/CowboyAITrial/SAVYUITests/CowboyFoundationUITests/testConnectionFailureRetainsTheWholeEntryForRetry"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "D2BC1BBD-8375-4225-A9BE-F50C1D65E023",
+        "deviceName" : "CowboyAI-Recovery",
+        "exportedFileName" : "6FD015F7-A876-47FB-BECF-F18E01A34F4E.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Original Calendar form with added Ask_0_F7E776AE-DF2C-4096-AEF1-FC53A203DCC3.png",
+        "timestamp" : 1791999887.626
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "D2BC1BBD-8375-4225-A9BE-F50C1D65E023",
+        "deviceName" : "CowboyAI-Recovery",
+        "exportedFileName" : "60C916EA-7B20-4135-8B5C-414466263EB9.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "SAVY fan with all four choices_0_6D532D7C-35D1-4531-B60E-909B456643AF.png",
+        "timestamp" : 1791999884.966
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "D2BC1BBD-8375-4225-A9BE-F50C1D65E023",
+        "deviceName" : "CowboyAI-Recovery",
+        "exportedFileName" : "04391749-4F46-4C6D-B1AB-6C7030E30E74.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Original Post form with added Ask_0_3056426A-C4D4-4C86-A2FF-A6EDFD5758E5.png",
+        "timestamp" : 1791999878.395
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "D2BC1BBD-8375-4225-A9BE-F50C1D65E023",
+        "deviceName" : "CowboyAI-Recovery",
+        "exportedFileName" : "AB1805C6-DE75-4057-ACAA-B5D05C5E0C3E.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "SAVY fan with all four choices_0_5AE04532-6992-432F-9F4B-0F532AAAE78F.png",
+        "timestamp" : 1791999875.789
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "D2BC1BBD-8375-4225-A9BE-F50C1D65E023",
+        "deviceName" : "CowboyAI-Recovery",
+        "exportedFileName" : "606316AB-55C0-490B-9554-774F7F650ED0.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Original Action form with added Ask_0_66DCE278-2E1E-4459-B159-196032A214D5.png",
+        "timestamp" : 1791999869.3
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "D2BC1BBD-8375-4225-A9BE-F50C1D65E023",
+        "deviceName" : "CowboyAI-Recovery",
+        "exportedFileName" : "9F8F44F3-459F-406F-B53D-AAB962EC2A86.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "SAVY fan with all four choices_0_7625E85B-D798-41EC-8B7C-6CB606CFFD29.png",
+        "timestamp" : 1791999866.681
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "D2BC1BBD-8375-4225-A9BE-F50C1D65E023",
+        "deviceName" : "CowboyAI-Recovery",
+        "exportedFileName" : "76A327CA-ACD0-4196-B724-A772B9F79734.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Original Reminder form with added Ask_0_FC5B82FE-6EE7-44EE-A2BE-33813639E350.png",
+        "timestamp" : 1791999860.167
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "D2BC1BBD-8375-4225-A9BE-F50C1D65E023",
+        "deviceName" : "CowboyAI-Recovery",
+        "exportedFileName" : "C0A20461-B261-474F-95F9-B6F0FB28A634.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "SAVY fan with all four choices_0_FDD31BD7-CAE5-48B0-81F9-6CE02FCB4699.png",
+        "timestamp" : 1791999857.823
+      }
+    ],
+    "testIdentifier" : "CowboyFoundationUITests/testFabRetainsAllFourSavyChoicesAndTheSameEntryForm()",
+    "testIdentifierURL" : "test://com.apple.xcode/CowboyAITrial/SAVYUITests/CowboyFoundationUITests/testFabRetainsAllFourSavyChoicesAndTheSameEntryForm"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "D2BC1BBD-8375-4225-A9BE-F50C1D65E023",
+        "deviceName" : "CowboyAI-Recovery",
+        "exportedFileName" : "1313E181-56D3-4721-B57A-5F92B70A5705.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Pinned response reopens after relaunch_0_0526E75A-91CA-40B6-8CE2-734A8A54C64A.png",
+        "timestamp" : 1791999915.694
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "D2BC1BBD-8375-4225-A9BE-F50C1D65E023",
+        "deviceName" : "CowboyAI-Recovery",
+        "exportedFileName" : "39F16DDE-AD50-4E4E-86B1-4601B39D67F9.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Right swipe exposes Unpin_0_D178CE22-6EF8-432F-B9DA-BF6E98378F48.png",
+        "timestamp" : 1791999906.896
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "D2BC1BBD-8375-4225-A9BE-F50C1D65E023",
+        "deviceName" : "CowboyAI-Recovery",
+        "exportedFileName" : "7DDFDBAF-32E1-49F8-84CD-E9B0E8061049.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Two independently pinned responses with SAVY colors_0_71B48EE9-D068-4574-8B6C-DDFBCF04C625.png",
+        "timestamp" : 1791999904.978
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "D2BC1BBD-8375-4225-A9BE-F50C1D65E023",
+        "deviceName" : "CowboyAI-Recovery",
+        "exportedFileName" : "703D0DD8-CF67-41FC-85DB-74B65976EFC4.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Right swipe exposes Pin_0_EA7E2C5A-FB8D-4A59-B976-BCB1EDFDB9F9.png",
+        "timestamp" : 1791999903.375
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "D2BC1BBD-8375-4225-A9BE-F50C1D65E023",
+        "deviceName" : "CowboyAI-Recovery",
+        "exportedFileName" : "B425BF5A-4C50-4E23-BD9C-623712712901.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Right swipe exposes Pin_0_3DFB541D-F711-473C-A7C6-45ABC388E5FD.png",
+        "timestamp" : 1791999898.321
+      }
+    ],
+    "testIdentifier" : "CowboyFoundationUITests/testRightSwipePinsMultipleResponsesAndUnpinKeepsTheOthersAfterRelaunch()",
+    "testIdentifierURL" : "test://com.apple.xcode/CowboyAITrial/SAVYUITests/CowboyFoundationUITests/testRightSwipePinsMultipleResponsesAndUnpinKeepsTheOthersAfterRelaunch"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "D2BC1BBD-8375-4225-A9BE-F50C1D65E023",
+        "deviceName" : "CowboyAI-Recovery",
+        "exportedFileName" : "EA750C3A-8429-4449-B107-E41265B59FE8.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Live FLOW response from the normal SAVY entry_0_F33B4358-1CA0-4747-8892-2E514506C365.png",
+        "timestamp" : 1791999934.966
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "D2BC1BBD-8375-4225-A9BE-F50C1D65E023",
+        "deviceName" : "CowboyAI-Recovery",
+        "exportedFileName" : "8D2DB85B-C37A-46E5-9616-3432DF9B3C59.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Original SAVY entry with writing and Ask_0_4F81C597-DBE9-4093-9DEC-0B951A80E747.png",
+        "timestamp" : 1791999930.635
+      }
+    ],
+    "testIdentifier" : "CowboyFoundationUITests/testSharedEntryAsksLiveCowboyAIAndReopensItsExactSavedAnswer()",
+    "testIdentifierURL" : "test://com.apple.xcode/CowboyAITrial/SAVYUITests/CowboyFoundationUITests/testSharedEntryAsksLiveCowboyAIAndReopensItsExactSavedAnswer"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "D2BC1BBD-8375-4225-A9BE-F50C1D65E023",
+        "deviceName" : "CowboyAI-Recovery",
+        "exportedFileName" : "5075B49E-399C-445C-B463-CC18FBEF3D3C.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "07 Independent Home pins and pinned order survive relaunch_0_4A784DDB-E093-4BC7-ABF7-48485B7E9714.png",
+        "timestamp" : 1792000080.593
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "D2BC1BBD-8375-4225-A9BE-F50C1D65E023",
+        "deviceName" : "CowboyAI-Recovery",
+        "exportedFileName" : "E15054A1-D8D9-43C9-8D07-33080C81656F.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "06b New unpin leads the unpinned Home cards below the remaining pins_0_64BAFBA7-42D1-4A36-9294-A8D6AE21069F.png",
+        "timestamp" : 1792000059.974
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "D2BC1BBD-8375-4225-A9BE-F50C1D65E023",
+        "deviceName" : "CowboyAI-Recovery",
+        "exportedFileName" : "6F568133-9712-4902-B32D-1334F3FE0D5E.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "06 Unpinning one Home card leaves the other three pinned_0_E65BE545-5ADD-4090-9333-0ABC77E447AF.png",
+        "timestamp" : 1792000040.97
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "D2BC1BBD-8375-4225-A9BE-F50C1D65E023",
+        "deviceName" : "CowboyAI-Recovery",
+        "exportedFileName" : "F8C43587-62C1-4B0B-A2CF-F28660B685CE.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "05 A pinned Home card moves within the pinned group_0_B3B9FDD5-6D7E-4E79-A06C-CBD5A8916CD8.png",
+        "timestamp" : 1792000022.429
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "D2BC1BBD-8375-4225-A9BE-F50C1D65E023",
+        "deviceName" : "CowboyAI-Recovery",
+        "exportedFileName" : "BFD77B41-A69C-4E8B-812A-7A1B6E2AEC61.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "04 All four Home cards retain independent pins_0_3E522DBB-5C7C-45E9-8B9C-63AE049611D5.png",
+        "timestamp" : 1792000014.017
+      }
+    ],
+    "testIdentifier" : "SAVYCardReorderUITests/testHomeCardsCanAllRemainPinnedAndKeepTheirOrderAfterRelaunch()",
+    "testIdentifierURL" : "test://com.apple.xcode/CowboyAITrial/SAVYUITests/SAVYCardReorderUITests/testHomeCardsCanAllRemainPinnedAndKeepTheirOrderAfterRelaunch"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "D2BC1BBD-8375-4225-A9BE-F50C1D65E023",
+        "deviceName" : "CowboyAI-Recovery",
+        "exportedFileName" : "B29F459C-EB9A-4100-B016-88CB9406AFD7.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "02 bolt post reopened with question and answer_0_8668D8D8-C75B-4D46-BB04-A3870CF8ACF6.png",
+        "timestamp" : 1792000113.174
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "D2BC1BBD-8375-4225-A9BE-F50C1D65E023",
+        "deviceName" : "CowboyAI-Recovery",
+        "exportedFileName" : "4082239F-E069-4EFA-A50E-A15EDBA1CFC0.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "01 fan with Post_0_D506C763-47EB-4D61-A9DC-23A383478EB2.png",
+        "timestamp" : 1792000090.507
+      }
+    ],
+    "testIdentifier" : "SAVYPostFormUITests/testBoltOpensPostFormWithThemeDecideAndFullReminderBody()",
+    "testIdentifierURL" : "test://com.apple.xcode/CowboyAITrial/SAVYUITests/SAVYPostFormUITests/testBoltOpensPostFormWithThemeDecideAndFullReminderBody"
+  }
+]

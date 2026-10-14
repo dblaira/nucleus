@@ -395,6 +395,7 @@ actor AWSGraphClient {
             request.httpBody = try JSONEncoder.awsGraph.encode(body)
         }
 
+        guard TrialIsolation.connectsToSavyServices else { throw URLError(.unsupportedURL) }
         let (data, response) = try await session.data(for: request)
         guard let http = response as? HTTPURLResponse else {
             throw AWSGraphClientError.requestFailed

@@ -14,6 +14,7 @@ enum HarnessDelegationWriter {
     /// Documents/Delegations inside the shared container; nil when
     /// iCloud is unavailable (signed out, airplane-mode first launch).
     static func delegationsDirectory() -> URL? {
+        guard TrialIsolation.connectsToSavyServices else { return nil }
         guard let container = FileManager.default.url(forUbiquityContainerIdentifier: containerIdentifier) else {
             return nil
         }
@@ -40,6 +41,7 @@ enum HarnessDelegationWriter {
     /// sentence, the body carries all three under his own labels.
     @discardableResult
     static func write(want: String, think: String, done: String, postContext: String? = nil) -> Bool {
+        guard TrialIsolation.connectsToSavyServices else { return false }
         // UI acceptance runs use synthetic entries on the connected phone, never its iCloud queue.
         if ProcessInfo.processInfo.arguments.contains("SAVY_UI_TEST_UNLOCKED") { return true }
         let stamp = Self.fileStampFormatter.string(from: Date())
@@ -121,6 +123,7 @@ enum HarnessedRegistry {
     }
 
     static func mark(_ reminder: Reminder) {
+        guard TrialIsolation.connectsToSavyServices else { return }
         guard !ProcessInfo.processInfo.arguments.contains("SAVY_UI_TEST_UNLOCKED") else { return }
         var ids = Set(UserDefaults.standard.stringArray(forKey: key) ?? [])
         ids.insert(reminder.id.uuidString)

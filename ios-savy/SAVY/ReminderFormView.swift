@@ -12,6 +12,12 @@ struct ReminderFormView: View {
     let existing: Reminder?
     let existingTags: [String]
     let connectionMode: Bool
+    private let conversationID: String?
+    private let conversationTheme: PostTheme?
+    @Environment(ConversationArchive.self) private var archive
+    @State private var showingOrigin: ConversationOrigin?
+    @State private var entryAskModel: AskModel?
+    @State private var showingEntryAnswer = false
     private let initialEntry: Reminder
     private let recoveryID: String
     var onSaveAttempt: ((Reminder) -> Bool)?
@@ -41,16 +47,25 @@ struct ReminderFormView: View {
 
     private let listChoices = ["Learning", "Leverage", "Delegation", "Inspiration", "Risk", "Health"]
 
-    init(initialKind: ReminderKind = .reminder, connectionMode: Bool = false, existing: Reminder?, existingTags: [String] = [], recoveryDraft: EntryRecoveryDraft? = nil, onSaveAttempt: ((Reminder) -> Bool)? = nil, onSave: @escaping (Reminder) -> Void) {
+    init(initialKind: ReminderKind = .reminder, connectionMode: Bool = false, origin: ConversationOrigin? = nil, existing: Reminder?, existingTags: [String] = [], recoveryDraft: EntryRecoveryDraft? = nil, conversationID: String? = nil, onSaveAttempt: ((Reminder) -> Bool)? = nil, onSave: @escaping (Reminder) -> Void) {
         self.existing = existing
         self.existingTags = existingTags
         self.connectionMode = connectionMode
+        self.conversationID = conversationID
+        let fixedTheme: PostTheme?
+        if conversationID != nil, let theme = (origin ?? existing?.origin)?.response?.question.theme {
+            fixedTheme = PostTheme(id: theme.id, name: theme.name, questions: theme.fields.map {
+                PostThemeQuestion(prompt: $0.prompt, symbol: $0.symbol ?? "text.bubble")
+            })
+        } else { fixedTheme = nil }
+        self.conversationTheme = fixedTheme
         self.onSaveAttempt = onSaveAttempt
         self.onSave = onSave
-        recoveryID = recoveryDraft?.id ?? EntryRecoveryDraft.reminderKey(existing: existing, kind: initialKind, connectionMode: connectionMode)
+        recoveryID = recoveryDraft?.id ?? conversationID.map { "conversation:" + $0 } ?? EntryRecoveryDraft.reminderKey(existing: existing, kind: initialKind, connectionMode: connectionMode, origin: origin)
         var base = existing ?? Reminder()
         if existing == nil {
             base.kind = initialKind
+            base.origin = origin
             if initialKind == .event { base.dueDate = Date() }
         }
         self.initialEntry = base
@@ -66,14 +81,14 @@ struct ReminderFormView: View {
         }
         _r = State(initialValue: base)
         _subtasks = State(initialValue: base.subtasks)
-        _postDraft = State(initialValue: PostEntryDraft(entry: base, fixedTheme: connectionMode ? ConnectionEntry.theme : nil))
+        _postDraft = State(initialValue: PostEntryDraft(entry: base, fixedTheme: fixedTheme ?? (connectionMode ? ConnectionEntry.theme : nil)))
         _pickedImage = State(initialValue: LocalImageStore.load(base.imageLocalPath))
     }
 
     var body: some View {
         NavigationStack {
             Form {
-                if !connectionMode {
+                if !connectionMode && conversationID == nil {
                     Section {
                         Picker(EntryFormCopy.destinationPickerTitle, selection: $r.kind) {
                             ForEach(ReminderKind.allCases) { Text($0.segmentLabel).tag($0) }
@@ -83,6 +98,14 @@ struct ReminderFormView: View {
                     .listRowBackground(Brand.card)
                 }
 
+                if let source = r.origin {
+                    Section("From this conversation") {
+                        Button { showingOrigin = source } label: {
+                            Label(source.question, systemImage: "arrow.uturn.backward")
+                                .lineLimit(3).foregroundStyle(Brand.crimson)
+                        }.accessibilityIdentifier("entryOrigin")
+                    }.listRowBackground(Brand.card)
+                }
                 unifiedEntrySections
             }
             .scrollContentBackground(.hidden)
@@ -91,7 +114,23 @@ struct ReminderFormView: View {
             .tint(Brand.crimson)
             // The keyboard row sits on top of the keyboard while any box has the cursor.
             .safeAreaInset(edge: .bottom, spacing: 0) {
-                if Self.showsKeyboardRow, activeField != nil { keyboardRow }
+                VStack(spacing: 0) {
+                    if conversationID == nil {
+                        Button(action: askCowboyAI) {
+                            Label("Ask CowboyAI", systemImage: "paperplane")
+                                .font(.body.weight(.semibold))
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.horizontal, 20).padding(.vertical, 16)
+                                .background(Brand.card, in: RoundedRectangle(cornerRadius: 24))
+                        }
+                        .buttonStyle(.plain).foregroundStyle(Brand.crimson)
+                        .disabled(entryQuestion.text.isEmpty || isSaving || entryAskModel?.working == true)
+                        .accessibilityIdentifier("entryAskCowboyAI")
+                        .padding(.horizontal, 20).padding(.vertical, 8)
+                    }
+                    if Self.showsKeyboardRow, activeField != nil { keyboardRow }
+                }
+                .background(Color.white)
             }
             // Header mirrors the Title as you type — the type name until the first character, then
             // the live title at full size. Compact icon buttons leave it more room.
@@ -104,6 +143,7 @@ struct ReminderFormView: View {
                     }
                     .tint(.black)
                     .accessibilityLabel("Cancel")
+                    .accessibilityIdentifier("entryCancel")
                     .disabled(isSaving)
                 }
                 ToolbarItem(placement: .confirmationAction) {
@@ -111,6 +151,7 @@ struct ReminderFormView: View {
                         SaveDiskIcon(size: 24)
                     }
                     .accessibilityLabel("Save")
+                    .accessibilityIdentifier("entrySave")
                     .disabled(isSaving)
                 }
             }
@@ -123,11 +164,22 @@ struct ReminderFormView: View {
                 if phase != .active { saveRecoveryDraft() }
             }
             // Auto-save: if the form is swiped away (not via Cancel) and has content, keep it.
-            .onDisappear { saveRecoveryDraft(); autosaveIfNeeded() }
+            .onDisappear {
+                saveRecoveryDraft()
+                if !showingEntryAnswer && showingOrigin == nil { autosaveIfNeeded() }
+            }
             .alert("Couldn't save \(entryLabel)", isPresented: $saveFailed) {
                 Button("OK", role: .cancel) { }
             } message: {
                 Text(saveErrorMessage)
+            }
+        }
+        .sheet(item: $showingOrigin) { source in
+            NavigationStack { ArchivedAnswerPage(origin: source, archive: archive) }
+        }
+        .fullScreenCover(isPresented: $showingEntryAnswer) {
+            if let entryAskModel {
+                NavigationStack { AnswerPage(model: entryAskModel, id: nil) }
             }
         }
         .sheet(isPresented: $showsSchedule) {
@@ -164,7 +216,7 @@ struct ReminderFormView: View {
             VStack(spacing: 12) {
                 Image(systemName: "checkmark.circle.fill")
                     .font(.system(size: 46)).foregroundStyle(Brand.crimson)
-                Text(connectionMode ? "Saved" : "Harnessed!").font(Brand.serif(30)).foregroundStyle(.black)
+                Text("Saved").font(Brand.serif(30)).foregroundStyle(.black)
             }
             .padding(.horizontal, 40).padding(.vertical, 30)
             .background(Color.white, in: RoundedRectangle(cornerRadius: 22))
@@ -193,6 +245,7 @@ struct ReminderFormView: View {
                 .fixedSize(horizontal: false, vertical: true)
                 .focused($focusedField, equals: .title)
                 .accessibilityIdentifier("Title")
+                .disabled(conversationID != nil)
             TextField(EntryFormCopy.whenPrompt, text: whenIAmBinding, axis: .vertical)
                 .lineLimit(1...)
                 .textFieldStyle(.plain)
@@ -218,35 +271,57 @@ struct ReminderFormView: View {
         } header: { sectionHeader(EntryFormCopy.chooseHeader) }
         .listRowBackground(Brand.card)
 
-        Section {
-            Button { showsSchedule = true } label: {
-                HStack(spacing: 12) {
-                    Label("Date", systemImage: "calendar")
-                        .foregroundStyle(.black)
-                    Spacer()
-                    Text(r.whenLabel ?? "Choose a date")
-                        .foregroundStyle(Brand.crimson)
-                        .multilineTextAlignment(.trailing)
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 12, weight: .semibold))
-                        .foregroundStyle(Brand.crimson)
+        if conversationID == nil {
+            Section {
+                Button { showsSchedule = true } label: {
+                    HStack(spacing: 12) {
+                        Label("Date", systemImage: "calendar")
+                            .foregroundStyle(.black)
+                        Spacer()
+                        Text(r.whenLabel ?? "Choose a date")
+                            .foregroundStyle(Brand.crimson)
+                            .multilineTextAlignment(.trailing)
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundStyle(Brand.crimson)
+                    }
                 }
-            }
-            .accessibilityIdentifier("openSchedule")
-            if r.schedule?.invitees?.isEmpty == false {
-                Button { commit(sendInvitations: true) } label: {
-                    Label("Save & Send Invitations", systemImage: "envelope")
+                .accessibilityIdentifier("openSchedule")
+                if r.schedule?.invitees?.isEmpty == false {
+                    Button { commit(sendInvitations: true) } label: {
+                        Label("Save & Send Invitations", systemImage: "envelope")
+                    }
+                    .disabled(isSaving)
+                    .accessibilityIdentifier("sendScheduleInvitations")
                 }
-                .disabled(isSaving)
-                .accessibilityIdentifier("sendScheduleInvitations")
-            }
-        } header: { sectionHeader(EntryFormCopy.scheduleHeader) }
-        .listRowBackground(Brand.card)
+            } header: { sectionHeader(EntryFormCopy.scheduleHeader) }
+            .listRowBackground(Brand.card)
+        }
 
         Section {
             imageRow
         } header: { sectionHeader("Details") }
         .listRowBackground(Brand.card)
+    }
+
+    private var entryQuestion: EntryQuestion {
+        EntryQuestion(entry: r, draft: postDraft, subtasks: subtasks)
+    }
+
+    private func askCowboyAI() {
+        let question = entryQuestion
+        guard !question.text.isEmpty, entryAskModel?.working != true else { return }
+        moveCursor(to: nil)
+        saveRecoveryDraft(force: true)
+        guard !saveFailed else { return }
+        let model = AskModel(archive: archive, keepsComposerDraft: false)
+        entryAskModel = model
+        showingEntryAnswer = true
+        Task { @MainActor in
+            await model.ask(entry: question)
+            if r.origin == nil, let origin = model.currentOrigin { r.origin = origin }
+            saveRecoveryDraft(force: true)
+        }
     }
 
     // MARK: - Post: Theme + Decide
@@ -257,7 +332,7 @@ struct ReminderFormView: View {
 
     private var postThemeSection: some View {
         Section {
-            if connectionMode {
+            if connectionMode || conversationTheme != nil {
                 Label(selectedPostTheme.name, systemImage: selectedPostTheme.questions.first?.symbol ?? "lightbulb")
                     .foregroundStyle(Brand.crimson)
                     .accessibilityIdentifier("connectionTheme")
@@ -656,11 +731,8 @@ struct ReminderFormView: View {
     }
 
     private func finishCommit(sendInvitations: Bool) {
-        // Adam's list #7: every saved entry rides home to the Harness
-        // Delegation queue through the shared iCloud pocket -- his
-        // three sentences (want / when I am / done), verbatim. No new
-        // menu options; the toast says where it went: "Harnessed!"
-        if !connectionMode {
+        // The original form keeps this hook; TrialIsolation prevents any shared write.
+        if !connectionMode && conversationID == nil {
             HarnessDelegationWriter.write(
                 want: r.title,
                 think: r.whenIAm ?? "",
@@ -692,7 +764,7 @@ struct ReminderFormView: View {
 
     private var recoveryContents: EntryRecoveryDraft.Contents {
         .reminder(.init(original: existing, entry: r, questions: postDraft, subtasks: subtasks,
-                        tagDraft: tagDraft, imageData: recoveryImageData, connectionMode: connectionMode))
+                        tagDraft: tagDraft, imageData: recoveryImageData, connectionMode: connectionMode, conversationID: conversationID))
     }
 
     private func saveRecoveryDraft(force: Bool = false) {
@@ -711,6 +783,12 @@ struct ReminderFormView: View {
     }
 
     private var hasContent: Bool {
+        if conversationID != nil {
+            return r != initialEntry || subtasks != initialEntry.subtasks
+                || postDraft != PostEntryDraft(entry: initialEntry, fixedTheme: conversationTheme)
+                || !tagDraft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                || recoveryImageData != nil
+        }
         if connectionMode, r != initialEntry || !tagDraft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             return true
         }
@@ -749,7 +827,7 @@ struct ReminderFormView: View {
         }
         if r.title.trimmingCharacters(in: .whitespaces).isEmpty { r.title = "New \(entryLabel)" }
         r.updatedAt = Date()
-        if r.schedule?.calendarIdentifier != nil {
+        if conversationID == nil, r.schedule?.calendarIdentifier != nil {
             do {
                 let eventID = try await CalendarScheduleBridge.shared.saveEvent(for: r)
                 r.schedule?.calendarEventIdentifier = eventID
@@ -757,7 +835,7 @@ struct ReminderFormView: View {
                 saveErrorMessage = error.localizedDescription
                 return false
             }
-        } else if initialEntry.schedule?.calendarIdentifier != nil {
+        } else if conversationID == nil, initialEntry.schedule?.calendarIdentifier != nil {
             do {
                 try await CalendarScheduleBridge.shared.disableAlertsForLinkedEvent(initialEntry)
             } catch {
@@ -768,7 +846,7 @@ struct ReminderFormView: View {
         if let onSaveAttempt, !onSaveAttempt(r) { return false }
         onSave(r)
         guard EntryDraftStore.shared.remove(recoveryID) else { return false }
-        CalendarScheduleBridge.shared.discardPendingSync(for: r.id)
+        if conversationID == nil { CalendarScheduleBridge.shared.discardPendingSync(for: r.id) }
         return true
     }
 }

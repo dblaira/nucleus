@@ -2,7 +2,7 @@ import SwiftUI
 
 /// Notorious Recall palette + type. Page surfaces are black; entry forms are white.
 enum Brand {
-    static let crimson = Color(red: 0xDC / 255, green: 0x14 / 255, blue: 0x3C / 255)
+    static let crimson = Color(hex: 0xA51D27)
     static let page    = Color(hex: 0x0A1626)              // deep navy page background (was black)
     static let card    = Color(red: 0xF3 / 255, green: 0xEA / 255, blue: 0xD5 / 255) // entry-form background (cream)
     static let ink     = Color.black
@@ -11,7 +11,7 @@ enum Brand {
     // Reminders-screen palette (from the Figma "Screen / Reminders" frame).
     static let tan         = Color(hex: 0xD5C194)   // RECALL band + tab bar
     static let nearBlack   = Color(hex: 0x0C1E33)   // deep navy — heroes, dark feed cards, FAB options (was near-black)
-    static let darkRed     = Color(hex: 0xB00124)   // story / tile red
+    static let darkRed     = Color(hex: 0xA51D27)   // story / tile red
     static let recallBlue  = Color(hex: 0x021784)   // "RECALL" label
     static let cyan        = Color(hex: 0x0C8A92)   // deep aqua — white text pops
     static let tileBlue    = Color(hex: 0x0F288E)   // deep blue (cyan-card text)

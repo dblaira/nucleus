@@ -10,6 +10,7 @@ struct EntryRecoveryDraft: Codable, Equatable, Identifiable {
         var tagDraft: String
         var imageData: Data?
         var connectionMode: Bool
+        var conversationID: String? = nil
     }
     struct PostWriting: Codable, Equatable {
         var original: SocialPost?
@@ -32,9 +33,10 @@ struct EntryRecoveryDraft: Codable, Equatable, Identifiable {
     var editedAt: Date
     var contents: Contents
 
-    static func reminderKey(existing: Reminder?, kind: ReminderKind, connectionMode: Bool) -> String {
+    static func reminderKey(existing: Reminder?, kind: ReminderKind, connectionMode: Bool, origin: ConversationOrigin? = nil) -> String {
         let destination = connectionMode ? "connection" : "reminder"
-        return destination + ":" + (existing?.id.uuidString ?? "new-\(kind.rawValue)")
+        let key = destination + ":" + (existing?.id.uuidString ?? "new-\(kind.rawValue)")
+        return existing == nil ? key + (origin.map { ":" + $0.conversationID } ?? "") : key
     }
     static func postKey(_ existing: SocialPost?) -> String { "post:" + (existing?.id.uuidString ?? "new") }
     static func storyKey(_ existing: Story?) -> String { "story:" + (existing?.id.uuidString ?? "new") }

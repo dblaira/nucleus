@@ -1,4 +1,4 @@
-name: SAVY
+name: CowboyAITrial
 options:
   bundleIdPrefix: com.adamblair
   deploymentTarget:
@@ -11,11 +11,6 @@ settings:
     CODE_SIGN_STYLE: Automatic
     DEVELOPMENT_TEAM: 7FKUS5M5QS
 
-packages:
-  Amplify:
-    url: https://github.com/aws-amplify/amplify-swift
-    from: 2.46.0
-
 targets:
   SAVY:
     type: application
@@ -23,20 +18,20 @@ targets:
     configFiles:
       Debug: SAVY.xcconfig
       Release: SAVY.xcconfig
-    dependencies:
-      - package: Amplify
-        product: Amplify
-      - package: Amplify
-        product: AWSCognitoAuthPlugin
-      - package: Amplify
-        product: AWSPluginsCore
     sources:
       - path: SAVY
+        excludes:
+          - AuthGateView.swift
+          - AuthenticationStore.swift
+          - AmplifyAuthService.swift
     resources:
       - path: SAVY/amplifyconfiguration.json
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.adamblair.savy
+        PRODUCT_BUNDLE_IDENTIFIER: com.adamblair.cowboyai.savytrial
+        PRODUCT_NAME: CowboyAITrial
+        PRODUCT_MODULE_NAME: SAVY
+        SUPPORTED_PLATFORMS: iphonesimulator
         CODE_SIGN_ENTITLEMENTS: SAVY/SAVY.entitlements
         CODE_SIGN_STYLE: Automatic
         DEVELOPMENT_TEAM: 7FKUS5M5QS
@@ -59,8 +54,8 @@ targets:
     settings:
       base:
         GENERATE_INFOPLIST_FILE: YES
-        PRODUCT_BUNDLE_IDENTIFIER: com.adamblair.savy.tests
-        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/SAVY.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/SAVY"
+        PRODUCT_BUNDLE_IDENTIFIER: com.adamblair.cowboyai.savytrial.tests
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/CowboyAITrial.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/CowboyAITrial"
         BUNDLE_LOADER: "$(TEST_HOST)"
   SAVYUITests:
     type: bundle.ui-testing
@@ -72,11 +67,11 @@ targets:
     settings:
       base:
         GENERATE_INFOPLIST_FILE: YES
-        PRODUCT_BUNDLE_IDENTIFIER: com.adamblair.savy.uitests
+        PRODUCT_BUNDLE_IDENTIFIER: com.adamblair.cowboyai.savytrial.uitests
         TEST_TARGET_NAME: SAVY
 
 schemes:
-  SAVY:
+  CowboyAITrial:
     build:
       targets:
         SAVY: all

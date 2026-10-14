@@ -271,6 +271,7 @@ struct CowboyCandidateClient: CowboyCandidateSubmitting, Sendable {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = try JSONEncoder.recall.encode(payload)
 
+        guard TrialIsolation.connectsToSavyServices else { throw URLError(.unsupportedURL) }
         let (data, response) = try await session.data(for: request)
         guard let http = response as? HTTPURLResponse else {
             throw SavyCowboyAIError.invalidResponse
@@ -462,6 +463,7 @@ struct SavyCowboyAIClient: Sendable {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = try JSONEncoder().encode(body)
 
+        guard TrialIsolation.connectsToSavyServices else { throw URLError(.unsupportedURL) }
         let (data, response) = try await session.data(for: request)
         guard let http = response as? HTTPURLResponse else {
             throw SavyCowboyAIError.invalidResponse

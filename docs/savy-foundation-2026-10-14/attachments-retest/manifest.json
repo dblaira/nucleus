@@ -1,0 +1,68 @@
+[
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "D2BC1BBD-8375-4225-A9BE-F50C1D65E023",
+        "deviceName" : "CowboyAI-Recovery",
+        "exportedFileName" : "99BA53C5-A95A-483E-85D1-96D2872BFC95.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Unsent writing recovered after relaunch_0_722BE637-E3BC-47C3-AD46-8D162EF9E26F.png",
+        "timestamp" : 1792000277.132
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "D2BC1BBD-8375-4225-A9BE-F50C1D65E023",
+        "deviceName" : "CowboyAI-Recovery",
+        "exportedFileName" : "D1B8C1DD-3A2D-4F0E-810D-963E2F9B7E34.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Connection failure leaves a return to the original writing_0_EBE4C82B-3703-40CA-8D98-1703EE2E3A04.png",
+        "timestamp" : 1792000267.659
+      }
+    ],
+    "testIdentifier" : "CowboyFoundationUITests/testConnectionFailureRetainsTheWholeEntryForRetry()",
+    "testIdentifierURL" : "test://com.apple.xcode/CowboyAITrial/SAVYUITests/CowboyFoundationUITests/testConnectionFailureRetainsTheWholeEntryForRetry"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "D2BC1BBD-8375-4225-A9BE-F50C1D65E023",
+        "deviceName" : "CowboyAI-Recovery",
+        "exportedFileName" : "F3ECD429-D6D4-43DB-8EDE-00DD9598D068.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Saved entry reopens its exact response after relaunch_0_EE85CB9F-173F-442C-A662-02FB8D94A03F.png",
+        "timestamp" : 1792000338.606
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "D2BC1BBD-8375-4225-A9BE-F50C1D65E023",
+        "deviceName" : "CowboyAI-Recovery",
+        "exportedFileName" : "613EF0F3-FA97-4B54-8055-AAF9527D7E54.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Actual dictionary evidence from the live response_0_1D15283E-CADB-4EC6-8367-9E43A480D2AB.png",
+        "timestamp" : 1792000305.4
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "D2BC1BBD-8375-4225-A9BE-F50C1D65E023",
+        "deviceName" : "CowboyAI-Recovery",
+        "exportedFileName" : "1A20458C-86C8-4C09-A5A2-EFE89A1C78DC.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Live FLOW response from the normal SAVY entry_0_E6BB0D48-E59B-4397-98A3-71FCF45DE0AF.png",
+        "timestamp" : 1792000294.916
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "D2BC1BBD-8375-4225-A9BE-F50C1D65E023",
+        "deviceName" : "CowboyAI-Recovery",
+        "exportedFileName" : "90337006-A686-4DBB-BE16-D192A26ED533.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Original SAVY entry with writing and Ask_0_AAD6F1C8-667C-48BF-B16B-7D91D7A00615.png",
+        "timestamp" : 1792000292.667
+      }
+    ],
+    "testIdentifier" : "CowboyFoundationUITests/testSharedEntryAsksLiveCowboyAIAndReopensItsExactSavedAnswer()",
+    "testIdentifierURL" : "test://com.apple.xcode/CowboyAITrial/SAVYUITests/CowboyFoundationUITests/testSharedEntryAsksLiveCowboyAIAndReopensItsExactSavedAnswer"
+  }
+]

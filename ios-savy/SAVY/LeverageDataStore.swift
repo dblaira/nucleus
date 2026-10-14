@@ -22,6 +22,7 @@ final class LeverageDataStore: ObservableObject {
     }
 
     func refresh() async {
+        guard TrialIsolation.connectsToSavyServices else { return }
         refreshGeneration += 1
         let generation = refreshGeneration
         isLoading = true

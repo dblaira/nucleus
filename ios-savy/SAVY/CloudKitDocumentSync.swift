@@ -438,7 +438,7 @@ final class CloudKitDocumentSync: ObservableObject, CKSyncEngineDelegate {
          accountCheckOnly: Bool = false) {
         self.adapters = adapters
         self.legacyDevice = legacyDevice
-        self.enabled = enabled
+        self.enabled = enabled && TrialIsolation.connectsToSavyServices
         self.requestedStateURL = stateURL
         self.accountCheckOnly = accountCheckOnly
     }
