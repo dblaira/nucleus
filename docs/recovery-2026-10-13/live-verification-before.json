@@ -1,0 +1,33 @@
+{
+  "at": "2026-10-14T02:47:15.287982+00:00",
+  "sources": {
+    "/Users/adamblair/Documents/Main/Ontology/accepted/accepted-graph.ttl": {
+      "sha256": "a84a55e9814a4db5aaad2e07d72bd0d2c199bc4cb05155940f307ff95a484b30",
+      "mtime": 1791945769.2608426
+    },
+    "/Users/adamblair/Documents/Main/Ontology/accepted/decision-ledger.json": {
+      "sha256": "c495e16968aba318a5301fd3b5bc930f1bb906a47ad209086c168fbaa85bde92",
+      "mtime": 1791945769.2594755
+    }
+  },
+  "http://100.111.154.126:8766": {
+    "count": 91,
+    "ids": [
+      "9f225a01-170c-4482-9f05-cd15b11553ce",
+      "2e07ea91-1d58-4ebd-af39-bb7f00b42ac6",
+      "18fc9352-e086-46f4-847f-83d5507e0311",
+      "5b06c719-ce09-43c9-907d-cadb548a47f9",
+      "985205b3-4cec-4195-b99e-951be2f8a76c"
+    ]
+  },
+  "http://127.0.0.1:8766": {
+    "count": 91,
+    "ids": [
+      "9f225a01-170c-4482-9f05-cd15b11553ce",
+      "2e07ea91-1d58-4ebd-af39-bb7f00b42ac6",
+      "18fc9352-e086-46f4-847f-83d5507e0311",
+      "5b06c719-ce09-43c9-907d-cadb548a47f9",
+      "985205b3-4cec-4195-b99e-951be2f8a76c"
+    ]
+  }
+}

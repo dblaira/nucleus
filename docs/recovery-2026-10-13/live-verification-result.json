@@ -1,0 +1,74 @@
+{
+  "question_id": "60458428-23f8-48aa-b6be-6dd951b113cb",
+  "question": "What is FLOW?",
+  "answer_status": "answered",
+  "answer_category": "aligned",
+  "rows": 46,
+  "engine_revision": "25d3c8a954ffb98d6eb361075c41d8b8415d8345",
+  "loaded_modules_match_disk": {
+    "serve.py": true,
+    "graph.py": true,
+    "narrative.py": true,
+    "phrases.py": true,
+    "links.py": true,
+    "ask.py": true,
+    "middle.py": true,
+    "contextual_sources.py": true
+  },
+  "steps": [
+    {
+      "name": "1 question in",
+      "seconds": 0.589,
+      "note": {
+        "question": "What is FLOW?",
+        "graph_sha256": "a84a55e9814a4db5aaad2e07d72bd0d2c199bc4cb05155940f307ff95a484b30",
+        "checked_count": 734,
+        "relationships_created": 0,
+        "selected_count": 1
+      }
+    },
+    {
+      "name": "2 dictionary reads it",
+      "seconds": 0.27,
+      "note": "outcome yes"
+    },
+    {
+      "name": "3 your phrases found",
+      "seconds": 0.208,
+      "note": "0 of his phrases found"
+    },
+    {
+      "name": "4 nucleus read whole",
+      "seconds": 0.001,
+      "note": ""
+    },
+    {
+      "name": "5 one model call",
+      "seconds": 0.0,
+      "note": "painted from your links, no model"
+    },
+    {
+      "name": "6 the gate",
+      "seconds": 0.0,
+      "note": ""
+    },
+    {
+      "name": "7 answer out",
+      "seconds": 0.0,
+      "note": ""
+    }
+  ],
+  "question_graph_sha256": "a84a55e9814a4db5aaad2e07d72bd0d2c199bc4cb05155940f307ff95a484b30",
+  "current_graph_sha256": "a84a55e9814a4db5aaad2e07d72bd0d2c199bc4cb05155940f307ff95a484b30",
+  "question_used_current_graph": true,
+  "model_calls_for_question": 0,
+  "source_file_hashes": {
+    "/Users/adamblair/Documents/Main/Ontology/accepted/accepted-graph.ttl": "a84a55e9814a4db5aaad2e07d72bd0d2c199bc4cb05155940f307ff95a484b30",
+    "/Users/adamblair/Documents/Main/Ontology/accepted/decision-ledger.json": "c495e16968aba318a5301fd3b5bc930f1bb906a47ad209086c168fbaa85bde92",
+    "/Users/adamblair/Documents/Main/Ontology/accepted/adam_pattern.ttl": "d6486fec2940915582bd53134ce7cc59cf3869518922ea2b231b25008f6dfd01",
+    "/Users/adamblair/Documents/Main/Ontology/shapes/connection-shape.ttl": "832bb1c101d0c5a784c90eac526394869879292ef2a4bc61ec075e4834c6ba96",
+    "/Users/adamblair/Documents/Main/Ontology/upper/bfo-bridge.ttl": "04e70158d1f498f43c684dd6c50e0ac327d232a6d4786dfdbe82c348e265ca74",
+    "/Users/adamblair/Documents/adams-language/meanings.txt": "4750c8b380de094a02f7bcde0f116920f75e72241bf2e2da3a98b4cbfddfd85d",
+    "/Users/adamblair/Documents/adams-language/routes.txt": "cc78e4649fb86ba52a109b8a038fe41fb89022e44dc016aa914aac3739012e6d"
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "source_bundle_bytes": {
+    "graph": 1463987,
+    "ledger": 1336816,
+    "shape": 2256,
+    "upper": 3747,
+    "meanings": 36437,
+    "routes": 3860
+  },
+  "checks": [
+    {
+      "question_id": "60458428-23f8-48aa-b6be-6dd951b113cb",
+      "question": "What is FLOW?",
+      "saved_nucleus_sha256": "ffe0f4a55ddd3564e4db2f046d2c8e341f32c59ae5f9af1342a448ecc05c64db",
+      "current_nucleus_sha256": "ffe0f4a55ddd3564e4db2f046d2c8e341f32c59ae5f9af1342a448ecc05c64db",
+      "matches": true,
+      "gate_ok": 1,
+      "model_calls": 0
+    },
+    {
+      "question_id": "6d0c07bc-7e8e-4d02-97bb-a9489abaa125",
+      "question": "What are reasons I would avoid going to the doctor?",
+      "saved_nucleus_sha256": "ffe0f4a55ddd3564e4db2f046d2c8e341f32c59ae5f9af1342a448ecc05c64db",
+      "current_nucleus_sha256": "ffe0f4a55ddd3564e4db2f046d2c8e341f32c59ae5f9af1342a448ecc05c64db",
+      "matches": true,
+      "gate_ok": 1,
+      "model_calls": 0
+    }
+  ]
+}
