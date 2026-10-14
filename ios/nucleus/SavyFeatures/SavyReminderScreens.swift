@@ -783,7 +783,7 @@ struct SavyBandCard: View {
         let text = Text(title)
             .font(SavyTypography.displaySerif(26, weight: .regular))
             .foregroundStyle(fg)
-            .lineLimit(isCompact ? 1 : (previewHeight != nil || detail == .medium ? 2 : nil))
+            .lineLimit(isCompact ? 1 : (previewHeight != nil ? 2 : nil))
             .truncationMode(.tail)
             .fixedSize(horizontal: false, vertical: true)
         if let titleAccessibilityIdentifier {
@@ -818,8 +818,8 @@ struct SavyReminderBandCard: View {
             detailLine: detailLine,
             detail: detail,
             isCompact: !reminder.pinned,
-            minimumHeight: reminder.pinned && detail != .medium && previewHeight == nil ? 186 : nil,
-            expandsContent: showsCompleteMetadata && detail != .medium,
+            minimumHeight: reminder.pinned && previewHeight == nil ? 186 : nil,
+            expandsContent: showsCompleteMetadata,
             previewHeight: reminder.pinned ? previewHeight : nil,
             metadataColor: metadataColor,
             metadataWeight: metadataWeight,

@@ -1,10 +1,10 @@
 import XCTest
 
 final class SavyFlowTests: XCTestCase {
-    @MainActor private func launchApp() -> XCUIApplication {
+    @MainActor private func launchApp(extraArguments: [String] = []) -> XCUIApplication {
         continueAfterFailure = false
         let app = XCUIApplication()
-        app.launchArguments = ["COWBOYAI_UI_TEST", "COWBOYAI_UI_TEST_RESET", "COWBOYAI_UI_TEST_SEED"]
+        app.launchArguments = ["COWBOYAI_UI_TEST", "COWBOYAI_UI_TEST_RESET", "COWBOYAI_UI_TEST_SEED"] + extraArguments
         app.launch()
         return app
     }
@@ -62,8 +62,10 @@ final class SavyFlowTests: XCTestCase {
         XCTAssertEqual(first.frame.height, 182, accuracy: 1)
         XCTAssertEqual(first.frame.width, 282, accuracy: 1)
         XCTAssertGreaterThan(carousel.frame.width, first.frame.width)
-        XCTAssertTrue(first.otherElements["carouselDetail-theme"].exists)
-        screenshot("Compact carousel with next card visible", app: app)
+        for kind in ["theme", "pattern", "priority", "energy"] {
+            XCTAssertTrue(first.otherElements["carouselDetail-\(kind)"].exists)
+        }
+        screenshot("SAVY cream carousel with saved metadata", app: app)
         carousel.swipeLeft()
         carousel.swipeLeft()
         XCTAssertTrue(third.isHittable)
@@ -73,7 +75,7 @@ final class SavyFlowTests: XCTestCase {
         XCTAssertEqual(app.staticTexts["live-answer-question"].label, "A third sample question to swipe to.")
     }
 
-    @MainActor func testPinExpandsAndUnpinCompactsTheOriginalCard() {
+    @MainActor func testPinKeepsCarouselMetadataAndUnpinReturnsToRecent() {
         let app = launchApp()
         let card = app.buttons["latest-ui-source"]
         XCTAssertTrue(card.waitForExistence(timeout: 10))
@@ -82,12 +84,36 @@ final class SavyFlowTests: XCTestCase {
         XCTAssertTrue(card.otherElements["carouselDetail-theme"].exists)
         card.press(forDuration: 1)
         app.buttons["Unpin"].tap()
-        XCTAssertLessThan(card.frame.height, pinnedHeight / 2)
-        card.press(forDuration: 1)
+        XCTAssertFalse(card.exists)
+        let recent = app.buttons["recent-ui-source"]
+        reveal(recent, app: app)
+        recent.press(forDuration: 1)
         app.buttons["Pin"].tap()
         XCTAssertEqual(card.frame.height, pinnedHeight, accuracy: 1)
-        XCTAssertTrue(card.otherElements["carouselDetail-theme"].exists)
-        screenshot("Pinned card with saved metadata beside compact cards", app: app)
+        for kind in ["theme", "pattern", "priority", "energy"] {
+            XCTAssertTrue(card.otherElements["carouselDetail-\(kind)"].exists)
+        }
+        screenshot("Pinned carousel with all saved metadata", app: app)
+    }
+
+    @MainActor func testSavyPinnedCardHierarchyOnRemindersAndActions() {
+        let app = launchApp(extraArguments: ["COWBOYAI_UI_TEST_CARD_REFERENCE"])
+        for tab in ["reminders", "actions"] {
+            app.buttons["tab-\(tab)"].tap()
+            // SAVY's text identifiers are inherited by each metadata line. Its
+            // gesture surfaces identify whole cards and expose their actual bounds.
+            let cards = app.otherElements.matching(NSPredicate(format: "identifier BEGINSWITH %@", "reminderReorderGesture-"))
+            let first = cards.element(boundBy: 0)
+            XCTAssertTrue(first.waitForExistence(timeout: 5))
+            XCTAssertEqual(cards.count, 3)
+            XCTAssertGreaterThan(first.frame.height, cards.element(boundBy: 1).frame.height)
+            XCTAssertEqual(cards.element(boundBy: 1).frame.height, 186, accuracy: 1)
+            XCTAssertLessThan(cards.element(boundBy: 2).frame.height, 60)
+            XCTAssertTrue(app.staticTexts["Code the Pattern   ·   !!!"].exists)
+            XCTAssertTrue(app.staticTexts["Sample saved Lift"].exists)
+            XCTAssertTrue(app.staticTexts["Sample saved notes stay visible under the title and metadata, using the full card from SAVY."].exists)
+            screenshot("SAVY large white pin and smaller \(tab) cards", app: app)
+        }
     }
 
     @MainActor func testCreateLinkedActionAndRetainAfterRelaunch() {

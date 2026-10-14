@@ -35,3 +35,48 @@ Verified corrected app commit bb0123d on simulator D2BC1BBD-8375-4225-A9BE-F50C1
 - Graph fingerprint also matches the latest successful automatic sync (7:42 pm PDT); 13,909 triples. Neither check created a graph relationship.
 - Runtime engine identifies as 25d3c8a954ffb98d6eb361075c41d8b8415d8345. All eight reported loaded engine module hashes match its source files.
 - Complete raw answers, source fingerprints and simulator screenshot accompany this report. No application or engine code was changed for this verification.
+
+## Follow-up: actual SAVY card code, 2026-10-13 8:09 pm PDT
+
+Read the current SAVY `RootView.swift`, `ReminderStore.swift`,
+`SavyReminderScreens.swift` and `SavyCarouselDetails.swift` together at commit
+87f2b8c535fd7069d9748159a78d3770247f1a2c. SAVY's home feed selects pinned
+entries. CowboyAI was adding unpinned conversations to that feed, causing
+them to use SAVY's compact title-only layout. CowboyAI now keeps pinned
+question/response pairs in the cream carousel and keeps other conversations
+available under Recent responses. No saved pin or metadata is invented.
+
+Removed three inherited medium-detail exceptions from the port. The shared
+card implementation from `enum SavyCardDetail` through the end of
+`SavyReminderBandCard` now matches SAVY character for character (SHA-256
+2c9e459f483d896a87c94909ab8d57a01a8026540b49743392618da4df92f4c4).
+The complete carousel-details implementation after its import also matches
+SAVY. CowboyAI's approved maroon palette remains in its own theme.
+
+All three targeted UI tests passed in
+`/tmp/CowboyAI-Savy-Cards-Final.xcresult` on simulator
+D2BC1BBD-8375-4225-A9BE-F50C1D65E023. The simulator build also succeeded.
+
+- Carousel: cream cards measure 282 × 182 points, all four saved metadata
+  pills appear, and swiping opens the correct paired conversation.
+- Unpin removes the pair from the carousel; pinning it again from Recent
+  restores the same height and metadata.
+- Reminders and Actions: the long leading pinned card expands above the
+  186-point second pinned card; an unpinned card is under 60 points high.
+  Saved pattern, priority, Lift and notes remain visible on the large card.
+
+Inspected the exported simulator screenshots: white leading card, red second
+card, sand compact card, and cream carousel with bottom-left metadata pills.
+Screenshots use isolated synthetic test entries, never Adam's phone data:
+
+- [Home carousel](carousel-metadata-simulator.png)
+- [Reminders](reminders-card-sizes-simulator.png)
+- [Actions](actions-card-sizes-simulator.png)
+
+The first hierarchy-test attempt counted inherited text identifiers rather
+than whole cards. Inspection showed the extra match was the second card's
+metadata line; the test now measures SAVY's existing full-card gesture
+surfaces. No assertion was removed to conceal a layout defect.
+
+No engine, ontology, graph, endpoint, normal app data, or SAVY file was changed.
+No physical phone was accessed. Adam retains the final physical-device build.

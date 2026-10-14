@@ -51,3 +51,19 @@ records or instructions to connect the two apps.
 - Reminder, action, calendar, archive, and photo storage use CowboyAI's own
   application container. No SAVY app files, stores, or cloud services are linked.
 - Broader verification is unfinished. A build is not physical-device proof.
+
+## 2026-10-13: card hierarchy and metadata, this Codex chat
+
+> Notice the different size cards.  The metadata too. The first pinned cards are the largest and have white backgrounds.  Metadata should be shown on the carousel cards.
+
+Adam confirmed the large leading cards belong in Reminders and Actions, while the home carousel stays cream as pictured:
+
+> Yes—match that layout
+
+> you should have seen this is the SAVY code. Read the fucking code!!!!
+
+Implementation and simulator evidence for this correction are in
+`recovery-2026-10-13/verification.md`. The source reference is the actual
+SAVY-iOS code at 87f2b8c, with no edits to SAVY. The earlier status section
+above records the original port's state; the dated recovery report contains
+the subsequent build, UI and live Nucleus verification.

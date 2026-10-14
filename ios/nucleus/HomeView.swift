@@ -46,7 +46,9 @@ struct HomeView: View {
         let values = cards
         let pins = model.archive.records(for: NucleusAPI.base).filter { $0.pinned != nil }.map { $0.latest.questionID }
         let byID = Dictionary(values.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
-        return pins.compactMap { byID[$0] } + values.filter { !$0.pinned }
+        // SAVY HomeFeedRow.rows reads ReminderStore.pinnedFeed.
+        // Recent conversations belong below; only saved pins belong in this carousel.
+        return pins.compactMap { byID[$0] }
     }
 
     var body: some View {
@@ -126,6 +128,13 @@ struct HomeView: View {
     private var carousel: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(alignment: .top, spacing: 16) {
+                if carouselCards.isEmpty {
+                    Text("Pin a conversation to keep it here.")
+                        .font(.system(size: 14)).foregroundStyle(SavyTheme.deepNavy)
+                        .padding(20).frame(width: RootHomeLayout.carouselCardWidth, alignment: .leading)
+                        .background(Brand.card, in: RoundedRectangle(cornerRadius: 8))
+                        .accessibilityIdentifier("emptyPinnedCarousel")
+                }
                 ForEach(carouselCards) { item in
                     Button { open(item) } label: {
                         SavyReminderBandCard(
@@ -192,6 +201,7 @@ struct HomeView: View {
                     .background(CowboyTheme.red, in: RoundedRectangle(cornerRadius: 8))
                 }
                 .buttonStyle(.plain)
+                .accessibilityIdentifier("recent-\(item.id)")
                 .contextMenu {
                     if let origin = item.origin {
                         Button("Details", systemImage: "slider.horizontal.3") { editingDetails = origin }

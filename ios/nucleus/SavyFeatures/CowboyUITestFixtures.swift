@@ -10,7 +10,6 @@ import Foundation
         guard let response = try? JSONDecoder().decode(AskResponse.self, from: Data(text.utf8)) else { return }
         model.current = response
         model.currentOrigin = model.archive.capture(response, source: NucleusAPI.base)
-        if shouldSeedPin, let origin = model.currentOrigin { _ = model.archive.togglePin(origin) }
         model.recent = [RecentItem(id: "ui-source", question: response.question.question,
                                    status: "answered", answer: "aligned", finished: 1_792_000_000)]
         for (index, question) in ["Another sample question in the carousel.", "A third sample question to swipe to."].enumerated() {
@@ -21,6 +20,18 @@ import Foundation
             ]), let sample = try? JSONDecoder().decode(AskResponse.self, from: data) else { continue }
             _ = model.archive.capture(sample, source: NucleusAPI.base)
             model.recent.append(RecentItem(id: sample.question.id, question: question, status: "answered", answer: "aligned", finished: 1_792_000_000 - Double(index + 1) * 3600))
+        }
+        if shouldSeedPin {
+            for record in model.archive.conversations.reversed() {
+                let origin = record.latest
+                var metadata = model.archive.metadata(for: origin)
+                metadata.context = .codePattern
+                metadata.priority = .high
+                metadata.energy = .low
+                if metadata.postThemeName == nil { metadata.postThemeName = "Sample theme" }
+                _ = model.archive.saveMetadata(metadata, for: origin)
+                _ = model.archive.togglePin(origin)
+            }
         }
         if ProcessInfo.processInfo.arguments.contains("COWBOYAI_UI_TEST_SEED"), entries.reminders.isEmpty {
             for (index, kind) in [ReminderKind.reminder, .action, .event].enumerated() {
@@ -35,6 +46,25 @@ import Foundation
                     let start = calendar.date(bySettingHour: 11, minute: 0, second: 0, of: Date())!
                     entry.schedule = ReminderSchedule(startDate: start, endDate: start.addingTimeInterval(3600), alert: .none)
                     entry.dueDate = start; entry.dueTime = start; entry.endTime = start.addingTimeInterval(3600)
+                }
+                if ProcessInfo.processInfo.arguments.contains("COWBOYAI_UI_TEST_CARD_REFERENCE"), kind != .event {
+                    entry.title = "Sample pinned " + kind.label.lowercased() + ": keep the complete thought visible while reviewing the information connected to this conversation."
+                    entry.pinned = true
+                    entry.upNextOrder = 0
+                    entry.context = .codePattern
+                    entry.priority = .high
+                    entry.listName = "Sample saved Lift"
+                    entry.notes = "Sample saved notes stay visible under the title and metadata, using the full card from SAVY."
+                    for offset in 1...2 {
+                        var other = Reminder()
+                        other.kind = kind
+                        other.title = (offset == 1 ? "Another pinned " : "A compact ") + kind.label.lowercased()
+                        other.pinned = offset == 1
+                        other.upNextOrder = offset
+                        other.context = .clearSign
+                        other.priority = .medium
+                        _ = entries.save(other)
+                    }
                 }
                 _ = entries.save(entry)
             }
